@@ -16,28 +16,31 @@
 ## 简介
 
 For fun DEVELOPING ?
-<br>
-消磨时光？追求心流？逃避现实？我码故我在？<br>
-谁知道呢，<br><br>
+<br><br>
+消磨时光？追求心流？逃避现实？我code故我在？
+<br><br>
+谁知道呢，
+<br><br>
 我想重写一下老博客，之前的博客是我刚学时做的（ps：而且还是半成品）<br>
 毕设在商城和博客中选了商城，现在想改改商城，直接改成博客算了<br>
-只需把商品，改成文章就行了，诶，你他娘的还真是个天才<br>
+只需把商品，改成文章就行了，诶，你他娘的还真是个天才
+<br><br>
 开搞，不想花太多时间，想肝铲铲<br>
 
 <br><br><br>
 ## 后端
 
 SpringBoot 2.7.2 
-<br>
-NewBlogJava文件夹为后端
+<br><br>
+NewBlogJava文件夹
 <br>
 <br><br><br>
 
 ## 前端
 
 Vue 2.7.16
-<br>
-NewBlogDemo文件夹为前端
+<br><br>
+NewBlogDemo文件夹
 <br>
 <br><br><br>
 
