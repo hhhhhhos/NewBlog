@@ -257,10 +257,10 @@ public class TestController {
 
     @Autowired
     WebSocket webSocket;
-    @GetMapping("/fuck")
-    public String testt(){
-
-        return WebSocket.sessionPool.toString();
+    @PostMapping("/fuck")
+    public String testt(@RequestBody String content){
+        log.info(content);
+        return content;
     }
 
     @Autowired

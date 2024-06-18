@@ -125,6 +125,12 @@ const routes = [
         ]
       },
       {
+        path: 'vue2-editor',
+        name: 'vue2-editor',
+        component: () => import(/* webpackChunkName: "about10" */ '../views/other/vue2-editor.vue'),
+        meta: { title: '席巴商城 -vue2-editor' },
+      },
+      {
         path: '/404',
         name: '404',
         component: () => import(/* webpackChunkName: "about11" */ '../views/other/VE404.vue'),

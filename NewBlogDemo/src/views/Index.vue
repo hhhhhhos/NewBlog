@@ -29,12 +29,7 @@
       <div v-if="this.$route.name !== 'home'" style="height: 56px;"></div>
 
 
-      <Tabbar v-if="this.$store.state.PAGE_STATE==='Tabbar'" style="position:fixed;" route>
-        <TabbarItem icon="home-o"  to="/home">主页</TabbarItem>
-        <TabbarItem icon="completed-o" to="/user/historylist">订单</TabbarItem>
-        <TabbarItem icon="cart-o" to="/user/buylist">购物车</TabbarItem>
-        <TabbarItem icon="contact-o" to="/user/info" >个人信息</TabbarItem>
-      </Tabbar>
+
 
       <!-- 右上角菜单弹出-->
       <van-popup v-model="popup_show" position="top" style="text-align: center;" >
@@ -109,7 +104,6 @@
 
 <script>
 import axios from '@/utils'
-import { Tabbar, TabbarItem } from 'vant';
 import { Icon } from 'vant';
 import { Popup } from 'vant';
 import { Cell, CellGroup } from 'vant';
@@ -118,8 +112,6 @@ import rootEvent from '@/components/receivedrootevent/VE.vue'
 
 export default {
   components:{
-    Tabbar,
-    TabbarItem,
     'van-icon':Icon,
     'van-popup':Popup,
     'van-cell':Cell,

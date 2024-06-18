@@ -6,7 +6,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 
 module.exports = defineConfig({
-  publicPath: '/xiba-shop/', // 子域名项目必备绝对路径 静态文件 适配history
+  publicPath: '/', // 子域名项目必备绝对路径 静态文件 适配history
   transpileDependencies: true,
   devServer: {
     client: {
