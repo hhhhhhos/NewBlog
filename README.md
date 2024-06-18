@@ -31,7 +31,9 @@ NewBlogJava文件夹
 
 Vue 2.7.16
 <br><br>
-NewBlogDemo文件夹
+NewBlogDemo文件夹 - 用户端
+<br><br>
+NewBlogAdmin文件夹 - 管理端
 <br>
 <br><br><br>
 
