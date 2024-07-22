@@ -3,7 +3,7 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">西巴商城管理系统</h3>
+        <h3 class="title">西巴博客管理系统</h3>
       </div>
 
       <el-form-item prop="username">
@@ -59,7 +59,14 @@
       </div>
        
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:15px;" @click.native.prevent="handleLogin">登录</el-button>
+
+      <div style="display: flex;justify-content: center;align-items: center;margin-top: 0;padding-top: 0;">
+        <img class="weixin" v-if="!IsRegis" loading="lazy" :src="require(`@/assets/wechat_login.png`)" 
+            style="width: 40px;height: 40px;object-fit: cover;cursor: pointer;margin-top: 0;border-radius: 20px;"
+        @click="login_wechat()">
+      </div>
+
 
     </el-form>
   </div>
@@ -70,98 +77,131 @@ import axios from '@/utils/axios';
 import { setToken } from '@/utils/auth'
 
 export default {
-  name: 'Login',
-  data() {
-    return {
-      loginForm: {
-        username: 'visitor',
-        password: '111111',
-        captch:'',
-      },
-      loginRules: {
-        username: [{ required: true, trigger: 'blur' }],
-        password: [{ required: true, trigger: 'blur' }],
-        captch: [{ required: true, trigger: 'blur' }],
-      },
-      loading: false,
-      passwordType: 'password',
-      redirect: undefined,
-      Is_captchaLoading:true
-    }
-  },
-  watch: {
-    $route: {
-      handler: function(route) {
-        this.redirect = route.query && route.query.redirect
-      },
-      immediate: true
-    }
-  },
-  methods: {
-    showPwd() {
-      if (this.passwordType === 'password') {
-        this.passwordType = ''
-      } else {
-        this.passwordType = 'password'
-      }
-      this.$nextTick(() => {
-        this.$refs.password.focus()
-      })
-    },
-    handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
-            this.getCaptch()
-          })
-        } else {
-          console.log('error submit!!')
-          return false
+    name: 'Login',
+    data() {
+        return {
+            loginForm: {
+                username: 'visitor',
+                password: '111111',
+                captch:'',
+            },
+            loginRules: {
+                username: [{ required: true, trigger: 'blur' }],
+                password: [{ required: true, trigger: 'blur' }],
+                captch: [{ required: true, trigger: 'blur' }],
+            },
+            loading: false,
+            passwordType: 'password',
+            redirect: '/',
+            Is_captchaLoading:true
         }
-      })
+    },
+    watch: {
+        $route: {
+            handler: function(route) {
+                this.redirect = route.query && route.query.redirect
+            },
+            immediate: true
+        }
+    },
+    methods: {
+        login_wechat(){
+            // 重定向页
+            console.log(process.env.VUE_APP_REDIRECT_URI)
+            // 微信要的state 每次都要不一样
+            var state = 'admin'+this.generateUUID()
 
+            // 获取 User Agent
+            var is_in_wechat = false
+            var userAgent = navigator.userAgent.toLowerCase();
+            // 判断是否在微信中打开
+            if (userAgent.indexOf('micromessenger') !== -1) {
+                console.log('当前页面在微信中打开');
+                is_in_wechat = true
+            } else {
+                console.log('当前页面不在微信中打开');
+                is_in_wechat = false
+            }
+
+            // 电脑跳转 // 网页授权appid
+            if(!this.$store.state.app.is_mobile)window.location.href =`https://open.weixin.qq.com/connect/qrconnect?appid=wxa631fd7ca89e35a9&redirect_uri=${process.env.VUE_APP_REDIRECT_URI}&response_type=code&scope=snsapi_login&state=${state}#wechat_redirect`
+            // 手机浏览器跳转
+            else if(!is_in_wechat) this.$router.push('url_scan')
+            // 微信内页跳转 // 服务号授权appid
+            else if(is_in_wechat) window.location.href =`https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxbc1cabc1fa496099&redirect_uri=${process.env.VUE_APP_REDIRECT_URI}&response_type=code&scope=snsapi_userinfo&state=${state}#wechat_redirect`
+            else this.$message.error("参数错误")
+
+
+        },
+        generateUUID() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        },
+        showPwd() {
+            if (this.passwordType === 'password') {
+                this.passwordType = ''
+            } else {
+                this.passwordType = 'password'
+            }
+            this.$nextTick(() => {
+                this.$refs.password.focus()
+            })
+        },
+        handleLogin() {
+            this.$refs.loginForm.validate(valid => {
+                if (valid) {
+                    this.loading = true
+                    this.$store.dispatch('user/login', this.loginForm).then(() => {
+                        this.$router.push({ path: this.redirect || '/' })
+                        this.loading = false
+                    }).catch(() => {
+                        this.loading = false
+                        this.getCaptch()
+                    })
+                } else {
+                    console.log('error submit!!')
+                    return false
+                }
+            })
+
+        },
+        getCaptch(){
+            axios.get('/user/getCaptch', {
+                responseType: 'blob'  // 告诉axios返回类型是blob
+            })
+                .then(response => {
+                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                    // 假设你有一个img标签用来显示验证码
+                    const img = document.getElementById('captchaImage');
+                    if (img) {
+                        img.src = url;
+                        this.Is_captchaLoading = false
+                    }
+                })
+                .catch(error => {
+                    this.$message.error('Error fetching the captcha');
+                    console.error(error);
+                });
+        },
+        getsession(){
+            axios.get('/user/session').then(response=>{
+                console.log(response.data)
+                console.log(response.data[0])
+                if(response.data[0]==="Role: admin"){
+                    setToken(123)
+                    this.$router.push({ path: this.redirect || '/' })
+                }
+                else{
+                    console.log("not admin")
+                }
+            })
+        }
     },
-    getCaptch(){
-      axios.get('/user/getCaptch', {
-          responseType: 'blob'  // 告诉axios返回类型是blob
-      })
-      .then(response => {
-          const url = window.URL.createObjectURL(new Blob([response.data]));
-          // 假设你有一个img标签用来显示验证码
-          const img = document.getElementById('captchaImage');
-          if (img) {
-              img.src = url;
-              this.Is_captchaLoading = false
-          }
-      })
-      .catch(error => {
-          this.$message.error('Error fetching the captcha');
-          console.error(error);
-      });
-    },
-    getsession(){
-      axios.get('/user/session').then(response=>{
-        console.log(response.data)
-        console.log(response.data[0])
-        if(response.data[0]==="Role: admin"){
-            setToken(123)
-            this.$router.push({ path: this.redirect || '/' })
-          }
-          else{
-            console.log("not admin")
-          }
-        })
+    mounted(){
+        this.getCaptch()
+        this.getsession()
     }
-  },
-  mounted(){
-    this.getCaptch()
-    this.getsession()
-  }
 }
 </script>
 
@@ -177,6 +217,15 @@ $cursor: #fff;
   .login-container .el-input input {
     color: $cursor;
   }
+}
+
+.weixin:hover{
+  background-color: #ffffffb7;
+  transition: background-color 0.3s ease;
+}
+
+.weixin{
+  transition: background-color 0.3s ease;
 }
 
 /* reset element-ui css */

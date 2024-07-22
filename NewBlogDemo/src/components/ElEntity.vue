@@ -28,50 +28,50 @@
 import axios from '@/utils';
 
 export default {
-  props: {
-    columns:Array,
-    geturl:String
-  },
-  data() {
-    return{
-      tableData:[],
-      currentPage:1,
-      TotalPage:null,
-      PageSize:5,
-      IsTableLoading:true
-    }
-  },
-  methods:{
-    // 拿表
-    gettable(){
-      axios.get(this.geturl,{
-        params: {
-          currentPage: this.currentPage,
-          PageSize: this.PageSize
+    props: {
+        columns:Array,
+        geturl:String
+    },
+    data() {
+        return{
+            tableData:[],
+            currentPage:1,
+            TotalPage:null,
+            PageSize:5,
+            IsTableLoading:true
         }
-      }).then(response=>{
-        this.tableData = response.data.records
-        this.TotalPage = response.data.total
-        this.IsTableLoading = false
-        console.log(response)
-      }).catch(error=>{
-        console.log(error)
-      })
     },
-    // 页容量变化
-    handleSizeChange(val) {
-      this.PageSize = val
-      this.gettable()
+    methods:{
+    // 拿表
+        gettable(){
+            axios.get(this.geturl,{
+                params: {
+                    currentPage: this.currentPage,
+                    PageSize: this.PageSize
+                }
+            }).then(response=>{
+                this.tableData = response.data.records
+                this.TotalPage = response.data.total
+                this.IsTableLoading = false
+                console.log(response)
+            }).catch(error=>{
+                console.log(error)
+            })
+        },
+        // 页容量变化
+        handleSizeChange(val) {
+            this.PageSize = val
+            this.gettable()
+        },
+        // 切页
+        handleCurrentChange(val) {
+            this.currentPage = val
+            this.gettable()
+        }
     },
-    // 切页
-    handleCurrentChange(val) {
-      this.currentPage = val
-      this.gettable()
+    created(){
+        this.gettable()
     }
-  },
-  created(){
-    this.gettable()
-  }
 }
 </script>
 

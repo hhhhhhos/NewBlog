@@ -16,13 +16,13 @@ let pcas = require('/src/assets/pca-code.json')
 export default {
     name: 'receiveAddress',
     props:{
-      PselectedOptions:Array
+        PselectedOptions:Array
     },
     data() {
         return {
             options: pcas,
             selectedOptions: [],
-      }
+        }
     },
     methods: {
         // 获取省市区地址级联
@@ -36,16 +36,16 @@ export default {
         },
     },
     mounted(){
-    this.$store.state.zhezhao_show = false
-      this.$store.state.zhezhao_show = false
-      if(this.PselectedOptions)this.selectedOptions = JSON.parse(JSON.stringify(this.PselectedOptions))
-      else this.selectedOptions = []
-    },
-    watch:{
-      PselectedOptions:function(){
+        this.$store.state.zhezhao_show = false
+        this.$store.state.zhezhao_show = false
         if(this.PselectedOptions)this.selectedOptions = JSON.parse(JSON.stringify(this.PselectedOptions))
         else this.selectedOptions = []
-      }
+    },
+    watch:{
+        PselectedOptions:function(){
+            if(this.PselectedOptions)this.selectedOptions = JSON.parse(JSON.stringify(this.PselectedOptions))
+            else this.selectedOptions = []
+        }
     }
 }
 </script>

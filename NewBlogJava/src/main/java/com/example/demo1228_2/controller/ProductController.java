@@ -11,6 +11,7 @@ import com.example.demo1228_2.entity.*;
 import com.example.demo1228_2.mapper.DataResultMapper;
 import com.example.demo1228_2.mapper.ProductMapper;
 import com.example.demo1228_2.mapper.ProductRateMapper;
+import com.example.demo1228_2.mapper.UserMapper;
 import com.example.demo1228_2.service.impl.ProductServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +21,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static com.example.demo1228_2.config.Tool.PHOTO_SAVE_URL;
 
 @RestController
 @RequestMapping("/product")
@@ -29,6 +35,9 @@ import java.util.stream.Collectors;
 public class ProductController {
     @Autowired
     ProductMapper productmapper;
+
+    @Autowired
+    UserMapper userMapper;
 
     @Autowired
     DataResultMapper dataResultMapper;
@@ -43,7 +52,7 @@ public class ProductController {
     ObjectMapper objectMapper;
 
     @GetMapping("/page") // 分页查询 接收params //防空设默认
-    public R<Page> FindPageProduct(@RequestParam Map<String,String> params){
+    public R<Page> FindPageProduct(@RequestParam Map<String,String> params,HttpSession session){
         //log.info("!!:{}",FType);
         try {
 
@@ -57,6 +66,7 @@ public class ProductController {
 
             // 空参数抛异常
             if(currentPage == 0 || PageSize == 0 )throw new CustomException("分页查询参数为空");
+            if(FName!=null && FName.length()>7)throw new CustomException("查询参数过长");
             // 分页查询
             Page page = new Page<>(currentPage, PageSize);
 
@@ -85,8 +95,11 @@ public class ProductController {
             log.info("分页查询成功");
             // 访客加一
             DataResult dataResult = dataResultMapper.selectById(45698);
-            dataResult.setHome_visitors(dataResult.getHome_visitors()+1);
-            dataResultMapper.updateById(dataResult);
+            if(!Tool.IsUserAdmin(session)){
+                dataResult.setHome_visitors(dataResult.getHome_visitors()+1);
+                dataResultMapper.updateById(dataResult);
+            }
+
             // 加点参数
             List<Product> res = page.getRecords();
             List<Map<String,Object>> nres = res.stream().map(product -> {
@@ -108,12 +121,12 @@ public class ProductController {
     }
 
     @GetMapping("/getone") // 查一个商品
-    public R<Product> FindOneProduct(@RequestParam(defaultValue = "-1")Long id){
+    public R<Product> FindOneProduct(@RequestParam(defaultValue = "-1")Long id,HttpSession session){
         Product product;
         if(id ==-1)return R.error("id为空");
         try{
             product = productmapper.selectById(id);
-            if(product != null){
+            if(product != null && !Tool.IsUserAdmin(session)){
                 // 浏览量加一
                 product.setVisited_num(product.getVisited_num()+1);
                 productmapper.updateById(product);
@@ -124,7 +137,7 @@ public class ProductController {
         }
 
         //log.info("{},{}",averageRate,productRateList.size());
-        return R.success(product).add("rate_value",product.getRate())
+        return R.success(product).add("user_name",userMapper.selectById(product.getUser_id()).getName())
                 .add("rate_num",product.getRate_num());
     }
 
@@ -144,12 +157,57 @@ public class ProductController {
     }
 
     /**
+     * 新增一个赞
+     * @param params comment_id
+     * @param session 1
+     * @return 1
+     */
+    @PostMapping("/addone/zan") // 加一个
+    public R<String> FindOneProduct(@RequestBody Map<String,Object> params, HttpSession session){
+        Long product_id;
+        Long user_id;
+        log.info("!!!!!"+params.toString());
+        try{
+            if(Tool.getUserSessionId(session).equals(0L))
+                throw new CustomException("未登录");
+            user_id = Long.parseLong(session.getAttribute("IsLogin").toString());
+            product_id = Long.parseLong(params.get("product_id").toString());
+        }catch (Exception e){
+            return R.error(e.getMessage());
+        }
+        Product product = productmapper.selectById(product_id);
+        List<Long> loveList = product.getLove_list();
+        if (loveList == null) { // 防止空指针异常
+            loveList = new ArrayList<>();
+        }
+        // 点赞过了 取消点赞
+        if(loveList.contains(user_id)){
+            loveList.remove(user_id);
+            product.setLove_list(loveList);
+            //comment.setLove_list_num(comment.getLove_list_num()-1);
+            if(productmapper.updateById(product)!=1)
+                return R.error("取消点赞失败，建议重试");
+            return R.success("取消点赞成功");
+            // 没点赞过 点赞
+        }else{
+            loveList.add(user_id);
+            product.setLove_list(loveList);
+            //comment.setLove_list_num(comment.getLove_list_num()+1);
+            if(productmapper.updateById(product)!=1)
+                return R.error("点赞失败，建议重试");
+            return R.success("点赞成功");
+        }
+
+    }
+
+
+    /**
      * 添加商品
      * @param photo 图片
      * @param product_json product字符串对象
      */
     @PostMapping("/addonebyadmin") // 加一个商品 //不加注解默认form-data
-    public R<String> FindOneProduct(MultipartFile photo,String product_json,HttpSession session){
+    public R<String> FindOneProduct(MultipartFile photo,MultipartFile photo_shot,String product_json,HttpSession session){
         try{
 
             //log.info(photo.getOriginalFilename());
@@ -170,8 +228,8 @@ public class ProductController {
                 throw new CustomException("不是管理员，禁止操作");
 
             // 防空
-            if(product.getName()==null || product.getPrice()==null)
-                throw new CustomException("商品名或价格不能为空");
+            if(product.getName()==null )
+                throw new CustomException("标题不能为空");
 
             //名字防重复
             if(Db.lambdaQuery(Product.class).eq(Product::getName,product.getName()).one()!=null)
@@ -182,24 +240,32 @@ public class ProductController {
             //Tool.saveFile(photo,Tool.PHOTO_SAVE_URL);
             // 转换webp存图
             String name = "noproduct";
-            if(photo!=null)name = Tool.convertToWebp(photo);
+            String name_shot = null;
+            if(photo!=null)name = Tool.convertToWebp(photo,"");
+            if(photo_shot!=null)name_shot = Tool.convertToWebp(photo_shot,"");
             log.info(name.replace(".webp", ""));
             //log.info("是否有图片 名字：{}",Tool.checkFileExists(name));
 
             product.setId(null);
             product.setVersion(null);
             product.setCreate_time(null);
+            product.setUpdate_time(LocalDateTime.now());
             product.setUser_id(Long.parseLong(session.getAttribute("IsLogin").toString()));
             if(product.getType()==null)product.setType("0");
             product.setPhoto(name.replace(".webp", ""));
+            if(name_shot!=null)product.setPhoto_shot(name_shot.replace(".webp", ""));
             if(productmapper.insert(product)==0){
                 // 指定要删除的文件路径
-                String filePath = Tool.PHOTO_SAVE_URL + name; // 替换为实际的文件路径
+                String filePath = PHOTO_SAVE_URL + name; // 替换为实际的文件路径
                 File file = new File(filePath);
                 // 尝试删除文件
                 boolean deleted = file.delete();
                 throw new CustomException("输入库插入失败");
             }else{
+                boolean moveresult = false;
+                if(!name.equals("noproduct"))
+                    moveresult = Tool.moveFile(name,product.getId().toString()+'/'+name);
+                log.info("图片移动结果："+moveresult);
                 return R.success("插入成功");
             }
 
@@ -208,8 +274,40 @@ public class ProductController {
         }
     }
 
+    @PostMapping("/saveTempPhotobyadmin") //保存临时图片
+    public R<String> FindOneProduct(MultipartFile photo,HttpSession session){
+        try{
+            // 验证权限
+            if(!session.getAttribute("Role").toString().equals("admin"))
+                throw new CustomException("不是管理员，禁止操作");
+
+            // 存图
+            String name = "";
+            if(photo!=null){
+                name = Tool.convertToWebpAndSaveToPath("temp/",photo,"");
+                //Tool.moveFile(name,product.getId().toString()+'/'+name);
+            }else{
+                throw new CustomException("图片为空");
+            }
+            log.info(name);
+            return R.success(name);
+
+        }catch (Exception e){
+            return R.error(e.getMessage());
+        }
+
+    }
+
+    @DeleteMapping("/deleteTempPhotobyadmin") //删除临时文件夹temp和里面所有文件(进入前端页面时会axios触发)
+    public void FindOneProduct(){
+        if(Tool.deleteAllFilesInDirectory(PHOTO_SAVE_URL+"temp/"))
+            log.info("删除temp文件夹所有文件成功");
+        else
+            log.error("删除temp文件夹失败");
+    }
+
     @PutMapping("/updateonebyadmin") // 更新一个商品 //不加注解默认form-data
-    public R<String> UpdateOneProduct(MultipartFile photo,String product_json,HttpSession session){
+    public R<String> UpdateOneProduct(MultipartFile photo,MultipartFile photo_shot,String product_json,HttpSession session){
         try{
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -225,8 +323,8 @@ public class ProductController {
                 throw new CustomException("不是管理员，禁止操作");
 
             // 防空
-            if(product.getName()==null || product.getPrice()==null)
-                throw new CustomException("商品名或价格不能为空");
+            if(product.getName()==null)
+                throw new CustomException("名不能为空");
 
             Product db_product = productService.getById(product.getId());
 
@@ -243,16 +341,20 @@ public class ProductController {
                     // 本身不是noproduct（前端删除请求）
                     if(!db_product.getPhoto().equals("noproduct"))
                         // 删老的图
-                        Tool.deleteOneWebp(db_product.getPhoto()+".webp");
+                        Tool.deleteOneWebp(db_product.getId().toString()+'/'+db_product.getPhoto()+".webp");
 
                     // 本身是 啥也不做
                 }
                 // 有传图 // 传图必是noproduct
                 else{
                     // 删老的图(不是noproduct.webp的话,别把默认图删了)
-                    if(!db_product.getPhoto().equals("noproduct"))Tool.deleteOneWebp(db_product.getPhoto()+".webp");
+                    if(!db_product.getPhoto().equals("noproduct"))Tool.deleteOneWebp(db_product.getId().toString()+'/'+db_product.getPhoto()+".webp");
                     // 存新图
-                    String new_photo_name = Tool.convertToWebp(photo);
+                    String new_photo_name = Tool.convertToWebp(photo,"");
+                    // 移位置
+                    boolean moveresult = false;
+                    moveresult = Tool.moveFile(new_photo_name,product.getId().toString()+'/'+new_photo_name);
+                    log.info("图片移动结果："+moveresult);
                     // 改名
                     product.setPhoto(new_photo_name.replace(".webp",""));
 
@@ -262,8 +364,17 @@ public class ProductController {
             }
             // 图片名字是正常文字（啥也不做）
 
+            product.setUpdate_time(LocalDateTime.now());
+
+            // 略缩图
+            String name_shot=null;
+            if(photo_shot!=null)name_shot = Tool.convertToWebp(photo_shot,"");
+            if(name_shot!=null)product.setPhoto_shot(name_shot.replace(".webp", ""));
+
             if(!productService.updateById(product))
                 throw new CustomException("updateById失败");
+
+            movePhotoFromTempToIdFolder(product.getContent(),product.getId().toString());
 
             return R.success("更新成功");
 
@@ -273,6 +384,30 @@ public class ProductController {
             return R.error(e.getMessage());
         }
     }
+
+    /**
+     * 自定义列表转webp图
+     * @return
+     */
+    @GetMapping("/photosToWebpbyadmin")
+    public String esad(){
+        try {
+            List<String> list = new ArrayList<>(Arrays.asList(
+                    "https://cdn-l-cyberpunk.cdprojektred.com/wallpapers/3840x2160/CNY_Artwork-zh-cn.jpg",
+                    "https://w.wallhaven.cc/full/6d/wallhaven-6d6yy6.jpg",
+                    "https://w.wallhaven.cc/full/gp/wallhaven-gpgddl.jpg",
+                    "https://w.wallhaven.cc/full/1p/wallhaven-1py3r1.jpg",
+                    "https://w.wallhaven.cc/full/qz/wallhaven-qzq5l7.jpg",
+                    "https://w.wallhaven.cc/full/m3/wallhaven-m3eve8.jpg",
+                    "https://w.wallhaven.cc/full/p9/wallhaven-p9pro3.jpg"
+            ));
+            return Tool.ListconvertToWebp(list,"homePagePhoto");
+        }catch (Exception e){
+            return e.getMessage();
+        }
+
+    }
+
 
     @Autowired
     ProductServiceImpl productService;
@@ -297,13 +432,21 @@ public class ProductController {
             for(Product product:productList)
                 if(product.getId()!=null){
                     IdList.add(product.getId());
-                    Tool.deleteOneWebp(product.getPhoto()+".webp"); // 删图片
+                    // 这是单独删除封面图 其实可以删除对应id文件夹下所有文件
+                    //Tool.deleteOneWebp(product.getId().toString() + '/' + product.getPhoto()+".webp"); // 删图片
+                    //Tool.deleteAllFilesInDirectory(PHOTO_SAVE_URL + product.getId());
+                    //后面不回滚了再删吧
                 }
 
             if(!productService.removeByIds(IdList))
                 throw new CustomException("数据库删除失败，可能存在非法ID");
 
-            // 删图片
+            // 删图
+            for(Long Id:IdList){
+                // 删除对应id文件夹下所有文件
+                Tool.deleteAllFilesInDirectory(PHOTO_SAVE_URL + Id.toString()+'/');
+            }
+
 
             return R.success("删除成功");
 
@@ -378,5 +521,28 @@ public class ProductController {
             default:
                 break;
         }
+    }
+
+    // 从正文捕获所有图片 移动到id文件夹
+    private void movePhotoFromTempToIdFolder(String content,String product_id) {
+        // 定义正则表达式
+        String regex = ".*\\/img/([^\\s]+\\.webp)";
+
+        // 编译正则表达式
+        Pattern pattern = Pattern.compile(regex);
+
+        // 创建匹配器
+        Matcher matcher = pattern.matcher(content);
+
+        // 创建列表存储结果
+        List<String> matchedResults = new ArrayList<>();
+
+        // 找到所有匹配项
+        while (matcher.find()) {
+            // 获取匹配的字符串
+            String matchedString = matcher.group(1);
+            Tool.moveFile("temp/"+matchedString,product_id+"/"+matchedString);
+        }
+
     }
 }

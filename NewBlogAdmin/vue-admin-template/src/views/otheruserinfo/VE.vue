@@ -61,69 +61,69 @@
 import axios from '@/utils/axios';
 
 export default {
-  name: 'MyIndex',
-  components: {
-  },
-  props: {},
-  data () {
-    return {
-      loading:true,
-      addordeleteFan_text:"关注",
-      addordeleteFan_type:"primary",
-      addordeleteFan_loading:false,
-      dt:0,
-      fs:-1,
-      gz:-1,
-      obj:null,
-      target_img_src:require('@/assets/load.webp'),
-      user_id:null,
-      trans_index:{
-        "name":"姓名",
-        "age":"年龄",
-        "sex":"性别",
-        "phone":"电话",
-        "create_time":"创建时间",
-        "role":"角色",
-        "money":"余额",
-        "ip_location":"归属地",
-      }
-    }
-  },
-  methods: {
-    async test(){
-      await this.getuserinfo()
+    name: 'MyIndex',
+    components: {
     },
-    async getuserinfo(){
-      await axios.get('/user/session')
-        .then(response=>{
-          console.log(response.data)
-          this.name = response.data?.[0].slice(6)
-          this.$store.state.app.UserId =  response.data[3].slice(9)
-          console.log("!!!!!!!"+response.data[3].slice(9))
-          console.log("name = response.data")
-        }).catch(error=>{
-          this.$message.error("error")
-          console.log(error)
-        })
-
-      await axios.get(`/user/otheruserinfo?user_id=${this.$store.state.app.UserId}`)
-      .then(response=>{
-        if(response.data.code)this.isloading1=false
-        else this.$message.error("获取失败："+response.data.msg)
-        this.obj = response.data.data
-        if(this.obj?.wechat_headimgurl === null){
-          this.target_img_src = require('@/assets/default_headimg5.webp')
+    props: {},
+    data () {
+        return {
+            loading:true,
+            addordeleteFan_text:"关注",
+            addordeleteFan_type:"primary",
+            addordeleteFan_loading:false,
+            dt:0,
+            fs:-1,
+            gz:-1,
+            obj:null,
+            target_img_src:require('@/assets/load.webp'),
+            user_id:null,
+            trans_index:{
+                "name":"姓名",
+                "age":"年龄",
+                "sex":"性别",
+                "phone":"电话",
+                "create_time":"创建时间",
+                "role":"角色",
+                "money":"余额",
+                "ip_location":"归属地",
+            }
         }
-        this.loading = false
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("获取失败："+error.data.msg)
-      })
     },
-  },
-  mounted(){
-    this.test()
-  }
+    methods: {
+        async test(){
+            await this.getuserinfo()
+        },
+        async getuserinfo(){
+            await axios.get('/user/session')
+                .then(response=>{
+                    console.log(response.data)
+                    this.name = response.data?.[0].slice(6)
+                    this.$store.state.app.UserId =  response.data[3].slice(9)
+                    console.log("!!!!!!!"+response.data[3].slice(9))
+                    console.log("name = response.data")
+                }).catch(error=>{
+                    this.$message.error("error")
+                    console.log(error)
+                })
+
+            await axios.get(`/user/otheruserinfo?user_id=${this.$store.state.app.UserId}`)
+                .then(response=>{
+                    if(response.data.code)this.isloading1=false
+                    else this.$message.error("获取失败："+response.data.msg)
+                    this.obj = response.data.data
+                    if(this.obj?.wechat_headimgurl === null){
+                        this.target_img_src = require('@/assets/default_headimg5.webp')
+                    }
+                    this.loading = false
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                })
+        },
+    },
+    mounted(){
+        this.test()
+    }
 }
 </script>
 

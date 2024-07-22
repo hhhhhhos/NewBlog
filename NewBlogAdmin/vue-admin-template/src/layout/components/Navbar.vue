@@ -39,52 +39,52 @@ import Hamburger from '@/components/Hamburger'
 import axios from '@/utils/axios';
 
 export default {
-  components: {
-    Breadcrumb,
-    Hamburger
-  },
-  data() {
-    return {
-      url:process.env.VUE_APP_SHOP_URL
+    components: {
+        Breadcrumb,
+        Hamburger
+    },
+    data() {
+        return {
+            url:process.env.VUE_APP_SHOP_URL
+        }
+    },
+    computed: {
+        ...mapGetters([
+            'sidebar',
+            'avatar'
+        ])
+    },
+    methods: {
+        searchsession(){
+            axios.get('/user/session')
+                .then(response=>{
+                    console.log(response.data)
+                    this.$message({
+                        dangerouslyUseHTMLString: true, // html格式
+                        showClose:true, // 显示关闭按钮
+                        duration:0, // 不会自动关闭
+                        message: response.data.join('<br>')
+                    });
+                }).catch(error=>{
+                    this.$message.error("error")
+                    console.log(error)
+                })
+        },
+        toggleSideBar() {
+            this.$store.dispatch('app/toggleSideBar')
+        },
+        return_avata(){
+            return `${process.env.VUE_APP_STATIC_PATH}avata.webp`
+        },
+        goToProfile(){
+            //this.$message("profile")
+            this.$router.push('/user/info')
+        },
+        async logout() {
+            await this.$store.dispatch('user/logout')
+            this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+        }
     }
-  },
-  computed: {
-    ...mapGetters([
-      'sidebar',
-      'avatar'
-    ])
-  },
-  methods: {
-    searchsession(){
-        axios.get('/user/session')
-        .then(response=>{
-          console.log(response.data)
-          this.$message({
-            dangerouslyUseHTMLString: true, // html格式
-            showClose:true, // 显示关闭按钮
-            duration:0, // 不会自动关闭
-            message: response.data.join('<br>')
-          });
-        }).catch(error=>{
-          this.$message.error("error")
-          console.log(error)
-        })
-    },
-    toggleSideBar() {
-      this.$store.dispatch('app/toggleSideBar')
-    },
-    return_avata(){
-      return `${process.env.VUE_APP_STATIC_PATH}avata.webp`
-    },
-    goToProfile(){
-      //this.$message("profile")
-      this.$router.push('/user/info')
-    },
-    async logout() {
-      await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
-    }
-  }
 }
 </script>
 

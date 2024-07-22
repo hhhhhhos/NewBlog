@@ -60,33 +60,33 @@ import CountTo from 'vue-count-to'
 import axios from '@/utils/axios';
 
 export default {
-  components: {
-    CountTo
-  },
-  data(){
-    return{
-      p1:2543,
-      p2:3445,
-      p3:3246,
-      p4:2344,
+    components: {
+        CountTo
+    },
+    data(){
+        return{
+            p1:2543,
+            p2:3445,
+            p3:3246,
+            p4:2344,
+        }
+    },
+    methods: {
+        handleSetLineChartData(type) {
+            this.$emit('handleSetLineChartData', type)
+        }
+    },
+    mounted(){
+        axios.get('/user-agent-details/init_dashboard_four')
+            .then(response=>{
+                console.log(response.data)
+                this.p1 = response.data.p1
+                this.p3 = response.data.p3
+                this.p4 = response.data.p4
+            }).catch(error=>{
+                console.log(error)
+            })
     }
-  },
-  methods: {
-    handleSetLineChartData(type) {
-      this.$emit('handleSetLineChartData', type)
-    }
-  },
-  mounted(){
-    axios.get('/user-agent-details/init_dashboard_four')
-        .then(response=>{
-          console.log(response.data)
-          this.p1 = response.data.p1
-          this.p3 = response.data.p3
-          this.p4 = response.data.p4
-        }).catch(error=>{
-          console.log(error)
-        })
-  }
 }
 </script>
 

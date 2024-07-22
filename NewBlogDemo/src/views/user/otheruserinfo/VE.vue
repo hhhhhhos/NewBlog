@@ -91,124 +91,124 @@ import { Dialog } from 'vant';
 import axios from '@/utils'
 
 export default {
-  name: 'MyIndex',
-  components: {
-  },
-  props: {},
-  data () {
-    return {
-      addordeleteFan_text:"关注",
-      addordeleteFan_type:"primary",
-      addordeleteFan_loading:false,
-      dt:0,
-      fs:-1,
-      gz:-1,
-      obj:null,
-      target_img_src:require('@/assets/load.webp'),
-      user_id:null,
-      trans_index:{
-        "name":"姓名",
-        "age":"年龄",
-        "sex":"性别",
-        "phone":"电话",
-        "create_time":"创建时间",
-        "role":"角色",
-        "money":"余额",
-        "ip_location":"归属地",
-      }
-    }
-  },
-  methods: {
-    async test(){
-      await this.getuserinfo()
-      await this.getfaninfo()
+    name: 'MyIndex',
+    components: {
     },
-    async getuserinfo(){
-
-      await axios.get(`/user/otheruserinfo?user_id=${this.user_id}`)
-      .then(response=>{
-        if(response.data.code)this.isloading1=false
-        else this.$message.error("获取失败："+response.data.msg)
-        this.obj = response.data.data
-        if(this.obj?.wechat_headimgurl === null){
-          this.target_img_src = require('@/assets/default_headimg5.webp')
-        }
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("获取失败："+error.data.msg)
-      })
-    },
-    async getfaninfo(){
-
-      await axios.get(`/fan/info?user_id=${this.user_id}`)
-      .then(response=>{
-        if(response.data.code){
-            // 如果response.data.data未true表示已关注
-            if(response.data.data){
-              this.addordeleteFan_text = "已关注"
-              this.addordeleteFan_type = "info"
+    props: {},
+    data () {
+        return {
+            addordeleteFan_text:"关注",
+            addordeleteFan_type:"primary",
+            addordeleteFan_loading:false,
+            dt:0,
+            fs:-1,
+            gz:-1,
+            obj:null,
+            target_img_src:require('@/assets/load.webp'),
+            user_id:null,
+            trans_index:{
+                "name":"姓名",
+                "age":"年龄",
+                "sex":"性别",
+                "phone":"电话",
+                "create_time":"创建时间",
+                "role":"角色",
+                "money":"余额",
+                "ip_location":"归属地",
             }
-            this.gz = response.data.map.gz
-            this.fs = response.data.map.fs
         }
-        else this.$message.error("获取失败："+response.data.msg)
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("获取失败："+error.data.msg)
-      })
-
     },
-    addordeleteFan(){
-        if(this.addordeleteFan_text==="已关注"){
-            Dialog.confirm({
-              title: '',
-              message: '取消关注？'
-            })
-            .then(() => {
-              // 点击确认执行的代码
-              this.addordeleteFan_axios()
+    methods: {
+        async test(){
+            await this.getuserinfo()
+            await this.getfaninfo()
+        },
+        async getuserinfo(){
+
+            await axios.get(`/user/otheruserinfo?user_id=${this.user_id}`)
+                .then(response=>{
+                    if(response.data.code)this.isloading1=false
+                    else this.$message.error("获取失败："+response.data.msg)
+                    this.obj = response.data.data
+                    if(this.obj?.wechat_headimgurl === null){
+                        this.target_img_src = require('@/assets/default_headimg5.webp')
+                    }
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                })
+        },
+        async getfaninfo(){
+
+            await axios.get(`/fan/info?user_id=${this.user_id}`)
+                .then(response=>{
+                    if(response.data.code){
+                        // 如果response.data.data未true表示已关注
+                        if(response.data.data){
+                            this.addordeleteFan_text = "已关注"
+                            this.addordeleteFan_type = "info"
+                        }
+                        this.gz = response.data.map.gz
+                        this.fs = response.data.map.fs
+                    }
+                    else this.$message.error("获取失败："+response.data.msg)
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                })
+
+        },
+        addordeleteFan(){
+            if(this.addordeleteFan_text==="已关注"){
+                Dialog.confirm({
+                    title: '',
+                    message: '取消关注？'
+                })
+                    .then(() => {
+                        // 点击确认执行的代码
+                        this.addordeleteFan_axios()
               
-            })
-            .catch(() => {
-              // 点击取消执行的代码
-            });
+                    })
+                    .catch(() => {
+                        // 点击取消执行的代码
+                    });
 
-        }else{
-            this.addordeleteFan_axios()
-        }
-    },
-    addordeleteFan_axios(){
+            }else{
+                this.addordeleteFan_axios()
+            }
+        },
+        addordeleteFan_axios(){
       
-      this.addordeleteFan_loading=true
-      axios.post(`/fan/addordelete?user_id=${this.user_id}`)
-      .then(response=>{
-        if(response.data.code){
-            // this..
-            Toast.success(response.data.data);
-            if(this.addordeleteFan_text==="关注"){
-              this.addordeleteFan_text = "已关注"
-              this.addordeleteFan_type = "info"
-            }
-            else{
-              this.addordeleteFan_text = "关注"
-              this.addordeleteFan_type = "primary"
-            }
-            this.getfaninfo()
-        }
-        else Toast.fail(response.data.msg)
-        this.addordeleteFan_loading=false
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("获取失败："+error.data.msg)
-        this.addordeleteFan_loading=false
-      })
+            this.addordeleteFan_loading=true
+            axios.post(`/fan/addordelete?user_id=${this.user_id}`)
+                .then(response=>{
+                    if(response.data.code){
+                        // this..
+                        Toast.success(response.data.data);
+                        if(this.addordeleteFan_text==="关注"){
+                            this.addordeleteFan_text = "已关注"
+                            this.addordeleteFan_type = "info"
+                        }
+                        else{
+                            this.addordeleteFan_text = "关注"
+                            this.addordeleteFan_type = "primary"
+                        }
+                        this.getfaninfo()
+                    }
+                    else Toast.fail(response.data.msg)
+                    this.addordeleteFan_loading=false
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                    this.addordeleteFan_loading=false
+                })
+        },
     },
-  },
-  mounted(){
-    this.$store.state.zhezhao_show = false
-    this.user_id = this.$route.query.user_id
-    this.test()
-  }
+    mounted(){
+        this.$store.state.zhezhao_show = false
+        this.user_id = this.$route.query.user_id
+        this.test()
+    }
 }
 </script>
 

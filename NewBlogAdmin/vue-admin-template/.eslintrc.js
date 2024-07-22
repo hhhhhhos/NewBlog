@@ -11,7 +11,9 @@ module.exports = {
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {}
+    "rules": {
+      "indent": ["error", 4]
+    }
   /*
   root: true,
   parserOptions: {

@@ -32,11 +32,13 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import javax.net.ssl.*;
 import javax.servlet.http.HttpSession;
 import redis.clients.jedis.Jedis;
@@ -91,6 +93,16 @@ public final class Tool {
         // 未登录 返回0
         else
             return 0L;
+    }
+
+    /**
+     * 返回用户是否是admin角色
+     * @param session 你懂的
+     * @return 是admin返回true 未登录/不是admin返回false
+     */
+    public static Boolean IsUserAdmin(HttpSession session){
+        // 小心未登录 空指针异常啊！
+        return session.getAttribute("Role")!=null && session.getAttribute("Role").equals("admin");
     }
 
     /**
@@ -172,7 +184,7 @@ public final class Tool {
      * @param photo 图片
      * @return 图片名字字符串（带.webp）
      */
-    public static String convertToWebp(MultipartFile photo) {
+    public static String convertToWebp(MultipartFile photo,String forward_name) {
         // 确保保存路径存在
         File saveDir = new File(PHOTO_SAVE_URL);
         if (!saveDir.exists()) {
@@ -188,7 +200,7 @@ public final class Tool {
             String formattedDate = now.format(formatter);
 
             // 构造新的文件名（包含时间戳）
-            String newFileName = "product" + generateRandomString(6) + "_" + formattedDate + ".webp";
+            String newFileName = forward_name + generateRandomString(6) + "_" + formattedDate + ".webp";
 
             File outputFile = new File(saveDir, newFileName);
 
@@ -209,6 +221,121 @@ public final class Tool {
     }
 
     /**
+     * 转换为Webp并存储到本地+path的路径位置 (会生成时间戳）
+     * @param photo 图片
+     * @param path 图片路径 会加在PHOTO_SAVE_URL后
+     * @return 图片名字字符串（带.webp）
+     */
+    public static String convertToWebpAndSaveToPath(String path,MultipartFile photo,String forward_name) {
+        // 确保保存路径存在
+        File saveDir = new File(PHOTO_SAVE_URL+path);
+        if (!saveDir.exists()) {
+            saveDir.mkdirs();
+        }
+
+        try (InputStream input = photo.getInputStream()) {
+            BufferedImage image = ImageIO.read(input);
+
+            // 使用LocalDateTime和DateTimeFormatter获取当前的年月日时分
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+            String formattedDate = now.format(formatter);
+
+            // 构造新的文件名（包含时间戳）
+            String newFileName = forward_name + generateRandomString(6) + "_" + formattedDate + ".webp";
+
+            File outputFile = new File(saveDir, newFileName);
+
+            ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
+            WebPWriteParam writeParam = new WebPWriteParam(writer.getLocale());
+            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSY_COMPRESSION]);
+            writeParam.setCompressionQuality(0.8f); // 设置压缩质量
+
+            try (ImageOutputStream outputStream = ImageIO.createImageOutputStream(outputFile)) {
+                writer.setOutput(outputStream);
+                writer.write(null, new IIOImage(image, null, null), writeParam);
+            }
+            return newFileName;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to convert image to WebP", e);
+        }
+    }
+
+    /**
+     * 移动文件到新位置（会创建新位置，如果不存在）
+     * @param oldfilename abc.jpb 有PHOTO_SAVE_URL前缀
+     * @param newfilename 123/abc.jpg 有PHOTO_SAVE_URL前缀
+     * @return 布尔
+     */
+    public static boolean moveFile(String oldfilename,String newfilename){
+        // 源文件路径
+        Path sourcePath = Paths.get(PHOTO_SAVE_URL+'/'+oldfilename);
+        // 目标文件路径
+        Path targetPath = Paths.get(PHOTO_SAVE_URL+'/'+newfilename);
+
+        try {
+            // 创建新路径目录（不然会失败）
+            Files.createDirectories(targetPath.getParent());
+            // 移动文件
+            Files.move(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    /**
+     * 从列表的url中获取图片转存为webp
+     * @param photoUrls
+     * @param forward_name
+     * @return 返回是否成功
+     */
+    public static String ListconvertToWebp(List<String> photoUrls, String forward_name) {
+        List<String> photosNameList = new ArrayList<>();
+        // 确保保存路径存在
+        File saveDir = new File(PHOTO_SAVE_URL);
+        if (!saveDir.exists()) {
+            saveDir.mkdirs();
+        }
+        int index = 0;
+        for (String photoUrl : photoUrls) {
+            index++;
+            try (InputStream input = new URL(photoUrl).openStream()) {
+                BufferedImage image = ImageIO.read(input);
+
+                // 使用LocalDateTime和DateTimeFormatter获取当前的年月日时分
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+                String formattedDate = now.format(formatter);
+
+                // 构造新的文件名（包含时间戳）
+                String newFileName = forward_name + index + ".webp";
+
+                File outputFile = new File(saveDir, newFileName);
+
+                ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
+                WebPWriteParam writeParam = new WebPWriteParam(writer.getLocale());
+                writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSY_COMPRESSION]);
+                writeParam.setCompressionQuality(0.8f); // 设置压缩质量
+
+                try (ImageOutputStream outputStream = ImageIO.createImageOutputStream(outputFile)) {
+                    writer.setOutput(outputStream);
+                    writer.write(null, new IIOImage(image, null, null), writeParam);
+                }
+
+                System.out.println("Saved file: " + newFileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to convert image from URL: " + photoUrl, e);
+            }
+        }
+        return photosNameList.toString();
+    }
+
+    /**
      * 删除图片.webp
      * @param name 图片名字.webp
      * @return 是否删除成功
@@ -221,6 +348,82 @@ public final class Tool {
         if(name.equals("noproduct.webp"))return true;
         // 尝试删除文件
         return file.delete();
+    }
+
+    /**
+     * 删除指定文件夹下的所有文件 (最后第一父文件夹记得删(提醒自己而已，功能里删了))
+     * @param directoryPath 文件夹路径(有点危险，前面没PHOTOSAVEURL)
+     * @return 是否删除成功
+     */
+    public static Boolean deleteAllFilesInDirectory(String directoryPath) {
+        File directory = new File(directoryPath);
+        if (!directory.exists() || !directory.isDirectory()) {
+            log.error("不存在或不是目录");
+            return false;
+        }
+
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    if (!file.delete()) {
+                        log.error("文件删除-失败"+file.getName());
+                        return false;
+                    }
+                } else if (file.isDirectory()) {
+                    deleteAllFilesInDirectory(file.getAbsolutePath()); // 递归删除子目录中的文件
+                }
+            }
+
+        }
+        // 删除自己
+        if (!directory.delete()) {
+            log.error("删除子文件夹本身删除-失败"+directory.getName());
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 删除以temp开头的webp文件
+     */
+    public static void deleteTempWebpFiles() {
+        File dir = new File(PHOTO_SAVE_URL);
+
+        // 检查目录是否存在
+        if (!dir.exists() || !dir.isDirectory()) {
+            log.warn("指定的目录不存在或者不是一个有效的目录。");
+            return;
+        }
+
+        // 获取目录中的所有文件
+        File[] files = dir.listFiles();
+
+        if (files != null) {
+            // 遍历所有文件
+            for (File file : files) {
+                if (file.isFile()) {
+                    // 检查文件名是否以"temp"开头且以".webp"结尾
+                    String fileName = file.getName();
+                    if (fileName.startsWith("temp") && fileName.endsWith(".webp")) {
+                        try {
+                            // 删除文件
+                            if (file.delete()) {
+                                log.info("文件 {} 已成功删除。", fileName);
+                            } else {
+                                log.warn("无法删除文件 {}。", fileName);
+                            }
+                        } catch (SecurityException e) {
+                            log.error("没有权限删除文件 {}。", fileName);
+                        }
+                    }
+                }
+            }
+        }else{
+            log.info("files为空");
+        }
+        log.info("结束");
     }
 
     /**

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
+import com.example.demo1228_2.config.CustomException;
 import com.example.demo1228_2.config.R;
 import com.example.demo1228_2.config.Tool;
 import com.example.demo1228_2.dto.CommentOrderUserRateDto;
@@ -283,6 +284,8 @@ public class CommentController {
             return R.error("评论过长");
         if(comment_info.length()==0)
             return R.error("评论不能为空");
+        if(Tool.getUserSessionId(session).equals(0L))
+            return R.error("请登录后评论");
 
 
         CompletableFuture<UserAgentDetails> future = userAgentDetailsService.saveByAsync(handleRequestResponseData(request,response),false);
@@ -343,6 +346,8 @@ public class CommentController {
         Long comment_id;
         Long user_id;
         try{
+            if(Tool.getUserSessionId(session).equals(0L))
+                throw new CustomException("未登录");
             user_id = Long.parseLong(session.getAttribute("IsLogin").toString());
             comment_id = Long.parseLong(params.get("comment_id").toString());
         }catch (Exception e){
@@ -350,6 +355,9 @@ public class CommentController {
         }
         Comment comment = commentMapper.selectById(comment_id);
         List<Long> loveList = comment.getLove_list();
+        if (loveList == null) {
+            loveList = new ArrayList<>();
+        }
         // 点赞过了 取消点赞
         if(loveList.contains(user_id)){
             loveList.remove(user_id);

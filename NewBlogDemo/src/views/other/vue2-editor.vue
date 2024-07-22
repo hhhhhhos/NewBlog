@@ -24,53 +24,53 @@ import { VueEditor } from "vue2-editor";
 import axios from '@/utils'
 
 export default {
-  components: {
-    VueEditor
-  },
-
-  data() {
-    return {
-      content: "<h1>Some initial content</h1>",
-      content2:""
-    };
-  },
-
-  methods:{
-    send(){
-      axios.post('/test/fuck', this.content, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      .then(response=>{
-        this.content2 = response.data
-      }).catch(error=>{
-        this.$message.error(error.data.msg);
-        console.log(error)
-      })
+    components: {
+        VueEditor
     },
-    handleImageAdded(file, Editor, cursorLocation, resetUploader) {
-      // An example of using FormData
-      // NOTE: Your key could be different such as:
-      // formData.append('file', file)
 
-      var formData = new FormData();
-      formData.append("image", file);
+    data() {
+        return {
+            content: "<h1>Some initial content</h1>",
+            content2:""
+        };
+    },
 
-      axios({
-        url: "https://fakeapi.yoursite.com/images",
-        method: "POST",
-        data: formData
-      })
-        .then(result => {
-          const url = result.data.url; // Get url from response
-          Editor.insertEmbed(cursorLocation, "image", url);
-          resetUploader();
-        })
-        .catch(err => {
-          console.log(err);
-        });
+    methods:{
+        send(){
+            axios.post('/test/fuck', this.content, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response=>{
+                    this.content2 = response.data
+                }).catch(error=>{
+                    this.$message.error(error.data.msg);
+                    console.log(error)
+                })
+        },
+        handleImageAdded(file, Editor, cursorLocation, resetUploader) {
+            // An example of using FormData
+            // NOTE: Your key could be different such as:
+            // formData.append('file', file)
+
+            var formData = new FormData();
+            formData.append("image", file);
+
+            axios({
+                url: "https://fakeapi.yoursite.com/images",
+                method: "POST",
+                data: formData
+            })
+                .then(result => {
+                    const url = result.data.url; // Get url from response
+                    Editor.insertEmbed(cursorLocation, "image", url);
+                    resetUploader();
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
     }
-  }
 };
 </script>

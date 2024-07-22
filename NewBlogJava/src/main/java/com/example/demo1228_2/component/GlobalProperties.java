@@ -36,6 +36,9 @@ public class GlobalProperties {
     @Value("${file.saveurl}")
     public String  PHOTO_SAVE_URL;
 
+    @Value("${env}")
+    public String ENV; // dev prod
+
     // @Component注入后才会调用@PostConstruct
     @PostConstruct
     public void init() {

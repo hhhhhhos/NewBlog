@@ -96,163 +96,163 @@ import axios from '@/utils'
 import ElA from '/src/components/ElAddress'
 
 export default {
-  components: {
-    ElA
-},
-  data() {
-    return{
-      isloading1:true,
-      datas:[],
-      obj:{
-        "id": null,
-        "name": null,
-        "age": null,
-        "sex": null,
-        "addresses": null,
-        "phone": null,
-        "create_time": Date,
-        "password": null
-      },
-      isupdateinfo:false,
-      dialogVisible:false,
-      dialog_title:"修改地址",
-      dialogdata:
+    components: {
+        ElA
+    },
+    data() {
+        return{
+            isloading1:true,
+            datas:[],
+            obj:{
+                "id": null,
+                "name": null,
+                "age": null,
+                "sex": null,
+                "addresses": null,
+                "phone": null,
+                "create_time": Date,
+                "password": null
+            },
+            isupdateinfo:false,
+            dialogVisible:false,
+            dialog_title:"修改地址",
+            dialogdata:
       {
-        "info": "",
-        "info_code":"",
-        "name": "",
-        "phone": "",
-        "detail": "",
-        "is_default":""
+          "info": "",
+          "info_code":"",
+          "name": "",
+          "phone": "",
+          "detail": "",
+          "is_default":""
       },
-      dialogindex:1,
-      radio:0
-    }
-  },
-  methods:{
-    getuserinfo(){
-      axios.get('/user/info')
-      .then(response=>{
-        if(response.data.code){
-          this.isloading1=false
-          this.obj = response.data.data
-          if(this.obj.addresses===null) this.obj.addresses=[]
-          else{
-            // 默认地址置顶
-            for(var i=0;i<this.obj.addresses.length;i++){
-              if(this.obj.addresses[i].is_default){
-                const temp = {...this.obj.addresses[0]}// 深拷贝
-                this.obj.addresses[0] = {...this.obj.addresses[i]}// 深拷贝
-                this.obj.addresses[i] = {...temp}// 深拷贝
-              }
-            }
-            // 传给buylist_result address
-            this.$emit("address",this.obj.addresses)
-            this.$emit("radio",this.radio)
-          }
+            dialogindex:1,
+            radio:0
         }
-        else this.$message.error("获取失败："+response.data.msg)
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("获取失败："+error.data.msg)
-      })
     },
-    async updateuserinfo(){
-      //if(this.obj.age!=null&&(this.obj.age>200||this.obj.age<0))return this.$message.error("年龄不合法")
-      //if(this.obj.sex!=null&&(this.obj.sex!="男"&&this.obj.sex!="女"))return this.$message.error("性别不合法")
-      //if (!(/^1[3|4|5|6|7|8][0-9]\d{8}$/.test(this.obj.phone)))return this.$message.error("电话不合法")
-      await axios.put('/user/update',this.obj)
-      .then(response=>{
-        if(response.data.code){
-          this.$message.success(response.data.data)
-          this.isloading1 = true
-        }
-        else this.$message.error("修改失败："+response.data.msg)   
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("修改失败："+error)
-      })
-      this.getuserinfo()
-    },
-    logout(){
-      axios.get('/user/logout')
-      .then(response=>{
-        console.log(response)
-        if(response.data.code){
-          this.$message.success("退出登录成功")
-          this.$store.state.IsLogin = false
-          this.$router.push('/xiba_shop/home')
-        }
-        else this.$message.error("退出失败："+response.data.msg)
+    methods:{
+        getuserinfo(){
+            axios.get('/user/info')
+                .then(response=>{
+                    if(response.data.code){
+                        this.isloading1=false
+                        this.obj = response.data.data
+                        if(this.obj.addresses===null) this.obj.addresses=[]
+                        else{
+                            // 默认地址置顶
+                            for(var i=0;i<this.obj.addresses.length;i++){
+                                if(this.obj.addresses[i].is_default){
+                                    const temp = {...this.obj.addresses[0]}// 深拷贝
+                                    this.obj.addresses[0] = {...this.obj.addresses[i]}// 深拷贝
+                                    this.obj.addresses[i] = {...temp}// 深拷贝
+                                }
+                            }
+                            // 传给buylist_result address
+                            this.$emit("address",this.obj.addresses)
+                            this.$emit("radio",this.radio)
+                        }
+                    }
+                    else this.$message.error("获取失败："+response.data.msg)
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                })
+        },
+        async updateuserinfo(){
+            //if(this.obj.age!=null&&(this.obj.age>200||this.obj.age<0))return this.$message.error("年龄不合法")
+            //if(this.obj.sex!=null&&(this.obj.sex!="男"&&this.obj.sex!="女"))return this.$message.error("性别不合法")
+            //if (!(/^1[3|4|5|6|7|8][0-9]\d{8}$/.test(this.obj.phone)))return this.$message.error("电话不合法")
+            await axios.put('/user/update',this.obj)
+                .then(response=>{
+                    if(response.data.code){
+                        this.$message.success(response.data.data)
+                        this.isloading1 = true
+                    }
+                    else this.$message.error("修改失败："+response.data.msg)   
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("修改失败："+error)
+                })
+            this.getuserinfo()
+        },
+        logout(){
+            axios.get('/user/logout')
+                .then(response=>{
+                    console.log(response)
+                    if(response.data.code){
+                        this.$message.success("退出登录成功")
+                        this.$store.state.IsLogin = false
+                        this.$router.push('/xiba_shop/home')
+                    }
+                    else this.$message.error("退出失败："+response.data.msg)
 
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("错误："+error.data.msg)
-      })
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("错误："+error.data.msg)
+                })
+        },
+        // 点击修改圆圈
+        change_address(index2,data2){
+            this.dialog_title = "修改地址"
+            this.dialogindex = index2+1
+            this.dialogdata = {...data2} // 深拷贝
+            this.dialogVisible = true
+        },
+        // 点击展开框的确认
+        confirm_change_address(){
+            if(this.dialogdata.is_default){
+                this.obj.addresses.forEach(address=>address.is_default = false)
+            }
+            this.obj.addresses[this.dialogindex-1] = {...this.dialogdata} // 深拷贝
+            //this.$message.success("已"+this.dialog_title+(this.dialogindex))
+            this.dialogVisible = false
+            this.updateuserinfo()
+        },
+        add_address(){
+            this.dialog_title = "新增地址"
+            this.dialogVisible = true
+            this.dialogindex = this.obj.addresses.length + 1
+            this.dialogdata = {}
+        },
+        delete_address(index2){
+            this.$confirm('删除地址'+(index2+1)+'?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.obj.addresses.splice(index2,1) // 删除数组下标为index2的，后面的数前移
+                this.$message({
+                    type: 'success',
+                    message: '删除成功!'
+                });
+                this.updateuserinfo()
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });          
+            });
+        }
     },
-    // 点击修改圆圈
-    change_address(index2,data2){
-      this.dialog_title = "修改地址"
-      this.dialogindex = index2+1
-      this.dialogdata = {...data2} // 深拷贝
-      this.dialogVisible = true
-    },
-    // 点击展开框的确认
-    confirm_change_address(){
-      if(this.dialogdata.is_default){
-        this.obj.addresses.forEach(address=>address.is_default = false)
-      }
-      this.obj.addresses[this.dialogindex-1] = {...this.dialogdata} // 深拷贝
-      //this.$message.success("已"+this.dialog_title+(this.dialogindex))
-      this.dialogVisible = false
-      this.updateuserinfo()
-    },
-    add_address(){
-      this.dialog_title = "新增地址"
-      this.dialogVisible = true
-      this.dialogindex = this.obj.addresses.length + 1
-      this.dialogdata = {}
-    },
-    delete_address(index2){
-      this.$confirm('删除地址'+(index2+1)+'?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.obj.addresses.splice(index2,1) // 删除数组下标为index2的，后面的数前移
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          });
-          this.updateuserinfo()
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          });          
-        });
-    }
-  },
-  mounted(){
-    this.$store.state.zhezhao_show = false
-    this.getuserinfo()
-  },
-  watch:{
-    // 守望者，未登陆不能访问本页
-    '$store.state.IsLogin':function(){
-      if(!this.$store.state.IsLogin)this.$router.push('/xiba_shop/home')
-    },
-    isupdateinfo:function(newv){
-      if(!newv){
-        this.$message.error("已取消修改")
+    mounted(){
+        this.$store.state.zhezhao_show = false
         this.getuserinfo()
-      }
     },
-    radio:function(){
-      this.$emit("radio",this.radio)
-      this.$emit("address",this.obj.addresses)
+    watch:{
+    // 守望者，未登陆不能访问本页
+        '$store.state.IsLogin':function(){
+            if(!this.$store.state.IsLogin)this.$router.push('/xiba_shop/home')
+        },
+        isupdateinfo:function(newv){
+            if(!newv){
+                this.$message.error("已取消修改")
+                this.getuserinfo()
+            }
+        },
+        radio:function(){
+            this.$emit("radio",this.radio)
+            this.$emit("address",this.obj.addresses)
+        }
     }
-  }
 }
 </script>
 

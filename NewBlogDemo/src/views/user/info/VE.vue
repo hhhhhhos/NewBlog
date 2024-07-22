@@ -51,14 +51,14 @@
     
     <div style="text-align: left;margin: 0px 0 0 0;border-top: 1px solid beige;">
       <van-cell icon="user-circle-o" title-style="margin-left: 5px;" title="详细信息" is-link to='/user/info/details' />
-      <van-cell icon="chat-o" title-style="margin-left: 5px;" title=" 消息通知" is-link to='/user/chat/history' >
+      <van-cell icon="chat-o" title-style="margin-left: 5px;" title=" 聊天消息" is-link to='/user/chat/history' >
         <template #icon>
           <van-icon name="chat-o" :badge=$store.state.chat_badge size="16" style="margin-right: 4px;"/>
         </template>
       </van-cell>
       <van-cell icon="edit" title-style="margin-left: 5px;" style="margin-top: 8px;" title="用户反馈" is-link @click.native="handleClick('feedback')" />
       <van-cell icon="smile-o" title-style="margin-left: 5px;" title="客服二号" is-link to="/kefu" />
-      <van-cell icon="orders-o" title-style="margin-left: 5px;" title="聊天记录" is-link to="/kefu/history" />
+      <van-cell icon="orders-o" title-style="margin-left: 5px;" title="客服记录" is-link to="/kefu/history" />
       <van-cell icon="setting-o" title-style="margin-left: 5px;" style="margin-bottom: 8px;" title="系统设置" is-link @click.native="handleClick('settings')" />
       <van-cell style="cursor: pointer;text-align: center;height: 50px;align-items: center;font-size: medium;" title="退出登录"  @click="logout"  />
     </div>
@@ -74,85 +74,86 @@ import axios from '@/utils'
 import { Icon } from 'vant';
 
 export default {
-  name: 'MyIndex',
-  components: {
-    'van-cell':Cell,
-    'van-icon':Icon,
+    name: 'MyIndex',
+    components: {
+        'van-cell':Cell,
+        'van-icon':Icon,
 
-  },
-  props: {},
-  data () {
-    return {
-      chat_badge:"",
-      dt:0,
-      fs:-1,
-      gz:-1,
-      obj:null,
-      target_img_src:require('@/assets/load.webp'),
-      isloading1:true
-    }
-  },
-  methods: {
-    async test(){
-      await this.getuserinfo()
-      await this.getfaninfo()
+    },
+    props: {},
+    data () {
+        return {
+            chat_badge:"",
+            dt:0,
+            fs:-1,
+            gz:-1,
+            obj:null,
+            target_img_src:require('@/assets/load.webp'),
+            isloading1:true
+        }
+    },
+    methods: {
+        async test(){
+            await this.getuserinfo()
+            await this.getfaninfo()
       
-    },
-    handleClick(routeName) {
-      console.log(routeName)
-      Dialog.alert({message: "<h3>comming soon</h3>"})
-    },
-    async getuserinfo(){
+        },
+        handleClick(routeName) {
+            console.log(routeName)
+            Dialog.alert({message: "<h3>comming soon</h3>"})
+        },
+        async getuserinfo(){
 
-      await axios.get('/user/info')
-      .then(response=>{
-        if(response.data.code)this.isloading1=false
-        else this.$message.error("获取失败："+response.data.msg)
-        this.obj = response.data.data
-        if(this.obj?.wechat_headimgurl === null){
-          this.target_img_src = require('@/assets/default_headimg2.png')
-        }
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("获取失败："+error.data.msg)
-      })
-    },
-    logout(){
-      axios.get('/user/logout')
-      .then(response=>{
-        console.log(response)
-        if(response.data.code){
-          this.$message.success("退出登录成功")
-          this.$store.state.IsLogin = false
-          this.$router.push('/home')
-        }
-        else this.$message.error("退出失败："+response.data.msg)
+            await axios.get('/user/info')
+                .then(response=>{
+                    if(response.data.code)this.isloading1=false
+                    else this.$message.error("获取失败："+response.data.msg)
+                    this.obj = response.data.data
+                    if(this.obj?.wechat_headimgurl === null){
+                        this.target_img_src = require('@/assets/default_headimg2.png')
+                    }
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                })
+        },
+        logout(){
+            axios.get('/user/logout')
+                .then(response=>{
+                    console.log(response)
+                    if(response.data.code){
+                        this.$message.success("退出登录成功")
+                        this.$store.state.IsLogin = false
+                        this.$root.$emit('logout')
+                        this.$router.push('/home')
+                    }
+                    else this.$message.error("退出失败："+response.data.msg)
 
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("错误："+error.data.msg)
-      })
-    },
-    async getfaninfo(){
-      await await axios.get(`/fan/info?user_id=${this.obj.id}`)
-      .then(response=>{
-        if(response.data.code){
-            // 如果response.data.data未true表示已关注
-            this.gz = response.data.map.gz
-            this.fs = response.data.map.fs
-        }
-        else this.$message.error("获取失败："+response.data.msg)
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("获取失败："+error.data.msg)
-      })
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("错误："+error.data.msg)
+                })
+        },
+        async getfaninfo(){
+            await await axios.get(`/fan/info?user_id=${this.obj.id}`)
+                .then(response=>{
+                    if(response.data.code){
+                        // 如果response.data.data未true表示已关注
+                        this.gz = response.data.map.gz
+                        this.fs = response.data.map.fs
+                    }
+                    else this.$message.error("获取失败："+response.data.msg)
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                })
 
+        },
     },
-  },
-  mounted(){
-    this.$store.state.zhezhao_show = false
-    this.test()
-  }
+    mounted(){
+        this.$store.state.zhezhao_show = false
+        this.test()
+    }
 }
 </script>
 

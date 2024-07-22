@@ -38,68 +38,68 @@
 import ElA from '/src/components/AddressAdd/ElAddress'
 
 export default {
-  props: {
+    props: {
     //state:String
-  },
-  components: {
-    ElA
-},
-  data() {
-    return{
-      isloading1:true,
-      datas:[],
-      obj:{
-        "id": null,
-        "name": null,
-        "age": null,
-        "sex": null,
-        "addresses": [],
-        "phone": null,
-        "create_time": Date,
-        "password": null
-      },
-      isupdateinfo:false,
-      dialogVisible:false,
-      dialog_title:"",
-      dialogdata:
-      {
-        "info": [],
-        "info_code":[],
-        "name": "",
-        "phone": "",
-        "detail": "",
-        "is_default":false
-      },
-      dialogindex:-1,
-      radio:0
-    }
-  },
-  methods:{
-    // 点击展开框的确认
-    confirm_change_address(){
-      if(this.dialogdata.info.length===0){
-        this.$message.error("未选择地址")
-        return
-      }
-      this.$emit("address",this.dialogindex,this.dialogdata)
-      console.log("子地址组件")
-      console.log(this.dialogindex)
-      console.log(this.dialogdata)
-      this.dialogVisible = false
     },
+    components: {
+        ElA
+    },
+    data() {
+        return{
+            isloading1:true,
+            datas:[],
+            obj:{
+                "id": null,
+                "name": null,
+                "age": null,
+                "sex": null,
+                "addresses": [],
+                "phone": null,
+                "create_time": Date,
+                "password": null
+            },
+            isupdateinfo:false,
+            dialogVisible:false,
+            dialog_title:"",
+            dialogdata:
+      {
+          "info": [],
+          "info_code":[],
+          "name": "",
+          "phone": "",
+          "detail": "",
+          "is_default":false
+      },
+            dialogindex:-1,
+            radio:0
+        }
+    },
+    methods:{
+    // 点击展开框的确认
+        confirm_change_address(){
+            if(this.dialogdata.info.length===0){
+                this.$message.error("未选择地址")
+                return
+            }
+            this.$emit("address",this.dialogindex,this.dialogdata)
+            console.log("子地址组件")
+            console.log(this.dialogindex)
+            console.log(this.dialogdata)
+            this.dialogVisible = false
+        },
 
-    // 点击展开框的取消
-    confirm_nochange_address(){
+        // 点击展开框的取消
+        confirm_nochange_address(){
 
-      this.dialogVisible = false
+            this.dialogVisible = false
+        }
+    },
+    mounted(){
+        this.isloading1 = false
+
+    },
+    watch:{
     }
-  },
-  mounted(){
-      this.isloading1 = false
-
-  },
-  watch:{
-  }
 }
 </script>
 

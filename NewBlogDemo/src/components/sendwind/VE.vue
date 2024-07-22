@@ -36,46 +36,46 @@ import EmojiPicker from '@/components/emoji/EmojiPicker.vue';
 import { Icon } from 'vant';
 
 export default {
-  components: {
-    EmojiPicker,
-    'van-icon':Icon,
-  },
-  props:{
-    is_kefuchat:Boolean
-  },
-  data() {
-    return{
-      comment_margin_bottom:'0',
-      comment_info:'',
-      input_disable:false
-    }
-  },
-  methods:{
-    sendComment(){
-      this.comment_margin_bottom = "0"
-      if(this.comment_info.length===0)return this.$message.error("输入为空")
-      this.$emit('sendComment',this.comment_info)
-      this.comment_info = ""
+    components: {
+        EmojiPicker,
+        'van-icon':Icon,
     },
-    selectEmoji(emoji){
-      console.log(emoji)
-      this.comment_info += emoji
+    props:{
+        is_kefuchat:Boolean
     },
-    // 监听点击
-    handleOutsideClick(e) {
-      // 检查点击事件是否在输入框（及其子元素）之外
-      if (!this.$refs.inputBox.contains(e.target)) {
-          this.comment_margin_bottom = "0"
-      }
+    data() {
+        return{
+            comment_margin_bottom:'0',
+            comment_info:'',
+            input_disable:false
+        }
+    },
+    methods:{
+        sendComment(){
+            this.comment_margin_bottom = "0"
+            if(this.comment_info.length===0)return this.$message.error("输入为空")
+            this.$emit('sendComment',this.comment_info)
+            this.comment_info = ""
+        },
+        selectEmoji(emoji){
+            console.log(emoji)
+            this.comment_info += emoji
+        },
+        // 监听点击
+        handleOutsideClick(e) {
+            // 检查点击事件是否在输入框（及其子元素）之外
+            if (!this.$refs.inputBox.contains(e.target)) {
+                this.comment_margin_bottom = "0"
+            }
+        }
+    },
+    mounted(){
+        this.$store.state.zhezhao_show = false
+        document.addEventListener('click', this.handleOutsideClick);
+    },
+    beforeDestroy(){
+        document.removeEventListener('click', this.handleOutsideClick);
     }
-  },
-  mounted(){
-    this.$store.state.zhezhao_show = false
-    document.addEventListener('click', this.handleOutsideClick);
-  },
-  beforeDestroy(){
-    document.removeEventListener('click', this.handleOutsideClick);
-  }
 }
 </script>
 

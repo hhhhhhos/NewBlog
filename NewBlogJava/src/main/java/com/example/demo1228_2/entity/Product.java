@@ -28,12 +28,23 @@ public class Product {
     BigDecimal price;
     int num;
     String info;
+
+    String content;
     String photo;
+
+    String photo_url;
+
+    String photo_shot;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime create_time;
+
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime update_time;
 
     String type;
 
@@ -52,9 +63,15 @@ public class Product {
     //Long product_related_list_id;
 
     String type2;
-    @Version
-    private Integer version; // 乐观锁版本号
+
+    private Integer version;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
     List<String> photo_list;
+
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING) // Long异常的处理
+    private List<Long> love_list;
+
+    String visible;
 }

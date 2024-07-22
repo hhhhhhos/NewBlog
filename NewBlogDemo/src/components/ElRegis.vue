@@ -1,5 +1,5 @@
 <template>
-    <div v-if="!this.$store.state.IsMobile" class="login-box">
+    <div v-if="false" class="login-box">
       <h2>用户注册</h2>
       <form>
         <input type="text" v-model=name placeholder="用户名">
@@ -27,39 +27,39 @@
 import axios from '@/utils'
 
 export default {
-  data() {
-    return{
-      name:null,
-      password:null,
-      password2:null
-    }
-  },
-  methods:{
-    regis(){
-      if(this.name===null)return this.$message.error("用户名不能为空")
-      if(this.password===null)return this.$message.error("密码不能为空")
-      if(this.password2===null)return this.$message.error("请再输入一次")
-      if(this.password!==this.password2)return this.$message.error("两次密码不一致")
-
-    axios.post('/user/regis',{
-        name:this.name,
-        password:this.password
-      }).then(response=>{
-        if(response.data.code===0)this.$message.error(response.data.msg)
-        else {
-          this.$message.success(response.data.data)
-          this.$emit('ChangeToLogin')
+    data() {
+        return{
+            name:null,
+            password:null,
+            password2:null
         }
-        console.log(response)
-      }).catch(error=>{
-        this.$message.error(error.data.msg);
-        console.log(error)
-      })
+    },
+    methods:{
+        regis(){
+            if(this.name===null)return this.$message.error("用户名不能为空")
+            if(this.password===null)return this.$message.error("密码不能为空")
+            if(this.password2===null)return this.$message.error("请再输入一次")
+            if(this.password!==this.password2)return this.$message.error("两次密码不一致")
+
+            axios.post('/user/regis',{
+                name:this.name,
+                password:this.password
+            }).then(response=>{
+                if(response.data.code===0)this.$message.error(response.data.msg)
+                else {
+                    this.$message.success(response.data.data)
+                    this.$emit('ChangeToLogin')
+                }
+                console.log(response)
+            }).catch(error=>{
+                this.$message.error(error.data.msg);
+                console.log(error)
+            })
+        }
+    },
+    created(){
+        console.log("login!!")
     }
-  },
-  created(){
-    console.log("login!!")
-  }
 }
 </script>
 

@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <div class="dashboard-text">Role: {{ name }}</div>
+    <div class="dashboard-text">Role: {{ this.name }}</div>
     
     <panel-group @handleSetLineChartData="handleSetLineChartData" />
     
@@ -227,166 +227,166 @@ import Echart1 from './components/Echart1'
 import axios from '@/utils/axios';
 
 let lineChartData = {
-  newVisitis: {
-    actualData: [120, 82, 91, 154, 162, 140, 145],
-    name:"访客数量",
-    color:"#40c9c6"
-  },
-  messages: {
-    name:"留言数量",
-    actualData: [180, 160, 151, 106, 145, 150, 130],
-    color:"#36a3f7"
-  },
-  purchases: {
-    name:"订单数量",
-    actualData: [120, 90, 100, 138, 142, 130, 130],
-    color:"#f4516c"
-  },
-  shoppings: {
-    name:"购物数量",
-    actualData: [120, 82, 91, 154, 162, 140, 130],
-    color:"#34bfa3"
-  }
+    newVisitis: {
+        actualData: [120, 82, 91, 154, 162, 140, 145],
+        name:"访客数量",
+        color:"#40c9c6"
+    },
+    messages: {
+        name:"留言数量",
+        actualData: [180, 160, 151, 106, 145, 150, 130],
+        color:"#36a3f7"
+    },
+    purchases: {
+        name:"订单数量",
+        actualData: [120, 90, 100, 138, 142, 130, 130],
+        color:"#f4516c"
+    },
+    shoppings: {
+        name:"购物数量",
+        actualData: [120, 82, 91, 154, 162, 140, 130],
+        color:"#34bfa3"
+    }
 }
 
 export default {
-  name: 'Dashboard',
-  components: {
-    PanelGroup,
-    Echart1,
-    LineChart
-  },
-  data(){
-    return{
-      name:"unknown",
-      Echart1:{
-        x_data: null,
-        y_data: null,
-        color: null,
-        title:null
-      },
-      lineChartData: lineChartData.newVisitis,
-      response_data:null,
-      tableData:[],
-      val:null,
-      currentPage:1,
-      TotalPage:1,
-      tableloading:true,
-      type:"newVisitis"
-    }
-  },
-  computed: {
+    name: 'Dashboard',
+    components: {
+        PanelGroup,
+        Echart1,
+        LineChart
+    },
+    data(){
+        return{
+            name:"unknown",
+            Echart1:{
+                x_data: null,
+                y_data: null,
+                color: null,
+                title:null
+            },
+            lineChartData: lineChartData.newVisitis,
+            response_data:null,
+            tableData:[],
+            val:null,
+            currentPage:1,
+            TotalPage:1,
+            tableloading:true,
+            type:"newVisitis"
+        }
+    },
+    computed: {
 
-  },
-  methods: {
-    myreplace(val) {
-      if (val) {
-        return String(val).replace("T", " ");
-      }
-      return "";
     },
-    generateUUID() {
-        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-        );
-    },
-    handleSetLineChartData(type) {
-      this.lineChartData = lineChartData[type]
-      console.log(type)
-      if(type === "messages")return this.$message("留言模块开发中")
-      this.type = type
-      this.PointClick(6)
-      this.getVistorsNum()
-    },
-    getrole(){
-      axios.get('/user/session')
-        .then(response=>{
-          console.log(response.data)
-          this.name = response.data?.[0].slice(6)
-          this.$store.state.app.UserId =  response.data?.[0].IsLogin
-          console.log("!!!!!!!"+response.data?.[0].IsLogin)
-          console.log("name = response.data")
-        }).catch(error=>{
-          this.$message.error("error")
-          console.log(error)
-        })
-      console.log(name)
-    },
-    async getVistorsNum(){
-      await axios.get(`/user-agent-details/select_dashboard_${this.type}`)
-        .then(response=>{
-          console.log(response.data)
-          this.response_data = response.data
-          //var x_data = []
-          var y_data = []
-          response.data.forEach(element => {
-            //x_data.push(element.create_time.slice(6))
-            if (element.user_uuids) {  // 检查 element 是否有 user_uuids 属性
-              y_data.push(element.user_uuids.length)
-            } else if (element.count !== undefined) {  // 如果没有 user_uuids，检查是否有 count 属性
-              y_data.push(element.count)
-            } else {
-              y_data.push(0)  // 如果两者都不存在，推入默认值0
+    methods: {
+        myreplace(val) {
+            if (val) {
+                return String(val).replace("T", " ");
             }
-          });
-          //this.Echart1.x_data = x_data
-          //this.Echart1.y_data = y_data
-          //this.Echart1.color = 'rgba(10, 87, 196, 0.545)'
-          //this.Echart1.title = "访客记录"
+            return "";
+        },
+        generateUUID() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        },
+        handleSetLineChartData(type) {
+            this.lineChartData = lineChartData[type]
+            console.log(type)
+            if(type === "messages")return this.$message("留言模块开发中")
+            this.type = type
+            this.PointClick(6)
+            this.getVistorsNum()
+        },
+        getrole(){
+            axios.get('/user/session')
+                .then(response=>{
+                    console.log(response.data)
+                    this.name = response.data?.[0].slice(6)
+                    this.$store.state.app.UserId =  response.data?.[0].Is
+                    console.log("!!!!!!!"+response.data?.[0].IsLogin)
+                    console.log("name = response.data")
+                }).catch(error=>{
+                    this.$message.error("error")
+                    console.log(error)
+                })
+            console.log(name)
+        },
+        async getVistorsNum(){
+            await axios.get(`/user-agent-details/select_dashboard_${this.type}`)
+                .then(response=>{
+                    console.log(response.data)
+                    this.response_data = response.data
+                    //var x_data = []
+                    var y_data = []
+                    response.data.forEach(element => {
+                        //x_data.push(element.create_time.slice(6))
+                        if (element.user_uuids) {  // 检查 element 是否有 user_uuids 属性
+                            y_data.push(element.user_uuids.length)
+                        } else if (element.count !== undefined) {  // 如果没有 user_uuids，检查是否有 count 属性
+                            y_data.push(element.count)
+                        } else {
+                            y_data.push(0)  // 如果两者都不存在，推入默认值0
+                        }
+                    });
+                    //this.Echart1.x_data = x_data
+                    //this.Echart1.y_data = y_data
+                    //this.Echart1.color = 'rgba(10, 87, 196, 0.545)'
+                    //this.Echart1.title = "访客记录"
 
-          lineChartData[this.type].actualData = y_data
-        }).catch(error=>{
-          console.log(error)
-        })
-    },
-    async init_dashboard_echarts_data(){
-      this.getrole()
-      await this.getVistorsNum()
-      setTimeout(() => {
-        this.PointClick(6)
-        }, 200)
+                    lineChartData[this.type].actualData = y_data
+                }).catch(error=>{
+                    console.log(error)
+                })
+        },
+        async init_dashboard_echarts_data(){
+            this.getrole()
+            await this.getVistorsNum()
+            setTimeout(() => {
+                this.PointClick(6)
+            }, 200)
       
+        },
+        PointClick(val){
+            this.tableloading = true
+            this.val = val
+            axios.post(`/user-agent-details/select_dashboard_${this.type}/click`,{
+                create_time:this?.response_data[val]?.create_time,
+                currentPage:this.currentPage
+            }).then(response=>{
+                this.tableData = response.data.records
+                this.TotalPage = response.data.total
+                this.currentPage = response.data.current
+                console.log(response)
+            }).catch(error=>{
+                console.log(error)
+            }).finally(() => {
+                // 这里放置无论成功与否都需要执行的代码
+                this.tableloading = false;
+            });
+        },
+        // 切页
+        handleCurrentChange(val) {
+            this.currentPage = val
+            this.PointClick(this.val)
+        },
+        repla(val) {
+            if (val == null || typeof val === 'undefined') {
+                return ''; // 或者任何你认为合适的默认值
+            }
+            return val.replace(/,/g, "<br>"); // 替换所有逗号为 <br> 标签
+        },
+        isWithinOneMinute(maxCreateTime) {
+            const oneMinute = 60 * 1000; // 一分钟的毫秒数
+            const maxTime = new Date(maxCreateTime); // 假设 maxCreateTime 是一个 ISO 格式的日期字符串
+            const now = new Date();
+            const diff = now - maxTime; // 时间差（毫秒）
+            return diff <= oneMinute;
+        }
     },
-    PointClick(val){
-      this.tableloading = true
-      this.val = val
-      axios.post(`/user-agent-details/select_dashboard_${this.type}/click`,{
-        create_time:this?.response_data[val]?.create_time,
-        currentPage:this.currentPage
-      }).then(response=>{
-        this.tableData = response.data.records
-        this.TotalPage = response.data.total
-        this.currentPage = response.data.current
-        console.log(response)
-      }).catch(error=>{
-        console.log(error)
-      }).finally(() => {
-        // 这里放置无论成功与否都需要执行的代码
-        this.tableloading = false;
-      });
-    },
-    // 切页
-    handleCurrentChange(val) {
-      this.currentPage = val
-      this.PointClick(this.val)
-    },
-    repla(val) {
-      if (val == null || typeof val === 'undefined') {
-        return ''; // 或者任何你认为合适的默认值
-      }
-      return val.replace(/,/g, "<br>"); // 替换所有逗号为 <br> 标签
-    },
-    isWithinOneMinute(maxCreateTime) {
-      const oneMinute = 60 * 1000; // 一分钟的毫秒数
-      const maxTime = new Date(maxCreateTime); // 假设 maxCreateTime 是一个 ISO 格式的日期字符串
-      const now = new Date();
-      const diff = now - maxTime; // 时间差（毫秒）
-      return diff <= oneMinute;
+    mounted(){
+        this.init_dashboard_echarts_data()
     }
-  },
-  mounted(){
-    this.init_dashboard_echarts_data()
-  }
 }
 </script>
 

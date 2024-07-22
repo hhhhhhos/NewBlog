@@ -4,7 +4,11 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.time.LocalDateTime;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.example.demo1228_2.dto.HomePagePhotoDto;
 import com.example.demo1228_2.mapper.DataResultMapper;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -25,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @since 2024-04-22
  */
 @Data
-@TableName("t_data_result")
+@TableName(value = "t_data_result", autoResultMap = true)
 public class DataResult implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
@@ -49,5 +53,20 @@ public class DataResult implements Serializable {
 
     @Version
     private Integer version;
+
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<HomePagePhotoDto> en_list;
+
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<HomePagePhotoDto> cn_list;
+
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<HomePagePhotoDto> co_list;
+
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private Map<String,String> fenlei_map;
+
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private Map<String,String> biaoqian_map;
 
 }

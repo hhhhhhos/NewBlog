@@ -37,93 +37,93 @@ import { List} from 'vant';
 import { throttle } from 'lodash';
 
 export default {
-  components: {
-    'van-list':List,
-  },
-  data() {
-    return{
-      // 头像
-      target_img_src:require('@/assets/default_headimg5.webp'),
-      //
-      user_id:null,
-      tableDatas:[],
-      // 分页参数
-      currentPage:0,
-      PageSize:10,
-      total:null,
-      current:null,
-      pages:null,
-      // 无限列表
-      loading_vanlist:false,
-      finished: false,
-      //
-      debouncedOnLoad:null,
-    }
-  },
-  methods:{
-    async test(){
-      
+    components: {
+        'van-list':List,
     },
-    async OnLoad(){
-      console.log("滚到底部，触发加载")
+    data() {
+        return{
+            // 头像
+            target_img_src:require('@/assets/default_headimg5.webp'),
+            //
+            user_id:null,
+            tableDatas:[],
+            // 分页参数
+            currentPage:0,
+            PageSize:10,
+            total:null,
+            current:null,
+            pages:null,
+            // 无限列表
+            loading_vanlist:false,
+            finished: false,
+            //
+            debouncedOnLoad:null,
+        }
+    },
+    methods:{
+        async test(){
+      
+        },
+        async OnLoad(){
+            console.log("滚到底部，触发加载")
 
-      this.currentPage +=1
+            this.currentPage +=1
 
-        await axios.get(`/fan/page`,{
-          params: {
-            p1:this.$route.params.segment1,
-            user_id:this.user_id,
-            currentPage: this.currentPage,
-            PageSize: this.PageSize,
-          }
-        })
-        .then(response=>{
-          if(response.data.code){
-              // this..
-              this.tableDatas = response.data.data.records
-              //
-              this.total = response.data.data.total
-              this.current = response.data.data.current
-              this.pages = response.data.data.pages
-          }
-          else this.$message.error("获取失败："+response.data.msg)
-        }).catch(error=>{
-          console.log(error)
-          this.$message.error("获取失败："+error.data.msg)
-        })
+            await axios.get(`/fan/page`,{
+                params: {
+                    p1:this.$route.params.segment1,
+                    user_id:this.user_id,
+                    currentPage: this.currentPage,
+                    PageSize: this.PageSize,
+                }
+            })
+                .then(response=>{
+                    if(response.data.code){
+                        // this..
+                        this.tableDatas = response.data.data.records
+                        //
+                        this.total = response.data.data.total
+                        this.current = response.data.data.current
+                        this.pages = response.data.data.pages
+                    }
+                    else this.$message.error("获取失败："+response.data.msg)
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                })
 
-        // 加载状态结束
-        this.loading_vanlist = false;
+            // 加载状态结束
+            this.loading_vanlist = false;
 
-        // 当前页数大于等于总页数
-        //if (this.PageSize >= this.TotalPage) {
-        if (this.current >= this.pages) {
-            this.finished = true;
+            // 当前页数大于等于总页数
+            //if (this.PageSize >= this.TotalPage) {
+            if (this.current >= this.pages) {
+                this.finished = true;
+            }
+
+        },
+    },
+    created(){
+        // 节流OnLoad 1._.throttle 每n秒钟只调用一次 2._.debounce n秒之后无操作 调用
+        this.debouncedOnLoad = throttle(this.OnLoad, 1000);
+    },
+    mounted(){
+        this.$store.state.zhezhao_show = false
+        this.user_id = this.$route.params.segment2
+        const p1 = this.$route.params.segment1
+        console.log(this.$route.params.segment2)
+        console.log(this.$route.params.segment1)
+        if(p1==='fs'){
+            this.$store.state.fanorguanzhu_name = "粉丝列表"
+        }else if(p1==='gz'){ 
+            this.$store.state.fanorguanzhu_name = "关注列表"
+        }else{
+            alert("参数错误")
+            return
         }
 
-    },
-  },
-  created(){
-      // 节流OnLoad 1._.throttle 每n秒钟只调用一次 2._.debounce n秒之后无操作 调用
-      this.debouncedOnLoad = throttle(this.OnLoad, 1000);
-  },
-  mounted(){
-    this.$store.state.zhezhao_show = false
-    this.user_id = this.$route.params.segment2
-    const p1 = this.$route.params.segment1
-    console.log(this.$route.params.segment2)
-    console.log(this.$route.params.segment1)
-    if(p1==='fs'){
-      this.$store.state.fanorguanzhu_name = "粉丝列表"
-    }else if(p1==='gz'){ 
-      this.$store.state.fanorguanzhu_name = "关注列表"
-    }else{
-      alert("参数错误")
-      return
+        this.test()
     }
-
-    this.test()
-  }
 }
 </script>
 

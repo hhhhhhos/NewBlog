@@ -22,11 +22,12 @@ public class WebConfig implements WebMvcConfigurer { //拦截器配置
         registry.addInterceptor(loginInterceptor)
                 .excludePathPatterns("/vue-admin-template/user/login","/user/login","/user/regis","/product/**","/error"
                         ,"/test/notifyUrl","/user/loginByWechat","/user/loginByEmail","/user/sendEmail","/user/getCaptch",
-                        "/comment/**","/user/otheruserinfo","/test/fuck","/fan/**");
+                        "/comment/**","/user/otheruserinfo","/test/fuck","/fan/**","/data-result/all");
 
         registry.addInterceptor(adminInterceptor)
                 .excludePathPatterns("/order/selectpagebyadmin","/product/selectpagebyadmin","/user/selectpagebyadmin",
-                        "/user-agent-details/selectbyadmin","/product-related-list/selectpagebyadmin");
+                        "/user-agent-details/selectbyadmin","/product-related-list/selectpagebyadmin",
+                        "/data-result/all");
     }
 
 }

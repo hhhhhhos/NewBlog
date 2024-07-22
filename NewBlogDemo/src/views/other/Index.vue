@@ -10,15 +10,15 @@
 <script>
 
 export default {
-  components: {
-  },
-  data() {
-    return{
-    }
-  },
-  methods:{
+    components: {
+    },
+    data() {
+        return{
+        }
+    },
+    methods:{
 
-  }
+    }
 }
 </script>
 

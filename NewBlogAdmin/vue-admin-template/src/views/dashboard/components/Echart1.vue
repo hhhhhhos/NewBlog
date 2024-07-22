@@ -14,78 +14,78 @@ import { CanvasRenderer } from 'echarts/renderers';
 
 // 注册必须的组件
 echarts.use(
-  [TitleComponent, TooltipComponent, GridComponent, LineChart, CanvasRenderer]
+    [TitleComponent, TooltipComponent, GridComponent, LineChart, CanvasRenderer]
 );
 
 export default {
-  name: 'LineChart',
-  data() {
-    return {
-      chart: null 
-    };
-  },
-  props: {
-    x_data: Array,
-    y_data: Array,
-    color: String,
-    title:String
-  },
-  mounted() {
-    this.initChart();
-  },
-  methods: {
+    name: 'LineChart',
+    data() {
+        return {
+            chart: null 
+        };
+    },
+    props: {
+        x_data: Array,
+        y_data: Array,
+        color: String,
+        title:String
+    },
+    mounted() {
+        this.initChart();
+    },
+    methods: {
     // 初始化表
-    initChart() {
-      const chartDom = this.$refs.chart;
-      this.chart = echarts.init(chartDom);
-      this.updateChart()
+        initChart() {
+            const chartDom = this.$refs.chart;
+            this.chart = echarts.init(chartDom);
+            this.updateChart()
+        },
+        // 重绘表
+        updateChart(){
+            const option = {
+                title: {
+                    text: this.title,
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: this.x_data
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: this.y_data,
+                    type: 'line',
+                    smooth: true,
+                    areaStyle: {
+                        color: this.color  // 半透明的区域填充颜色
+                    },
+                }]
+            };
+            this.chart.setOption(option);
+        }
     },
-    // 重绘表
-    updateChart(){
-      const option = {
-        title: {
-          text: this.title,
-        },
-        xAxis: {
-          type: 'category',
-          boundaryGap: false,
-          data: this.x_data
-        },
-        yAxis: {
-          type: 'value'
-        },
-        series: [{
-          data: this.y_data,
-          type: 'line',
-          smooth: true,
-          areaStyle: {
-            color: this.color  // 半透明的区域填充颜色
-          },
-        }]
-      };
-      this.chart.setOption(option);
-    }
-  },
-  beforeDestroy() {
-    if (this.chart) {
-      this.chart.dispose();
-    }
-  },
+    beforeDestroy() {
+        if (this.chart) {
+            this.chart.dispose();
+        }
+    },
 
-  watch: {
-    x_data: function() {
-      this.updateChart();
+    watch: {
+        x_data: function() {
+            this.updateChart();
+        },
+        y_data: function() {
+            this.updateChart();
+        },
+        color: function() {
+            this.updateChart();
+        },
+        title: function() {
+            this.updateChart();
+        }
     },
-    y_data: function() {
-      this.updateChart();
-    },
-    color: function() {
-      this.updateChart();
-    },
-    title: function() {
-      this.updateChart();
-    }
-  },
 }
 </script>
 

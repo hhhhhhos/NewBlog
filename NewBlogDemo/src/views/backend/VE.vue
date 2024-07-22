@@ -8,16 +8,16 @@
 <script>
 
 export default {
-  data() {
-    return{
-      admin_url:process.env.VUE_APP_AMDIN_URL
+    data() {
+        return{
+            admin_url:process.env.VUE_APP_AMDIN_URL
+        }
+    },
+    methods:{
+    },
+    created(){
+        window.location.href = `${process.env.VUE_APP_ADMIN_URL}`
     }
-  },
-  methods:{
-  },
-  created(){
-    window.location.href = `${process.env.VUE_APP_ADMIN_URL}`
-  }
 }
 </script>
 

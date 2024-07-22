@@ -1,7 +1,7 @@
 <template>
   <div>
 
-    <div v-if="!this.$store.state.IsMobile">
+    <div v-if="false">
       <h1 class="myborder">用户信息</h1>
 
       <img v-lazy style="height:80px;margin: 15px 0 0px 0 ;border-radius: 66px;" :src="obj.wechat_headimgurl?obj.wechat_headimgurl:target_img_src">
@@ -183,188 +183,188 @@ import axios from '@/utils'
 import ElA from '/src/components/ElAddress'
 
 export default {
-  components: {
-    ElA
-  },
-  data() {
-    return{
-      trans_index:{
-        "id":"ID",
-        "name":"姓名",
-        "age":"年龄",
-        "sex":"性别",
-        "phone":"电话",
-        "create_time":"创建时间",
-        "role":"角色",
-        "money":"余额",
-        "addresses":"收货地",
-        "ip_location":"归属地",
-        "password":"密码",
-        "wechat_nickname":"微信名",
-        "wechat_headimgurl":"微信头像",
-      },
-      target_img_src:require('@/assets/load.webp'),
-      isloading1:true,
-      datas:[],
-      obj:{
-        "id": null,
-        "name": null,
-        "age": null,
-        "sex": null,
-        "addresses": null,
-        "phone": null,
-        "create_time": Date,
-        "password": null,
-        "money":null
-      },
-      isupdateinfo:false,
-      dialogVisible:false,
-      dialog_title:"修改地址",
-      dialogdata:
+    components: {
+        ElA
+    },
+    data() {
+        return{
+            trans_index:{
+                "id":"ID",
+                "name":"姓名",
+                "age":"年龄",
+                "sex":"性别",
+                "phone":"电话",
+                "create_time":"创建时间",
+                "role":"角色",
+                "money":"余额",
+                "addresses":"收货地",
+                "ip_location":"归属地",
+                "password":"密码",
+                "wechat_nickname":"微信名",
+                "wechat_headimgurl":"微信头像",
+            },
+            target_img_src:require('@/assets/load.webp'),
+            isloading1:true,
+            datas:[],
+            obj:{
+                "id": null,
+                "name": null,
+                "age": null,
+                "sex": null,
+                "addresses": null,
+                "phone": null,
+                "create_time": Date,
+                "password": null,
+                "money":null
+            },
+            isupdateinfo:false,
+            dialogVisible:false,
+            dialog_title:"修改地址",
+            dialogdata:
       {
-        "info": "",
-        "name": "",
-        "phone": "",
-        "detail": "",
-        "is_default":""
+          "info": "",
+          "name": "",
+          "phone": "",
+          "detail": "",
+          "is_default":""
       },
-      dialogindex:1
-    }
-  },
-  methods:{
-    getuserinfo(){
-      axios.get('/user/info')
-      .then(response=>{
-        if(response.data.code)this.isloading1=false
-        else this.$message.error("获取失败："+response.data.msg)
-        this.obj = response.data.data
-        if(this.obj.addresses===null) this.obj.addresses=[]
-        else{
-          if(response.data.data?.wechat_headimgurl!==null){
-            this.target_img_src = response.data.data?.wechat_headimgurl
-          }else{
-            this.target_img_src = require('@/assets/default_headimg1.webp')
-          }
-          // 默认地址置顶
-          for(var i=0;i<this.obj.addresses.length;i++){
-            if(this.obj.addresses[i].is_default){
-              const temp = this.obj.addresses[0]
-              this.obj.addresses[0] = this.obj.addresses[i]
-              this.obj.addresses[i] = temp
+            dialogindex:1
+        }
+    },
+    methods:{
+        getuserinfo(){
+            axios.get('/user/info')
+                .then(response=>{
+                    if(response.data.code)this.isloading1=false
+                    else this.$message.error("获取失败："+response.data.msg)
+                    this.obj = response.data.data
+                    if(this.obj.addresses===null) this.obj.addresses=[]
+                    else{
+                        if(response.data.data?.wechat_headimgurl!==null){
+                            this.target_img_src = response.data.data?.wechat_headimgurl
+                        }else{
+                            this.target_img_src = require('@/assets/default_headimg1.webp')
+                        }
+                        // 默认地址置顶
+                        for(var i=0;i<this.obj.addresses.length;i++){
+                            if(this.obj.addresses[i].is_default){
+                                const temp = this.obj.addresses[0]
+                                this.obj.addresses[0] = this.obj.addresses[i]
+                                this.obj.addresses[i] = temp
+                            }
+                        }
+                    }
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                })
+        },
+        // 点修改
+        async updateuserinfo(){
+            //if(this.obj.age!=null&&(this.obj.age>200||this.obj.age<0))return this.$message.error("年龄不合法")
+            //if(this.obj.sex!=null&&(this.obj.sex!="男"&&this.obj.sex!="女"))return this.$message.error("性别不合法")
+            //if (!(/^1[3|4|5|6|7|8][0-9]\d{8}$/.test(this.obj.phone)))return this.$message.error("电话不合法")
+            var result = false
+            await axios.put('/user/update',this.obj)
+                .then(response=>{
+                    if(response.data.code){
+                        this.$message.success(response.data.data)
+                        this.isloading1 = true
+                        this.isupdateinfo = false
+                        this.getuserinfo()
+                        result = true
+                    }
+                    else this.$message.error("修改失败："+response.data.msg)   
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("修改失败："+error)
+                })
+            return result
+        },
+        // 点取消
+        cancel(){
+            this.isupdateinfo=false
+            this.$message.error("已取消修改")
+            this.getuserinfo()
+        },
+        logout(){
+            axios.get('/user/logout')
+                .then(response=>{
+                    console.log(response)
+                    if(response.data.code){
+                        this.$message.success("退出登录成功")
+                        this.$store.state.IsLogin = false
+                        this.$router.push('/home')
+                    }
+                    else this.$message.error("退出失败："+response.data.msg)
+
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("错误："+error.data.msg)
+                })
+        },
+        // 点击修改圆圈
+        change_address(index2,data2){
+            this.dialog_title = "修改地址"
+            this.dialogindex = index2+1
+            this.dialogdata = Object.assign({},data2) // 浅拷贝
+            this.dialogVisible = true
+        },
+        // 点击展开框的确认
+        confirm_change_address(){
+            if(this.dialogdata.is_default){
+                this.obj.addresses.forEach(address=>address.is_default = false)
             }
-          }
-        }
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("获取失败："+error.data.msg)
-      })
-    },
-    // 点修改
-    async updateuserinfo(){
-      //if(this.obj.age!=null&&(this.obj.age>200||this.obj.age<0))return this.$message.error("年龄不合法")
-      //if(this.obj.sex!=null&&(this.obj.sex!="男"&&this.obj.sex!="女"))return this.$message.error("性别不合法")
-      //if (!(/^1[3|4|5|6|7|8][0-9]\d{8}$/.test(this.obj.phone)))return this.$message.error("电话不合法")
-      var result = false
-      await axios.put('/user/update',this.obj)
-      .then(response=>{
-        if(response.data.code){
-          this.$message.success(response.data.data)
-          this.isloading1 = true
-          this.isupdateinfo = false
-          this.getuserinfo()
-          result = true
-        }
-        else this.$message.error("修改失败："+response.data.msg)   
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("修改失败："+error)
-      })
-      return result
-    },
-    // 点取消
-    cancel(){
-      this.isupdateinfo=false
-      this.$message.error("已取消修改")
-      this.getuserinfo()
-    },
-    logout(){
-      axios.get('/user/logout')
-      .then(response=>{
-        console.log(response)
-        if(response.data.code){
-          this.$message.success("退出登录成功")
-          this.$store.state.IsLogin = false
-          this.$router.push('/home')
-        }
-        else this.$message.error("退出失败："+response.data.msg)
+            //this.dialogdata.info_code = 
+            //this.$refs.ELA.selectedOptions
+            this.obj.addresses[this.dialogindex-1] = Object.assign({},this.dialogdata) // 浅拷贝
+            this.dialogVisible = false
+            //if(true){
+            this.updateuserinfo()
+                .then(response=>{
+                    if(response){
+                        this.$message.success("已"+this.dialog_title+(this.dialogindex))
+                    }
+                })
 
-      }).catch(error=>{
-        console.log(error)
-        this.$message.error("错误："+error.data.msg)
-      })
-    },
-    // 点击修改圆圈
-    change_address(index2,data2){
-      this.dialog_title = "修改地址"
-      this.dialogindex = index2+1
-      this.dialogdata = Object.assign({},data2) // 浅拷贝
-      this.dialogVisible = true
-    },
-    // 点击展开框的确认
-    confirm_change_address(){
-      if(this.dialogdata.is_default){
-        this.obj.addresses.forEach(address=>address.is_default = false)
-      }
-      //this.dialogdata.info_code = 
-      //this.$refs.ELA.selectedOptions
-      this.obj.addresses[this.dialogindex-1] = Object.assign({},this.dialogdata) // 浅拷贝
-      this.dialogVisible = false
-      //if(true){
-      this.updateuserinfo()
-        .then(response=>{
-          if(response){
-            this.$message.success("已"+this.dialog_title+(this.dialogindex))
-          }
-        })
+            //}else{
 
-      //}else{
-
-      //}
+            //}
         
+        },
+        add_address(){
+            this.dialog_title = "新增地址"
+            this.dialogVisible = true
+            this.dialogindex = this.obj.addresses.length + 1
+            this.dialogdata = {}
+        },
+        delete_address(index2){
+            this.$confirm('删除地址'+(index2+1)+'?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                var adr_before = JSON.parse(JSON.stringify(this.obj.addresses)) // 备份 删除失败复位
+                this.obj.addresses.splice(index2,1) // 删除数组下标为index2的，后面的数前移
+                this.updateuserinfo()
+                    .then(response=>{
+                        if(response)this.$message.success("删除成功")
+                        else this.obj.addresses = JSON.parse(JSON.stringify(adr_before)) // 删除失败复位
+                    })
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });          
+            });
+        }
     },
-    add_address(){
-      this.dialog_title = "新增地址"
-      this.dialogVisible = true
-      this.dialogindex = this.obj.addresses.length + 1
-      this.dialogdata = {}
+    mounted(){
+        this.$store.state.zhezhao_show = false
+        this.getuserinfo()
     },
-    delete_address(index2){
-      this.$confirm('删除地址'+(index2+1)+'?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          var adr_before = JSON.parse(JSON.stringify(this.obj.addresses)) // 备份 删除失败复位
-          this.obj.addresses.splice(index2,1) // 删除数组下标为index2的，后面的数前移
-          this.updateuserinfo()
-          .then(response=>{
-            if(response)this.$message.success("删除成功")
-            else this.obj.addresses = JSON.parse(JSON.stringify(adr_before)) // 删除失败复位
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          });          
-        });
+    watch:{
     }
-  },
-  mounted(){
-    this.$store.state.zhezhao_show = false
-    this.getuserinfo()
-  },
-  watch:{
-  }
 }
 </script>
 

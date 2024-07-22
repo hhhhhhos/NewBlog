@@ -1,96 +1,97 @@
 <template>
   <div style="margin-top: 0;padding-top: 0;margin-bottom: 50px;">
     
+
     <!-- 电脑 -->
     <div v-if="!this.$store.state.IsMobile" class="desktop">
-      <el-carousel :style="'height:'+ this.$store.state.CURRENT_HEIGHT*0.4 +'px;overflow-y: hidden;'">
-        <el-carousel-item :style="'height:'+ $store.state.CURRENT_HEIGHT*0.4 +'px;'" v-for="item in 4" :key="item">
-          <img loading="lazy"  :src="require(`@/assets/B${item}.webp`)" style="object-fit: cover;cursor: pointer;height: 100%;" @click="goto4399">
-        </el-carousel-item>
-      </el-carousel>
-      <el-menu style="background-color: white;padding:0 80px;" :default-active="activeIndex2" class="el-menu-demo" mode="horizontal" @select="handleSelect">
-        <el-menu-item index="0">首页</el-menu-item>
-        <el-menu-item index="1">家电</el-menu-item>
-        <el-menu-item index="2">食物</el-menu-item>
-        <el-menu-item index="3">成人用品</el-menu-item>
-        <div style="float:right">
-          <el-input style="width:200px;padding:10px;" v-model="input" placeholder="请输入内容"></el-input>
-          <el-button @click="clicksearch" round>搜索</el-button>
+      <!-- 图 -->
+      <div @click="$openURL2(selectedImage)" 
+      :style="`cursor: pointer;background-color:gray;background-image: url(${selectedImage});background-position:${selectedImageBGposition};`"
+       class="bgphoto">
+        <div class="xiba">
+          {{FType?`分类 の ${dataResult?.fenlei_map[FType]?dataResult.fenlei_map[FType]:'未知分类'}`:`西巴の博客`}}
+          <div class="xiba-sub">
+            {{FName?FName:''}}
+          </div>
         </div>
-      </el-menu>
+      </div>
 
       <!-- 筛选排序 -->
-      <van-dropdown-menu style="position: relative;margin-top: 8px;" class="my">
-          <van-dropdown-item v-model="value2" :options="option2" @closed="dropdown_closed(value2)" @change="dropdown_isclick = true"/>
-          <!-- 访问量 -->
-          <div style="margin: 0 10px 4px 0;position:absolute;color: #00000060;right:0;bottom:0;">
-            <i class="el-icon-view"></i>&nbsp;{{mobile.home_visitors}}
-          </div>
+      <van-dropdown-menu style="position: relative;margin-top:10px;" class="my">
+        <van-dropdown-item v-model="value2" :options="option2" @closed="dropdown_closed(value2)" @change="dropdown_isclick = true"/>
+        <!-- 访问量 -->
+        <div style="margin: 0 10px 4px 0;position:absolute;color: #00000060;font-size: 16px;right:0;bottom:0;">
+          <i class="el-icon-view"></i>{{mobile.home_visitors}}
+        </div>
       </van-dropdown-menu>
 
-      <!-- 左右间距 -->
-      <div style="width:100%;margin: 0px auto;">
+      <div v-loading=this.IsTableLoading style="min-height: 100px;">
+        
+        <!-- 无限滚动 -->
+        <van-list
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有更多了"
+        @load="onLoad"
+        offset=-40
+        style="margin: 40px auto ;width: 70%;"
+        class="myvan"
+        >
 
-        <!-- 商品架 -->
-        <div v-if="tableData.length!==0" v-loading="IsTableLoading">
-          <el-row style="width: 1500px;margin: 0 auto;">
-            <el-col v-for="(product, index) in tableData" :key="index" :span="6" >
-              <!-- 商品卡 -->
-              <div @click="cardclick(product.id)"
-                 class="mybordert" style="width:280px;height:380px;display:block;cursor: pointer;margin:20px auto;background-color: white;object-fit: contain;" >
-                <img loading="lazy"  :src="require(`@/assets/${product.photo}.webp`)"   style="height:280px;width:280px;object-fit: cover;border-radius: 5px;">
+          <div 
+          v-for="(product, index) in tableData" @click="cardclick(product.id,product.comment_num)"
+          :key="index"
+          
+          >
+            <div class="card-out"
+            @click="cardclick(product.id,product.comment_num)"
+            :style="product.photo_url?
+                `background-image: url(`+product.photo_url+`);`
+                :'background-image: url(/img/'+`${product.id+'/'+product.photo}.webp`+');'">
+
+              <div
+                class="card"
+              >
+                <div class="card-title">
+                  <h3 style="margin: 5px 0 0 5px;">{{product.name}}</h3>
+                </div>
+
+                <div class="card-info">
+                  <p style="margin: 5px 0 0 5px;">{{product.info}}</p>
+                </div>
+
+                <div>
+                  <div class="card-detail">
+                    <i style="" class="el-icon-view"></i>
+                    <span style="margin-left: 3px;">{{product.visited_num}}</span>
+
+                    <i style="margin-left: 10px;" class="el-icon-chat-round" ></i>
+                    <span style="margin-left: 3px;">{{product.comment_num}}</span>
+
+                    <svg  style="display:inline;margin:0px 0px -3px 10px;" t="1636093575017" class="icon hoverable2" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px">
+                      <path d="M594.176 151.168a34.048 34.048 0 0 0-29.184 10.816c-11.264 13.184-15.872 24.064-21.504 40.064l-1.92 5.632c-5.632 16.128-12.8 36.864-27.648 63.232-25.408 44.928-50.304 74.432-86.208 97.024-23.04 14.528-43.648 26.368-65.024 32.576v419.648a4569.408 4569.408 0 0 0 339.072-4.672c38.72-2.048 72-21.12 88.96-52.032 21.504-39.36 47.168-95.744 63.552-163.008a782.72 782.72 0 0 0 22.528-163.008c0.448-16.832-13.44-32.256-35.328-32.256h-197.312a32 32 0 0 1-28.608-46.336l0.192-0.32 0.64-1.344 2.56-5.504c2.112-4.8 5.12-11.776 8.32-20.16 6.592-17.088 13.568-39.04 16.768-60.416 4.992-33.344 3.776-60.16-9.344-84.992-14.08-26.688-30.016-33.728-40.512-34.944zM691.84 341.12h149.568c52.736 0 100.864 40.192 99.328 98.048a845.888 845.888 0 0 1-24.32 176.384 742.336 742.336 0 0 1-69.632 178.56c-29.184 53.44-84.48 82.304-141.76 85.248-55.68 2.88-138.304 5.952-235.712 5.952-96 0-183.552-3.008-244.672-5.76-66.432-3.136-123.392-51.392-131.008-119.872a1380.672 1380.672 0 0 1-0.768-296.704c7.68-72.768 70.4-121.792 140.032-121.792h97.728c13.76 0 28.16-5.504 62.976-27.456 24.064-15.104 42.432-35.2 64.512-74.24 11.904-21.184 17.408-36.928 22.912-52.8l2.048-5.888c6.656-18.88 14.4-38.4 33.28-60.416a97.984 97.984 0 0 1 85.12-32.768c35.264 4.096 67.776 26.88 89.792 68.608 22.208 42.176 21.888 84.864 16 124.352a342.464 342.464 0 0 1-15.424 60.544z m-393.216 477.248V405.184H232.96c-40.448 0-72.448 27.712-76.352 64.512a1318.912 1318.912 0 0 0 0.64 282.88c3.904 34.752 32.96 61.248 70.4 62.976 20.8 0.96 44.8 1.92 71.04 2.816z" p-id="3324" 
+                      fill="#ffffff">
+                      </path>
+                    </svg>
+                    <span style="margin-left: 3px;">{{product.love_list?product.love_list.length:0}}</span>
+                  </div>
+                  
+                  <span class="card-create-time">
+                    {{product.create_time?.replace("T"," ")}}
+                  </span>
                 
-                <!-- 前两行 1名字-评分 2价格-评分信息 -->
-                <div style="padding:8px;margin: 5px 0 0 5px;">
-                  
-                  <div style="display: flex;justify-content: space-between;font-weight:bold;">
-                    <div>{{ product.name }}</div>
-                    <!-- 评分 -->
-                    <van-rate  v-model="product.rate" allow-half void-icon="star" void-color="#eee" readonly />
-                  </div>
-                  
-                  <div style="display: flex;justify-content: space-between;margin-top:10px;color:red;font-weight:bold;">
-                    <div style="display: flex;">
-                      <span style="font-size: medium;display: flex;align-items: center;margin-right: 3px;">¥</span><span style="font-size: larger;">{{ product.price }}</span>
-                    </div>
-                    <div>
-                      <span style="font-size: small;color: #00000060;">({{product.rate?product.rate:0}}分,{{product.rate_num?product.rate_num:0}}人评价)</span>
-                    </div>
-                  </div>
-
-                </div>
-
-                <!-- 后一行 日期 售量 访问量 -->
-                <div style="float:right;margin: 0 10px 10px 0;color: #00000060;">
-                  <i class="el-icon-view"></i>
-                  <span style="margin-left: 3px;">{{product.visited_num}}</span>
-                </div>
-                <div style="float:right;margin: 0 10px 10px 0;color: #00000060;">
-                  <i class="el-icon-shopping-cart-1"></i>
-                  <span style="margin-left: 3px;">{{product.sold_num}}</span>
-                </div>
-                <div style="float:left;margin: 0 0 10px 15px;color: #00000060;">
-                  <span style="font-size: small;">{{product.create_time?.slice(0,10)}}</span>
                 </div>
 
               </div>
-            </el-col>
-          </el-row>
-        </div>
-        <div v-else>
-          <div style="margin: 50px 0 50px 0;color: gainsboro;">无结果</div>
-        </div>
-        <el-pagination
-          style="margin-top: 50px;"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="currentPage"
-          :page-sizes="[8, 16, 24]"
-          :page-size=PageSize
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="TotalPage">
-        </el-pagination>
+
+            </div>
+
+          </div>
+    
+        </van-list>
+
       </div>
+
     </div>
 
     
@@ -108,18 +109,12 @@
         />
       </div>
 
-      
-      <Swipe class="my-swipe" :autoplay="3000" indicator-color="white">
-        <SwipeItem v-for="item in 4" :key="item" style="display: flex; justify-content: center; align-items: center;height: 170px;background-color: rgb(248,248,248);">
-          <img loading="lazy"  :src="require(`@/assets/B${item}.webp`)" style="object-fit:cover;height:100%;cursor: pointer;" @click="goto4399">
-        </SwipeItem>
-      </Swipe>
     
       <Tabs v-model="activeIndex2" style="margin-top: 0;" @click="handleSelect" animated swipeable>
         <Tab title="首页"></Tab>
-        <Tab title="家电"></Tab>
-        <Tab title="食物"></Tab>
-        <Tab title="成人用品"></Tab>
+        <Tab title="技术"></Tab>
+        <Tab title="日常"></Tab>
+        <Tab title="游戏"></Tab>
       </Tabs>
 
       <!-- 筛选排序 -->
@@ -144,25 +139,38 @@
         offset=-40
         >
 
-          <div style="margin: 5px 5px 10px 5px;" v-for="(product, index) in tableData" @click="cardclick(product.id)"
+          <div style="margin: 5px 5px 10px 5px;" v-for="(product, index) in tableData" @click="cardclick(product.id,product.comment_num)"
                 :key="index">
             <Card
-              style="border-radius: 10px; overflow: hidden;background-color: white;"
-              :num=product.num
-              :price=product.price
-              :desc=product.info
-              :title=product.name
-              :thumb="require(`@/assets/${product.photo}.webp`)"
+              style="border-radius: 10px; overflow: hidden;background-color: white;text-align: left;"
+              :thumb="product.photo_url?product.photo_url
+                :'/img/'+`${product.id+'/'+product.photo}.webp`"
             >
+            <template #title >
+              <h3 style="margin: 5px 0 0 5px;">{{product.name}}</h3>
+            </template>
+
+            <template #desc >
+              <p style="margin: 5px 0 0 5px;">{{product.info}}</p>
+            </template>
 
             <template #bottom >
-              <div style="float:left;margin-left: 10px;">
+              <div style="float:left;margin-left: 5px;">
                 <i style="color: gray;" class="el-icon-view"></i>
                 <span style="margin-left: 3px;color: #00000060;">{{product.visited_num}}</span>
 
                 <i style="margin-left: 10px;color: gray;" class="el-icon-chat-round" ></i>
                 <span style="margin-left: 3px;color: #00000060;">{{product.comment_num}}</span>
+
+                <svg  style="color: #00000060;display:inline;margin:0px 0px -3px 10px;cursor: pointer;" t="1636093575017" class="icon hoverable2" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3323" width="14px" height="14px">
+                  <path d="M594.176 151.168a34.048 34.048 0 0 0-29.184 10.816c-11.264 13.184-15.872 24.064-21.504 40.064l-1.92 5.632c-5.632 16.128-12.8 36.864-27.648 63.232-25.408 44.928-50.304 74.432-86.208 97.024-23.04 14.528-43.648 26.368-65.024 32.576v419.648a4569.408 4569.408 0 0 0 339.072-4.672c38.72-2.048 72-21.12 88.96-52.032 21.504-39.36 47.168-95.744 63.552-163.008a782.72 782.72 0 0 0 22.528-163.008c0.448-16.832-13.44-32.256-35.328-32.256h-197.312a32 32 0 0 1-28.608-46.336l0.192-0.32 0.64-1.344 2.56-5.504c2.112-4.8 5.12-11.776 8.32-20.16 6.592-17.088 13.568-39.04 16.768-60.416 4.992-33.344 3.776-60.16-9.344-84.992-14.08-26.688-30.016-33.728-40.512-34.944zM691.84 341.12h149.568c52.736 0 100.864 40.192 99.328 98.048a845.888 845.888 0 0 1-24.32 176.384 742.336 742.336 0 0 1-69.632 178.56c-29.184 53.44-84.48 82.304-141.76 85.248-55.68 2.88-138.304 5.952-235.712 5.952-96 0-183.552-3.008-244.672-5.76-66.432-3.136-123.392-51.392-131.008-119.872a1380.672 1380.672 0 0 1-0.768-296.704c7.68-72.768 70.4-121.792 140.032-121.792h97.728c13.76 0 28.16-5.504 62.976-27.456 24.064-15.104 42.432-35.2 64.512-74.24 11.904-21.184 17.408-36.928 22.912-52.8l2.048-5.888c6.656-18.88 14.4-38.4 33.28-60.416a97.984 97.984 0 0 1 85.12-32.768c35.264 4.096 67.776 26.88 89.792 68.608 22.208 42.176 21.888 84.864 16 124.352a342.464 342.464 0 0 1-15.424 60.544z m-393.216 477.248V405.184H232.96c-40.448 0-72.448 27.712-76.352 64.512a1318.912 1318.912 0 0 0 0.64 282.88c3.904 34.752 32.96 61.248 70.4 62.976 20.8 0.96 44.8 1.92 71.04 2.816z" p-id="3324" fill="#9499a0">
+                  </path>
+                </svg>
+                <span style="margin-left: 3px;color: #00000060;">{{product.love_list?product.love_list.length:0}}</span>
               </div>
+              
+              <span style="margin-left: 10px;color: #00000060;float: right;">{{product.create_time?.slice(0,10)}}</span>
+            
             </template>
             </Card>
           </div>
@@ -173,221 +181,408 @@
     
     </div>
 
+
+    <!--接收product_page_FType的总线事件-->
+    <rootEvent event_name="product_page_FType" @rootEvent="product_page_FType_Event" />
+
+    <!--接收clicksearch的总线事件-->
+    <rootEvent event_name="clicksearch" @rootEvent="clicksearch" />
+
   </div>
 </template>
 
 <script>
 import axios from '@/utils'
-import { Swipe, SwipeItem } from 'vant';
 import { Search,Card,Tabs,Tab } from 'vant';
 import { List} from 'vant';
 import { DropdownMenu, DropdownItem } from 'vant';
-import { Rate } from 'vant';
+import rootEvent from '@/components/receivedrootevent/VE.vue'
+
+const failedIndices = new Set();
 
 export default {
-  components:{
-    Swipe,
-    SwipeItem,
-    Search,
-    Card,
-    Tabs,
-    Tab,
-    'van-list':List,
-    'van-dropdown-menu':DropdownMenu,
-    'van-dropdown-item':DropdownItem,
-    'van-rate': Rate,
-  },
-  data() {
-    return{
-      // region vant无限滚动手机参数
-      loading: false,
-      finished: false,
-      // end region
-      // region vant主页筛选商品/排序
-      value2: 'a',
-      option2: [
-        { text: '默认排序', value: 'a' },
-        { text: '时间排序', value: 'b' },
-        { text: '访问量排序', value: 'c' },
-        { text: '销量排序', value: 'd' },
-        { text: '评分最高', value: 'e' },
-        { text: '评分最低', value: 'f' },
-      ],
-      dropdown_isclick:false,
-      //endregion
-      activeIndex1:null,
-      activeIndex2:'0',
-      input:null,
-      product:{
-        id:1,
-        name:"测试",
-        price:999,
-        photo:'p1.webp',
-        create_tiem:"2022-12-2"
-      },
-      currentPage:1,
-      PageSize:8,
-      tableData:[],
-      TotalPage:0,
-      IsTableLoading:true,
-      FName:null,
-      FType:null,
-      mobile:{
-        home_visitors:null
-      }
-
-    }
-  },
-  methods:{
-    // 筛选框关闭触发
-    dropdown_closed(value){
-      console.log(value)
-      if(this.dropdown_isclick){
-        this.getproduct()
-        this.dropdown_isclick = false
-      }
+    components:{
+        rootEvent,
+        Search,
+        Card,
+        Tabs,
+        Tab,
+        'van-list':List,
+        'van-dropdown-menu':DropdownMenu,
+        'van-dropdown-item':DropdownItem,
     },
-    // vant手机划到底部时触发
-    async onLoad() {
-      //var oldScrollPosition
-      console.log("滚到底部，触发加载")
-      // 异步更新数据
-      // setTimeout 仅做示例，真实场景中一般为 ajax 请求
-      this.PageSize +=3
-      await axios.get('product/page',{
-        params: {
-          currentPage: this.currentPage,
-          PageSize: this.PageSize,
-          FName:this.FName,
-          FType:this.FType,
-          value2:this.value2
+    data() {
+        return{
+            dataResult:{
+                home_visitors:null,
+                back_visitors:null,
+                comment_total_num:null,
+                product_total_num:null,
+                en_list:null,
+                cn_list:null,
+                co_list:null,
+                fenlei_map:null,
+                biaoqian_map:null
+            },
+            // 首页图list
+            images:[
+                "https://cdn-l-cyberpunk.cdprojektred.com/wallpapers/3840x2160/CNY_Artwork-zh-cn.jpg",
+                "https://w.wallhaven.cc/full/6d/wallhaven-6d6yy6.jpg",
+                "https://w.wallhaven.cc/full/gp/wallhaven-gpgddl.jpg",
+                "https://w.wallhaven.cc/full/1p/wallhaven-1py3r1.jpg",
+                "https://w.wallhaven.cc/full/qz/wallhaven-qzq5l7.jpg",
+                //"https://w.wallhaven.cc/full/m3/wallhaven-m3eve8.jpg",
+                "https://w.wallhaven.cc/full/p9/wallhaven-p9pro3.jpg",
+                "https://w.wallhaven.cc/full/gp/wallhaven-gpg5ql.jpg",
+                "https://w.wallhaven.cc/full/2y/wallhaven-2yxp16.jpg",
+                "https://w.wallhaven.cc/full/we/wallhaven-wekp5x.jpg",
+                "https://w.wallhaven.cc/full/d6/wallhaven-d6z96o.jpg",
+            ],
+            selectedImage:"",
+            selectedImageBGposition:"",
+            // region vant无限滚动手机参数
+            loading: false,
+            finished: false,
+            // end region
+            // region vant主页筛选商品/排序
+            value2: 'b',
+            option2: [
+                { text: '时间升序', value: 'a' },
+                { text: '时间降序', value: 'b' },
+                { text: '访问量排序', value: 'c' },
+                //{ text: '销量排序', value: 'd' },
+                //{ text: '评分最高', value: 'e' },
+                //{ text: '评分最低', value: 'f' },
+            ],
+            dropdown_isclick:false,
+            //endregion
+            activeIndex1:null,
+            activeIndex2:'0',
+            input:null,
+            product:{
+                id:1,
+                name:"测试",
+                price:999,
+                photo:'p1.webp',
+                create_tiem:"2022-12-2"
+            },
+            currentPage:1,
+            PageSize:8,
+            tableData:[],
+            TotalPage:0,
+            IsTableLoading:true,
+            FName:null,
+            FType:null,
+            mobile:{
+                home_visitors:null
+            }
+
         }
-      }).then(response=>{
-        //oldScrollPosition = window.pageYOffset
-        this.tableData = response.data.data.records
-        // 防止element-table移动视角
-        //setTimeout(() => {window.scrollTo(0, oldScrollPosition),this.loading1 = false}, 0);
-        this.loading1 = false
-        this.TotalPage = response.data.data.total
-        this.mobile.home_visitors = response.data.map.home_visitors
-        this.IsTableLoading = false
+    },
+    methods:{
+        async getUserLocation() {
+            try {
+                // 调用第三方 API 获取用户 IP 和地理位置
+                const response = await axios.get('http://ip-api.com/json/?lang=zh-CN');
+                const data = response.data;
 
-        console.log(response)
-      }).catch(error=>{
-        console.log(error)
-      })
+                // 返回位置字符串
+                const country = data.countryCode === 'CN' ? '国内' : '海外';
+                console.log( '访客来源：'+country)
 
-      // 加载状态结束
-      this.loading = false;
+                // 根据国家获取首页图
+                const response2 = await axios.get('/data-result/all')
+                if(data.countryCode !== 'CN')this.images = response2.data.en_list
+                else this.images = response2.data.cn_list
 
-      // 数据全部加载完成
-      if (this.PageSize >= this.TotalPage) {
-          this.finished = true;
-      }
+                // 添加公用首页图
+                // 添加公用首页图
+                this.images = this.images.concat(response2.data.co_list);
+
+            } catch (error) {
+                console.error('Error fetching user location:', error);
+                console.log( '访客来源：未知')
+            } finally{
+                this.getRandomImage()
+            }
+        },
+        // 从事件总线接收 分类博客事件
+        product_page_FType_Event(index){
+            this.FType = index
+            this.getproduct()
+        },
+        getRandomImage() {
+            if (failedIndices.size === this.images.length) {
+                console.error('All images failed to load.');
+                return;
+            }
+
+            let randomIndex;
+            let imageUrl;
+            let imageUrlBGposition;
+
+            // 随机选择一个不在 failedIndices 集合中的图片
+            do {
+                randomIndex = Math.floor(Math.random() * this.images.length);
+                imageUrl = this.images[randomIndex].photo_url;
+                imageUrlBGposition = this.images[randomIndex].background_position;
+            } while (failedIndices.has(randomIndex));
+
+            console.log(randomIndex);
+
+            // 创建一个新的 Image 对象来检查图片的加载状态
+            const img = new Image();
+            let timeoutId;
+
+            img.onload = () => {
+                clearTimeout(timeoutId); // 清除定时器
+                console.log('onload');
+                this.selectedImage = imageUrl;
+                this.selectedImageBGposition = imageUrlBGposition;
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId); // 清除定时器
+                console.log('onerror');
+                failedIndices.add(randomIndex); // 记录失败的图片索引
+                this.getRandomImage();
+            };
+
+            // 设置加载超时时间为5秒
+            timeoutId = setTimeout(() => {
+                console.log('timeout');
+                img.onerror();
+            }, 2000); // 5000 毫秒 = 5 秒
+
+            img.src = imageUrl; // 设置 src 属性，触发加载
+        },
+        // 筛选框关闭触发
+        dropdown_closed(value){
+            console.log(value)
+            if(this.dropdown_isclick){
+                this.getproduct()
+                this.dropdown_isclick = false
+            }
+        },
+        // vant手机划到底部时触发
+        async onLoad() {
+            //var oldScrollPosition
+            console.log("滚到底部，触发加载")
+            // 异步更新数据
+            // setTimeout 仅做示例，真实场景中一般为 ajax 请求
+            this.PageSize +=3
+            await axios.get('product/page',{
+                params: {
+                    currentPage: this.currentPage,
+                    PageSize: this.PageSize,
+                    FName:this.FName,
+                    FType:this.FType,
+                    value2:this.value2
+                }
+            }).then(response=>{
+                //oldScrollPosition = window.pageYOffset
+                this.tableData = response.data.data.records
+                // 防止element-table移动视角
+                //setTimeout(() => {window.scrollTo(0, oldScrollPosition),this.loading1 = false}, 0);
+                this.loading1 = false
+                this.TotalPage = response.data.data.total
+                this.mobile.home_visitors = response.data.map.home_visitors
+                this.IsTableLoading = false
+
+                console.log(response)
+            }).catch(error=>{
+                console.log(error)
+            })
+
+            // 加载状态结束
+            this.loading = false;
+
+            // 数据全部加载完成
+            if (this.PageSize >= this.TotalPage) {
+                this.finished = true;
+            }
     
 
-    },
-    adjustArrowPosition() {
-      console.log('adjustArrowPosition')
-      // 使用类名选择器找到所有的箭头元素
-      const arrows = document.querySelectorAll('.el-carousel__arrow');
+        },
+        adjustArrowPosition() {
+            console.log('adjustArrowPosition')
+            // 使用类名选择器找到所有的箭头元素
+            const arrows = document.querySelectorAll('.el-carousel__arrow');
       
-      arrows.forEach(arrow => {
-        // 动态计算并设置箭头的位置
-        // 例如，根据某个元素的尺寸或直接使用计算好的值
-        arrow.style.top = `${this.$store.state.CURRENT_HEIGHT * 0.15}px`;
-      });
-    },
-    // 点商品分类
-    handleSelect(key) {
-      console.log(key)
-      this.FType = key
-      if(key==="0"||key===0)this.FType=null
-      this.currentPage = 1
-      this.getproduct()
+            arrows.forEach(arrow => {
+                // 动态计算并设置箭头的位置
+                // 例如，根据某个元素的尺寸或直接使用计算好的值
+                arrow.style.top = `${this.$store.state.CURRENT_HEIGHT * 0.15}px`;
+            });
+        },
+        // 点商品分类
+        handleSelect(key) {
+            console.log(key)
+            this.FType = key
+            if(key==="0"||key===0)this.FType=null
+            this.currentPage = 1
+            this.getproduct()
 
-    },
-    // 拿页
-    getproduct(){
-      this.tableData = []
-      this.IsTableLoading = true
-      axios.get('product/page',{
-        params: {
-          currentPage: this.currentPage,
-          PageSize: this.PageSize,
-          FName:this.FName,
-          FType:this.FType,
-          value2:this.value2
+        },
+        // 拿页
+        getproduct(){
+            this.tableData = []
+            this.IsTableLoading = true
+            axios.get('product/page',{
+                params: {
+                    currentPage: this.currentPage,
+                    PageSize: this.PageSize,
+                    FName:this.FName,
+                    FType:this.FType,
+                    value2:this.value2
+                }
+            }).then(response=>{
+                if(response.data.code){
+                    this.tableData = response.data.data.records
+                    this.TotalPage = response.data.data.total
+                    this.mobile.home_visitors = response.data.map.home_visitors
+                    this.IsTableLoading = false
+                    console.log(response)
+                }else
+                    this.$message.error(response.data.msg)
+
+            }).catch(error=>{
+                console.log(error)
+            })
+        },
+        // 点商品
+        cardclick(id,comment_num){
+            console.log("clicked")
+            let num=0
+            if(comment_num)num = comment_num
+            this.$router.push(`/product?id=${id}&comment_num=${num}`)
+        },
+        goto4399(){
+            console.log(4399)
+            window.open('https://www.4399.com', '_blank');
+        },
+        // 页容量变化
+        handleSizeChange(val) {
+            this.PageSize = val
+            this.getproduct()
+        },
+        // 切页
+        handleCurrentChange(val) {
+            this.currentPage = val
+            this.getproduct()
+        },
+        // 点搜索
+        clicksearch(input){
+            this.input = input
+            this.FName = this.input
+            this.getproduct()
+
+
+        },
+        // mobile
+        mobileTagonClick(val1){
+            console.log(val1)
+        },
+        getdataresult(){
+            axios.get('/data-result/all')
+                .then(response=>{
+                    console.log(response.data)
+                    this.dataResult = response.data
+                })
         }
-      }).then(response=>{
-        this.tableData = response.data.data.records
-        this.TotalPage = response.data.data.total
-        this.mobile.home_visitors = response.data.map.home_visitors
-        this.IsTableLoading = false
-        console.log(response)
-      }).catch(error=>{
-        console.log(error)
-      })
+
     },
-    // 点商品
-    cardclick(id){
-      console.log("clicked")
-      this.$router.push(`/product?id=${id}`)
-    },
-    goto4399(){
-      console.log(4399)
-      window.open('https://www.4399.com', '_blank');
-    },
-    // 页容量变化
-    handleSizeChange(val) {
-      this.PageSize = val
-      this.getproduct()
-    },
-    // 切页
-    handleCurrentChange(val) {
-      this.currentPage = val
-      this.getproduct()
-    },
-    // 点搜索
-    clicksearch(){
-        this.FName = this.input
+    created(){
+        if(this.$route.query.FType)this.FType = this.$route.query.FType
         this.getproduct()
-        this.$message.success('已发起搜索');
-
-    },
-    // mobile
-    mobileTagonClick(val1){
-      console.log(val1)
-    }
-
-  },
-  created(){
-    this.getproduct()
+        this.getdataresult()
     //sessionStorage.setItem('Time',new Date().getTime())
     //console.log(sessionStorage.getItem('Time'))
-  },
-  watch:{
-      // 移动端触发翻页
-      currentPage:function(){
+    },
+    watch:{
+        // 移动端触发翻页
+        currentPage:function(){
         // 不是手机不运行
-        if(!this.$store.state.IsMobile)return        
-        this.handleCurrentChange(this.currentPage)    
-    }
-  },
-  mounted() {
-    this.$store.state.zhezhao_show = false
-    this.adjustArrowPosition();
-    // 监听窗口resize事件，以便动态调整
-    window.addEventListener('resize', this.adjustArrowPosition);
-  },
-  beforeDestroy() {
+            if(!this.$store.state.IsMobile)return        
+            this.handleCurrentChange(this.currentPage)    
+        }
+    },
+    mounted() {
+        this.$store.state.zhezhao_show = false
+        this.getUserLocation();
+        this.adjustArrowPosition();
+        // 监听窗口resize事件，以便动态调整
+        window.addEventListener('resize', this.adjustArrowPosition);
+        
+    },
+    beforeDestroy() {
     // 组件销毁时移除事件监听器
-    window.removeEventListener('resize', this.adjustArrowPosition);
-  }
+        window.removeEventListener('resize', this.adjustArrowPosition);
+    }
 }
 </script>
 
 <style scoped>
+.card-out{
+  background-color:gray;
+  background-size: cover; /* 调整背景图片大小以填充容器 */
+  background-position:center; /* 将背景图片顶部对齐 */
+  border-radius: 20px;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  height:30vh;
+  color:white;
+  position: relative;
+  cursor: pointer;
+  margin: 80px auto;
+}
+.card{
+  flex-grow: 1;
+}
+.card-title{
+  font-size: 2rem;
+}
+.card-info{
+  font-size: 1.5rem;
+}
+.card-detail{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  margin: 0 0 10px 20px;
+}
+.card-create-time{
+  position: absolute;
+  bottom: 0;
+  right:0;
+  margin: 0 20px 10px 0;
+}
+
+.bgphoto{
+  background-size: cover; /* 调整背景图片大小以填充容器 */
+  background-position:top; /* 将背景图片顶部对齐 */
+  width: 100%;
+  height: 50vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.xiba{
+  color:aliceblue;
+  font-size: 4.5rem;
+  line-height: 1.5;
+  margin-bottom: .75rem;
+  font-weight: 600;
+  position: relative;
+}
+.xiba-sub{
+    position: absolute;
+    margin-top: 10px;
+    font-size: 1.5rem;
+    width: 100%;
+    text-align: center;
+}
 .van-card__price {
   position: absolute;
   right: 44%;

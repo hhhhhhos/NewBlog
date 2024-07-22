@@ -16,16 +16,16 @@
 import { Notify } from 'vant';
 
 export default {
-  components: {
+    components: {
 
-  },
-  data() {
-    return{
-      websocket:null,
-      retryInterval:null, //重试定时器
-    }
-  },
-  methods:{
+    },
+    data() {
+        return{
+            websocket:null,
+            retryInterval:null, //重试定时器
+        }
+    },
+    methods:{
         /*
         1. `WebSocket.CONNECTING` (值为 0)：表示正在连接。
         2. `WebSocket.OPEN` (值为 1)：表示连接成功并且可以通信。
@@ -42,55 +42,56 @@ export default {
         // #region 下面是socket方法
         // 初始化socket链接
         setupWebSocket () {
-          if(this.$store.state.UserId){
-            const protocol = process.env.VUE_APP_WEBSOCKET_URI + '/'+ this.$store.state.UserId
-            this.websocket = new WebSocket(protocol) // 创建WebSocket连接
-            this.websocket.onopen = this.onWebSocketOpen // WebSocket连接打开时的处理函数
-            this.websocket.onerror = this.onWebSocketError //
-            this.websocket.onmessage = this.onWebSocketMessage // 收到WebSocket消息时的处理函数
-            this.websocket.onclose = this.onWebSocketClose // WebSocket连接关闭时的处理函数
-          }
+            if(this.$store.state.UserId && this.websocket===null){
+                const protocol = process.env.VUE_APP_WEBSOCKET_URI + '/'+ this.$store.state.UserId
+                this.websocket = new WebSocket(protocol) // 创建WebSocket连接
+                this.websocket.onopen = this.onWebSocketOpen // WebSocket连接打开时的处理函数
+                this.websocket.onerror = this.onWebSocketError //
+                this.websocket.onmessage = this.onWebSocketMessage // 收到WebSocket消息时的处理函数
+                this.websocket.onclose = this.onWebSocketClose // WebSocket连接关闭时的处理函数
+            }
         },
         // socket成功建立后 开始发数据
         onWebSocketOpen () {
-          console.log('[local]:socket链接成功')
-          //this.sendMessag("hello")
+            console.log('[local]:socket链接成功')
+            //this.sendMessag("hello")
         },
         onWebSocketError () {
-          console.log('链接错误')
-          console.log('[local]:socket链接错误')
+            console.log('链接错误')
+            console.log('[local]:socket链接错误')
         },
         // 接收信息函数
         onWebSocketMessage (event) {
-          // json转js对象
-          //const data = JSON.parse(event.data)
-          //console.log(event.data)
-          var objectlize = JSON.parse(event.data)
-          console.log(`[local]:接收到：${objectlize}`)
-          // 事件总线发出事件
-          this.$root.$emit('socket_received_msg',objectlize)
+            // json转js对象
+            //const data = JSON.parse(event.data)
+            //console.log(event.data)
+            var objectlize = JSON.parse(event.data)
+            console.log(`[local]:接收到：${objectlize}`)
+            // 事件总线发出事件
+            this.$root.$emit('socket_received_msg',objectlize)
         },
         onWebSocketClose (event) {
-          if (this.websocket) {
-            this.websocket.close() // 关闭WebSocket连接
-            console.log(event)
-            console.log('[local]:socket链接被本机或服务器关闭')
-            this.retryWebSocketConnection()
-          }
+            if (this.websocket) {
+                this.websocket.close() // 关闭WebSocket连接
+                console.log(event)
+                console.log('[local]:socket链接被本机或服务器关闭')
+                this.retryWebSocketConnection()
+            }
         },
         // 发送信息函数
         sendMessag (message) {
-          // js转json
-          message = JSON.stringify(message)
-          if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-            this.websocket.send(message)
-            console.log(`[local]:已发送：${message}`)
-          } else {
-            console.log(`[local]:发送:${message}失败`)
-          }
+            // js转json
+            message = JSON.stringify(message)
+            if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                this.websocket.send(message)
+                console.log(`[local]:已发送：${message}`)
+            } else {
+                console.log(`[local]:发送:${message}失败`)
+            }
         },
         // 重试链接函数
         retryWebSocketConnection() {
+            if(this.websocket)return
             const protocol = process.env.VUE_APP_WEBSOCKET_URI;
             // 如果已经存在一个重试定时器，先清除它
             if (this.retryInterval) {
@@ -98,31 +99,31 @@ export default {
             }
             // 每隔2秒尝试重新连接
             this.retryInterval = setInterval(() => {
-              if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-                clearInterval(this.retryInterval);
-                this.retryInterval = null;
-                return;
-              }
-              Notify('socket链接已断开，重连中..');
-              console.log('Attempting to reconnect WebSocket...');
-              this.setupWebSocket(protocol);
+                if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                    clearInterval(this.retryInterval);
+                    this.retryInterval = null;
+                    return;
+                }
+                Notify('socket链接已断开，重连中..');
+                console.log('Attempting to reconnect WebSocket...');
+                this.setupWebSocket(protocol);
             }, 2000);
         }
         // #endregion
-  },
-  mounted(){
-    this.setupWebSocket()
-  },
-  watch: {
-    '$store.state.UserId': {
-      handler(newVal) {
-        if(newVal)this.setupWebSocket()
-      },
+    },
+    mounted(){
+        this.setupWebSocket()
+    },
+    watch: {
+        '$store.state.UserId': {
+            handler(newVal) {
+                if(newVal)this.setupWebSocket()
+            },
+        }
+    },
+    beforeDestroy(){
+        this.websocket.close()
     }
-  },
-  beforeDestroy(){
-    this.websocket.close()
-  }
 }
 </script>
 

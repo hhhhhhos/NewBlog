@@ -1,6 +1,7 @@
 package com.example.demo1228_2.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.example.demo1228_2.component.GlobalProperties;
 import com.example.demo1228_2.config.Tool;
 import com.example.demo1228_2.entity.User;
 import com.example.demo1228_2.mapper.UserMapper;
@@ -23,6 +24,9 @@ import javax.servlet.http.HttpSession;
 @Slf4j
 @Service
 public class HttpService {
+
+    @Autowired
+    GlobalProperties globalProperties;
 
     /**
      * 发送Get请求
@@ -60,9 +64,11 @@ public class HttpService {
     @Async
     public void sendGetIpLocationToDb(HttpSession session) throws Exception{
         String location = "火星人"; // 默认值
-        String realIp= session.getAttribute("X-Real-IP").toString();
+        if(session.getAttribute("X-Real-IP")==null)return;
 
-        if(realIp == null)return;
+        String realIp= session.getAttribute("X-Real-IP").toString();
+        if(realIp.startsWith("192.168"))return;
+
         log.info("realIp:{}",realIp);
         log.info("https://api.vore.top/api/IPdata?ip="+realIp);
         Map<String,String> map = new HashMap<>();
@@ -121,9 +127,15 @@ public class HttpService {
         HttpResponse<String> response = HttpClient.newBuilder().build().send(request, HttpResponse.BodyHandlers.ofString());
 
          */
-        HttpClient httpClient = HttpClient.newBuilder()
-                .proxy(ProxySelector.of(new InetSocketAddress("localhost", 7890))) // 设置代理
-                .build();
+        HttpClient httpClient;
+        if(false) {
+            httpClient = HttpClient.newBuilder()
+                    .proxy(ProxySelector.of(new InetSocketAddress("localhost", 7890))) // 设置代理
+                    .build();
+        }else{
+            httpClient = HttpClient.newBuilder()
+                    .build();
+        }
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.openai.com/v1/chat/completions"))

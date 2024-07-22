@@ -38,61 +38,61 @@
 import ElTable_buylist from '/src/components/ElTable_buylist'
 
 export default {
-  components: {
-    ElTable_buylist
-  },
-  data() {
-    return{
-      columns1 : [
-        //{ prop: 'id', label: 'ID', width: '100' },
-        //{ prop: 'user_id', label: '用户ID', width: '100' },
-        //{ prop: 'product_id', label: '商品ID', width: '100' },
-        { prop: 'photo', label: '商品图', width: '180' },
-        { prop: 'name', label: '商品名' },
-        { prop: 'product_num', label: '购买数量' , width: '120' },
-        { prop: 'price', label: '价格', width: '100' },
-        { prop: 'create_time', label: '创建时间', width: '180' },
-        { label: '操作' , width: '180'}
-      ],
-      columns2 : [
-        //{ prop: 'id', label: 'ID', width: '100' },
-        //{ prop: 'user_id', label: '用户ID', width: '100' },
-        //{ prop: 'product_id', label: '商品ID', width: '100' },
-        { prop: 'photo', label: '商品图', width: '100' },
-        //{ prop: 'name', label: '商品名' },
-        { prop: 'product_num', label: '信息'  },
-        //{ prop: 'price', label: '价格', width: '100' },
-        //{ prop: 'create_time', label: '创建时间', width: '180' },
-        { label: '操作' , width: '100'}
-      ],
-      geturl:'/buylist/page',
-      TotalPrice:0,
-      Datas:[]
-    }
-  },
-  methods:{
-    // 根据emit更新价格
-    selectrow(datas){
-      this.TotalPrice = 0
-      this.Datas = datas
-      datas.forEach(data=>{
-        this.TotalPrice += data.product.price*data.buylist.product_num
-        this.TotalPrice = parseFloat(this.TotalPrice.toFixed(2));
-      })
+    components: {
+        ElTable_buylist
     },
-    // 跳转结算页
-    gotoresult(){
-      console.log(this.Datas)
-      // 检查有没有卖完的商品
-      if(this.Datas.some(data=>data.product.num===0))return this.$message.error("不能选择卖完的商品")
+    data() {
+        return{
+            columns1 : [
+                //{ prop: 'id', label: 'ID', width: '100' },
+                //{ prop: 'user_id', label: '用户ID', width: '100' },
+                //{ prop: 'product_id', label: '商品ID', width: '100' },
+                { prop: 'photo', label: '商品图', width: '180' },
+                { prop: 'name', label: '商品名' },
+                { prop: 'product_num', label: '购买数量' , width: '120' },
+                { prop: 'price', label: '价格', width: '100' },
+                { prop: 'create_time', label: '创建时间', width: '180' },
+                { label: '操作' , width: '180'}
+            ],
+            columns2 : [
+                //{ prop: 'id', label: 'ID', width: '100' },
+                //{ prop: 'user_id', label: '用户ID', width: '100' },
+                //{ prop: 'product_id', label: '商品ID', width: '100' },
+                { prop: 'photo', label: '商品图', width: '100' },
+                //{ prop: 'name', label: '商品名' },
+                { prop: 'product_num', label: '信息'  },
+                //{ prop: 'price', label: '价格', width: '100' },
+                //{ prop: 'create_time', label: '创建时间', width: '180' },
+                { label: '操作' , width: '100'}
+            ],
+            geturl:'/buylist/page',
+            TotalPrice:0,
+            Datas:[]
+        }
+    },
+    methods:{
+    // 根据emit更新价格
+        selectrow(datas){
+            this.TotalPrice = 0
+            this.Datas = datas
+            datas.forEach(data=>{
+                this.TotalPrice += data.product.price*data.buylist.product_num
+                this.TotalPrice = parseFloat(this.TotalPrice.toFixed(2));
+            })
+        },
+        // 跳转结算页
+        gotoresult(){
+            console.log(this.Datas)
+            // 检查有没有卖完的商品
+            if(this.Datas.some(data=>data.product.num===0))return this.$message.error("不能选择卖完的商品")
       
-      if(this.TotalPrice===0)return this.$message.error("未选择商品")
+            if(this.TotalPrice===0)return this.$message.error("未选择商品")
 
-      console.log("跳转结算页")
-      console.log(this.Datas)
-      this.$router.push({name:"userbuylist_result",params:{datas:this.Datas}})
+            console.log("跳转结算页")
+            console.log(this.Datas)
+            this.$router.push({name:"userbuylist_result",params:{datas:this.Datas}})
+        }
     }
-  }
 }
 </script>
 

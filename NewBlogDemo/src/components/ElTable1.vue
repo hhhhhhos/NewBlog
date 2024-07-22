@@ -181,286 +181,286 @@ import ET1 from '/src/components/ElTable_buylist_result'
 import { List} from 'vant';
 
 export default {
-  props: {
-    columns:Array,
-    geturl:String,
-    PtableData:Array
-  },
-  components:{
-    'van-list':List,
-    //'van-cell':Cell,
-    ET1
-  },
-  data() {
-    return{
-      // region vant手机参数
-      loading: false,
-      finished: false,
-      // end region
-      tableData:[],
-      columns1 : [
-        //{ prop: 'id', label: 'ID', width: '100' },
-        //{ prop: 'user_id', label: '用户ID', width: '100' },
-        //{ prop: 'product_id', label: '商品ID', width: '100' },
-        { prop: 'photo', label: '商品图', width: '180' },
-        { prop: 'name', label: '商品名' },
-        { prop: 'product_num', label: '购买数量' , width: '120' },
-        { prop: 'price', label: '价格', width: '100' },
-        { prop: 'create_time', label: '创建时间', width: '180' },
-      ],
-      currentPage:1,
-      PageSize:10,
-      TotalPage:null,
-      IsTableLoading:true,
-      // 弹窗参数
-      dialogVisible:false,
-      dialog_title:"支付方式",
-      radio2:"1",
-      obj:{
-        "id": null,
-        "name": null,
-        "age": null,
-        "sex": null,
-        "addresses": null,
-        "phone": null,
-        "create_time": Date,
-        "password": null,
-        "money":null
-      },
-      alipay:{
-        "id":null,
-        "money":null,
-        "num":null,
-        "name":null
-      },
-    }
-  },
-  methods:{
-    handleRowClick(row) {
-      row.expanded = !row.expanded;
-      this.$refs.expandTable.toggleRowExpansion(row, row.expanded);
+    props: {
+        columns:Array,
+        geturl:String,
+        PtableData:Array
     },
-    handleExpand(props) {
-      // 可以在这里控制展开逻辑
-      // `props` 包含了行数据，`event` 是触摸事件对象
-      // 使用 props.row.toggleRowExpansion() 来展开或收起行
-      console.log("handleExpand")
-      props.row.toggleRowExpansion();
+    components:{
+        'van-list':List,
+        //'van-cell':Cell,
+        ET1
     },
-    // vant手机无限滚动范例
-    async onLoad() {
-      //var oldScrollPosition
-      console.log("滚到底部，触发加载")
-      // 异步更新数据
-      // setTimeout 仅做示例，真实场景中一般为 ajax 请求
-      this.PageSize +=3
-      await axios.get(this.geturl,{
-        params: {
-          currentPage: this.currentPage,
-          PageSize: this.PageSize
+    data() {
+        return{
+            // region vant手机参数
+            loading: false,
+            finished: false,
+            // end region
+            tableData:[],
+            columns1 : [
+                //{ prop: 'id', label: 'ID', width: '100' },
+                //{ prop: 'user_id', label: '用户ID', width: '100' },
+                //{ prop: 'product_id', label: '商品ID', width: '100' },
+                { prop: 'photo', label: '商品图', width: '180' },
+                { prop: 'name', label: '商品名' },
+                { prop: 'product_num', label: '购买数量' , width: '120' },
+                { prop: 'price', label: '价格', width: '100' },
+                { prop: 'create_time', label: '创建时间', width: '180' },
+            ],
+            currentPage:1,
+            PageSize:10,
+            TotalPage:null,
+            IsTableLoading:true,
+            // 弹窗参数
+            dialogVisible:false,
+            dialog_title:"支付方式",
+            radio2:"1",
+            obj:{
+                "id": null,
+                "name": null,
+                "age": null,
+                "sex": null,
+                "addresses": null,
+                "phone": null,
+                "create_time": Date,
+                "password": null,
+                "money":null
+            },
+            alipay:{
+                "id":null,
+                "money":null,
+                "num":null,
+                "name":null
+            },
         }
-      }).then(response=>{
-        if(response.data.code===0)this.$message.error(response.data.msg)
-        else {
-          //oldScrollPosition = window.pageYOffset
-          this.tableData = response.data.data.records
-          // 防止element-table移动视角
-          //setTimeout(() => {window.scrollTo(0, oldScrollPosition),this.loading1 = false}, 0);
-          this.loading1 = false
-          this.TotalPage = response.data.data.total
-          this.IsTableLoading = false
-          console.log(response)
-        }
-      }).catch(error=>{
-        this.$message.error(error.data.msg)
-        console.log(error)
-      })
+    },
+    methods:{
+        handleRowClick(row) {
+            row.expanded = !row.expanded;
+            this.$refs.expandTable.toggleRowExpansion(row, row.expanded);
+        },
+        handleExpand(props) {
+            // 可以在这里控制展开逻辑
+            // `props` 包含了行数据，`event` 是触摸事件对象
+            // 使用 props.row.toggleRowExpansion() 来展开或收起行
+            console.log("handleExpand")
+            props.row.toggleRowExpansion();
+        },
+        // vant手机无限滚动范例
+        async onLoad() {
+            //var oldScrollPosition
+            console.log("滚到底部，触发加载")
+            // 异步更新数据
+            // setTimeout 仅做示例，真实场景中一般为 ajax 请求
+            this.PageSize +=3
+            await axios.get(this.geturl,{
+                params: {
+                    currentPage: this.currentPage,
+                    PageSize: this.PageSize
+                }
+            }).then(response=>{
+                if(response.data.code===0)this.$message.error(response.data.msg)
+                else {
+                    //oldScrollPosition = window.pageYOffset
+                    this.tableData = response.data.data.records
+                    // 防止element-table移动视角
+                    //setTimeout(() => {window.scrollTo(0, oldScrollPosition),this.loading1 = false}, 0);
+                    this.loading1 = false
+                    this.TotalPage = response.data.data.total
+                    this.IsTableLoading = false
+                    console.log(response)
+                }
+            }).catch(error=>{
+                this.$message.error(error.data.msg)
+                console.log(error)
+            })
 
-      // 加载状态结束
-      this.loading = false;
+            // 加载状态结束
+            this.loading = false;
 
-      // 数据全部加载完成
-      if (this.PageSize >= this.TotalPage) {
-          this.finished = true;
-      }
+            // 数据全部加载完成
+            if (this.PageSize >= this.TotalPage) {
+                this.finished = true;
+            }
       
 
-    },
-    // 拿表
-    gettable(){
-      axios.get(this.geturl,{
-        params: {
-          currentPage: this.currentPage,
-          PageSize: this.PageSize
-        }
-      }).then(response=>{
-        if(response.data.code===0)this.$message.error(response.data.msg)
-        else {
-          this.tableData = response.data.data.records
-          this.TotalPage = response.data.data.total
-          this.IsTableLoading = false
-          console.log(response)
+        },
+        // 拿表
+        gettable(){
+            axios.get(this.geturl,{
+                params: {
+                    currentPage: this.currentPage,
+                    PageSize: this.PageSize
+                }
+            }).then(response=>{
+                if(response.data.code===0)this.$message.error(response.data.msg)
+                else {
+                    this.tableData = response.data.data.records
+                    this.TotalPage = response.data.data.total
+                    this.IsTableLoading = false
+                    console.log(response)
           
-        }
-      }).catch(error=>{
-        this.$message.error(error.data.msg)
-        console.log(error)
-      })
+                }
+            }).catch(error=>{
+                this.$message.error(error.data.msg)
+                console.log(error)
+            })
 
-    },
-    // 页容量变化
-    handleSizeChange(val) {
-      this.PageSize = val
-      this.gettable()
-    },
-    // 切页
-    handleCurrentChange(val) {
-      this.currentPage = val
-      this.gettable()
-    },
-    // 点击删除
-    confirmtodelete(id,status){
-      this.$confirm("确定删除订单吗", '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          if(status==="未支付")this.confirmtobackbuylist(id)
-          else this.deletebyid(id)
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          })
-        });
-    },
-    // 是否返回购物车
-    confirmtobackbuylist(id){
-      console.log(id)
-      this.$confirm("是否将商品返回购物车", '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.deletebyid(id,true)
-        }).catch(() => {
-          this.deletebyid(id)
-          this.$message({
-            type: 'info',
-            message: '不返回购物车并删除'
-          })
-        });
-    },
-    //删订单
-    deletebyid(orderid,backbuylist = false){
-      // 根据id删除 请求范例 //是否返回车
-      axios.delete('/order/deletebyid',{params: {D_id:orderid,backBuyList:backbuylist}})
-      .then(response=>{
-        if(response.data.code){
-          this.$message.success(response.data.data)
-          setTimeout(() => {window.location.reload()}, 500);
-        }
-        else this.$message.error(response.data.msg)
-        console.log(response)
-      }).catch(error=>{
-        this.$message.error(error.data.msg);
-        console.log(error)
-      })
+        },
+        // 页容量变化
+        handleSizeChange(val) {
+            this.PageSize = val
+            this.gettable()
+        },
+        // 切页
+        handleCurrentChange(val) {
+            this.currentPage = val
+            this.gettable()
+        },
+        // 点击删除
+        confirmtodelete(id,status){
+            this.$confirm("确定删除订单吗", '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                if(status==="未支付")this.confirmtobackbuylist(id)
+                else this.deletebyid(id)
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                })
+            });
+        },
+        // 是否返回购物车
+        confirmtobackbuylist(id){
+            console.log(id)
+            this.$confirm("是否将商品返回购物车", '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.deletebyid(id,true)
+            }).catch(() => {
+                this.deletebyid(id)
+                this.$message({
+                    type: 'info',
+                    message: '不返回购物车并删除'
+                })
+            });
+        },
+        //删订单
+        deletebyid(orderid,backbuylist = false){
+            // 根据id删除 请求范例 //是否返回车
+            axios.delete('/order/deletebyid',{params: {D_id:orderid,backBuyList:backbuylist}})
+                .then(response=>{
+                    if(response.data.code){
+                        this.$message.success(response.data.data)
+                        setTimeout(() => {window.location.reload()}, 500);
+                    }
+                    else this.$message.error(response.data.msg)
+                    console.log(response)
+                }).catch(error=>{
+                    this.$message.error(error.data.msg);
+                    console.log(error)
+                })
 
-    },
-    // 下面是为了弹窗搞的
-    // 判断状态,是否跳转支付
-    gotopay(status,id,money,num,name){
-      if(status==="未支付"){
+        },
+        // 下面是为了弹窗搞的
+        // 判断状态,是否跳转支付
+        gotopay(status,id,money,num,name){
+            if(status==="未支付"){
         
-        this.alipay.id = id
-        this.alipay.money = money
-        this.alipay.num = num
-        this.alipay.name = name
+                this.alipay.id = id
+                this.alipay.money = money
+                this.alipay.num = num
+                this.alipay.name = name
 
-        this.dialogVisible = true
-      }else if(status==="已支付"){
-        this.$message("订单已支付")
-      }else{
-        this.$message.error("状态错误")
-      }
-    },
-    // 点确定支付
-    async final_pay(){
-      console.log(this.radio2)
-      // 判断跳转余额支付还是支付宝支付 this.radio2=1 余额 2支付宝
-      if(this.radio2==="1"){
-        // 余额支付
-        await this.moneypay(this.alipay.id)
-        // 无论支付·结果 都跳转历史交易页 // 跳转自己不会刷新 直接获取新数据
-        setTimeout(() => {this.gettable()}, 500);
-      }else{
-        // 支付宝支付
-        console.log("支付宝支付")
-        // 不拦截支付
-        sessionStorage.setItem('StopRedirectPay',"false")
-        setTimeout(() => this.$router.push(`/alipay_account?id=${this.alipay.id}&money=${this.alipay.money}&num=${this.alipay.num}&name=${this.alipay.name}`), 1000);
-      }
+                this.dialogVisible = true
+            }else if(status==="已支付"){
+                this.$message("订单已支付")
+            }else{
+                this.$message.error("状态错误")
+            }
+        },
+        // 点确定支付
+        async final_pay(){
+            console.log(this.radio2)
+            // 判断跳转余额支付还是支付宝支付 this.radio2=1 余额 2支付宝
+            if(this.radio2==="1"){
+                // 余额支付
+                await this.moneypay(this.alipay.id)
+                // 无论支付·结果 都跳转历史交易页 // 跳转自己不会刷新 直接获取新数据
+                setTimeout(() => {this.gettable()}, 500);
+            }else{
+                // 支付宝支付
+                console.log("支付宝支付")
+                // 不拦截支付
+                sessionStorage.setItem('StopRedirectPay',"false")
+                setTimeout(() => this.$router.push(`/alipay_account?id=${this.alipay.id}&money=${this.alipay.money}&num=${this.alipay.num}&name=${this.alipay.name}`), 1000);
+            }
       
-      this.dialogVisible = false
+            this.dialogVisible = false
+        },
+        async getuserinfo(){
+            await axios.get('/user/info')
+                .then(response=>{
+                    //if(response.data.code)this.$message.success("获取成功")
+                    //else this.$message.error("获取失败："+response.data.msg)
+                    this.obj = response.data.data
+                    if(this.obj.addresses===null) this.obj.addresses=[]
+                    else{
+                        // 默认地址置顶
+                        for(var i=0;i<this.obj.addresses.length;i++){
+                            if(this.obj.addresses[i].is_default){
+                                const temp = this.obj.addresses[0]
+                                this.obj.addresses[0] = this.obj.addresses[i]
+                                this.obj.addresses[i] = temp
+                            }
+                        }
+                    }
+                    return this.obj
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                    return this.obj
+                })
+        },
+        // 余额支付
+        async moneypay(order_id){
+            console.log("余额支付")
+            var result = false
+            await axios.post(`/order/payonmoney?order_id=${order_id}`)
+                .then(response=>{
+                    if(response.data.code){
+                        this.$message.success(response.data.data)
+                        //setTimeout(() => {window.location.reload()}, 500);
+                        result =  true
+                    }
+                    else {
+                        this.$message.error(response.data.msg)
+                        console.log(response)
+                        result =  false
+                    }
+                }).catch(error=>{
+                    this.$message.error(error.data.msg);
+                    console.log(error)
+                    result =  false
+                })
+            return result
+        }
     },
-    async getuserinfo(){
-    await axios.get('/user/info')
-    .then(response=>{
-      //if(response.data.code)this.$message.success("获取成功")
-      //else this.$message.error("获取失败："+response.data.msg)
-      this.obj = response.data.data
-      if(this.obj.addresses===null) this.obj.addresses=[]
-      else{
-        // 默认地址置顶
-        for(var i=0;i<this.obj.addresses.length;i++){
-          if(this.obj.addresses[i].is_default){
-            const temp = this.obj.addresses[0]
-            this.obj.addresses[0] = this.obj.addresses[i]
-            this.obj.addresses[i] = temp
-          }
-        }
-      }
-      return this.obj
-    }).catch(error=>{
-      console.log(error)
-      this.$message.error("获取失败："+error.data.msg)
-      return this.obj
-    })
-    },
-    // 余额支付
-    async moneypay(order_id){
-      console.log("余额支付")
-      var result = false
-      await axios.post(`/order/payonmoney?order_id=${order_id}`)
-      .then(response=>{
-        if(response.data.code){
-          this.$message.success(response.data.data)
-          //setTimeout(() => {window.location.reload()}, 500);
-          result =  true
-        }
-        else {
-          this.$message.error(response.data.msg)
-          console.log(response)
-          result =  false
-        }
-      }).catch(error=>{
-        this.$message.error(error.data.msg);
-        console.log(error)
-        result =  false
-      })
-      return result
-    }
-  },
-  created(){
+    created(){
     // 没数据才请求
-    if(!this.PtableData)this.gettable()
-    else {
-      this.IsTableLoading = false
-      this.tableData=  this.PtableData
+        if(!this.PtableData)this.gettable()
+        else {
+            this.IsTableLoading = false
+            this.tableData=  this.PtableData
+        }
+        this.getuserinfo()
     }
-    this.getuserinfo()
-  }
 }
 </script>
 

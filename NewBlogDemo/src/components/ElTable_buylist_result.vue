@@ -60,146 +60,146 @@
 import axios from '@/utils';
 
 export default {
-  props: {
-    columns:Array,
-    geturl:String,
-    Datas:Array,
-    showHeader:{
-      default:true
-    }
-  },
-  data() {
-    return{
-      tableData:[],
-      currentPage:1,
-      TotalPage:null,
-      PageSize:10000,
-      IsTableLoading:true,
-      val:[]
-    }
-  },
-  methods:{
+    props: {
+        columns:Array,
+        geturl:String,
+        Datas:Array,
+        showHeader:{
+            default:true
+        }
+    },
+    data() {
+        return{
+            tableData:[],
+            currentPage:1,
+            TotalPage:null,
+            PageSize:10000,
+            IsTableLoading:true,
+            val:[]
+        }
+    },
+    methods:{
     // 图片不存在 就换成默认图
-    getImagePath(imageName) {
-      // 尝试动态引入图片，如果失败，则返回默认图片
-      try {
-        return require(`@/assets/${imageName}.webp`);
-      } catch {
-        // 图片加载失败时，返回默认图片路径
-        return require('@/assets/deletedproduct.webp');
-      }
-    },
-    // 拿表
-    gettable(){
-      axios.get(this.geturl,{
-        params: {
-          currentPage: this.currentPage,
-          PageSize: this.PageSize
-        }
-      }).then(response=>{
-        if(response.data.code===0)this.$message.error(response.data.msg)
-        else {
-          this.tableData = response.data.data.records
-          this.TotalPage = response.data.data.total
-          this.IsTableLoading = false
+        getImagePath(imageName) {
+            // 尝试动态引入图片，如果失败，则返回默认图片
+            try {
+                return require(`@/assets/${imageName}.webp`);
+            } catch {
+                // 图片加载失败时，返回默认图片路径
+                return require('@/assets/deletedproduct.webp');
+            }
+        },
+        // 拿表
+        gettable(){
+            axios.get(this.geturl,{
+                params: {
+                    currentPage: this.currentPage,
+                    PageSize: this.PageSize
+                }
+            }).then(response=>{
+                if(response.data.code===0)this.$message.error(response.data.msg)
+                else {
+                    this.tableData = response.data.data.records
+                    this.TotalPage = response.data.data.total
+                    this.IsTableLoading = false
           
-        }
-      }).catch(error=>{
-        this.$message.error(error.data.msg)
-        console.log(error)
-      })
-    },
-    // 页容量变化
-    handleSizeChange(val) {
-      this.PageSize = val
-      this.gettable()
-    },
-    // 切页
-    handleCurrentChange(val) {
-      this.currentPage = val
-      this.gettable()
-    },
+                }
+            }).catch(error=>{
+                this.$message.error(error.data.msg)
+                console.log(error)
+            })
+        },
+        // 页容量变化
+        handleSizeChange(val) {
+            this.PageSize = val
+            this.gettable()
+        },
+        // 切页
+        handleCurrentChange(val) {
+            this.currentPage = val
+            this.gettable()
+        },
 
-    // 更新表格
-    updatetable(){
-      axios.post('/buylist/update',this.tableData)
-      .then(response=>{
-        if(response.data.code)this.$message.success(response.data.data)
-        else this.$message.error(response.data.msg)
-        console.log(response)
-      }).catch(error=>{
-        this.$message.error(error.data.msg);
-        console.log(error)
-      })
-    },
-    // 点击删除
-    confirmtodelete(str,id){
-      this.$confirm('确定删除'+str+"吗", '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.deletebyid(id)
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          })
-        });
-    },
-    // 根据id删除 请求范例
-    deletebyid(id){
-      axios.delete('/buylist/deletebyid',{params: {D_id:id}})
-      .then(response=>{
-        if(response.data.code){
-          this.$message.success(response.data.data)
-          setTimeout(() => {window.location.reload()}, 500);
+        // 更新表格
+        updatetable(){
+            axios.post('/buylist/update',this.tableData)
+                .then(response=>{
+                    if(response.data.code)this.$message.success(response.data.data)
+                    else this.$message.error(response.data.msg)
+                    console.log(response)
+                }).catch(error=>{
+                    this.$message.error(error.data.msg);
+                    console.log(error)
+                })
+        },
+        // 点击删除
+        confirmtodelete(str,id){
+            this.$confirm('确定删除'+str+"吗", '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.deletebyid(id)
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                })
+            });
+        },
+        // 根据id删除 请求范例
+        deletebyid(id){
+            axios.delete('/buylist/deletebyid',{params: {D_id:id}})
+                .then(response=>{
+                    if(response.data.code){
+                        this.$message.success(response.data.data)
+                        setTimeout(() => {window.location.reload()}, 500);
+                    }
+                    else this.$message.error(response.data.msg)
+                    console.log(response)
+                }).catch(error=>{
+                    this.$message.error(error.data.msg);
+                    console.log(error)
+                })
         }
-        else this.$message.error(response.data.msg)
-        console.log(response)
-      }).catch(error=>{
-        this.$message.error(error.data.msg);
-        console.log(error)
-      })
-    }
-  },
-  created(){
-    if(!this.Datas)this.gettable()
-    else {
-      this.IsTableLoading = false
-      this.tableData = JSON.parse(JSON.stringify(this.Datas))
-    }
-  },
-  // 页面关闭或者刷新不会触发beforeDestroy
-  beforeDestroy(){
+    },
+    created(){
+        if(!this.Datas)this.gettable()
+        else {
+            this.IsTableLoading = false
+            this.tableData = JSON.parse(JSON.stringify(this.Datas))
+        }
+    },
+    // 页面关闭或者刷新不会触发beforeDestroy
+    beforeDestroy(){
 
-  },
-  mounted() {
-    this.$store.state.zhezhao_show = false
-    // 刷新或关闭网页触发
-    window.onbeforeunload = () => {
-        this.updatetable();
-    } 
-  },
-  // 深层监听器
-  watch:{
+    },
+    mounted() {
+        this.$store.state.zhezhao_show = false
+        // 刷新或关闭网页触发
+        window.onbeforeunload = () => {
+            this.updatetable();
+        } 
+    },
+    // 深层监听器
+    watch:{
     // 点加减时触发
-    tableData:{
-      deep: true,
-      handler:function(){
-        for(let i=0;i<this.val.length;i++){
-        for(let j=0;j<this.tableData.length;j++){
-          if(this.val[i].id===this.tableData[j].id){
-            this.val[i].product_num = this.tableData[j].product_num;
-            break;
-          }
-        }
-      }
+        tableData:{
+            deep: true,
+            handler:function(){
+                for(let i=0;i<this.val.length;i++){
+                    for(let j=0;j<this.tableData.length;j++){
+                        if(this.val[i].id===this.tableData[j].id){
+                            this.val[i].product_num = this.tableData[j].product_num;
+                            break;
+                        }
+                    }
+                }
 
-      //console.log("watch!")
-      }
+                //console.log("watch!")
+            }
+        }
     }
-  }
 }
 </script>
 

@@ -29,30 +29,30 @@
 <script>
 
 export default {
-  components: {
-  },
-  data() {
-    return{
-      is_sanbox:false
-    }
-  },
-  methods:{
+    components: {
+    },
+    data() {
+        return{
+            is_sanbox:false
+        }
+    },
+    methods:{
 
-  },
-  mounted(){
-    this.$store.state.zhezhao_show = false
-    // 假设这里是你获取URL参数的代码
-    const id = this.$route.query.id;
-    const money = this.$route.query.money;
-    const num = this.$route.query.num;
-    const name = this.$route.query.name;
+    },
+    mounted(){
+        this.$store.state.zhezhao_show = false
+        // 假设这里是你获取URL参数的代码
+        const id = this.$route.query.id;
+        const money = this.$route.query.money;
+        const num = this.$route.query.num;
+        const name = this.$route.query.name;
 
     
-    setTimeout(() => {
-      //window.open(this.$router.resolve(`/gotopay?id=${id}&money=${money}&num=${num}&name=${name}`).href, '_blank');
-      this.$router.push(`/gotopay?id=${id}&money=${money}&num=${num}&name=${name}`)
-      }, 500); // 1000毫秒后跳转
-  }
+        setTimeout(() => {
+            //window.open(this.$router.resolve(`/gotopay?id=${id}&money=${money}&num=${num}&name=${name}`).href, '_blank');
+            this.$router.push(`/gotopay?id=${id}&money=${money}&num=${num}&name=${name}`)
+        }, 500); // 1000毫秒后跳转
+    }
 }
 </script>
 

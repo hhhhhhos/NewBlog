@@ -31,57 +31,87 @@ import Layout from '@/layout'
  * all roles can be accessed
  */
 export const constantRoutes = [
-  {
-    path: '/login',
-    component: () => import('@/views/login/index'),
-    hidden: true
-  },
+    {
+        path: '/login',
+        component: () => import('@/views/login/index'),
+        hidden: true
+    },
 
 
-  {
-    path: '/404',
-    component: () => import('@/views/404'),
-    hidden: true
-  },
+    {
+        path: '/404',
+        component: () => import('@/views/404'),
+        hidden: true
+    },
 
-  {
-    path: '/',
-    component: Layout,
-    redirect: '/dashboard',
-    children: [{
-      path: 'dashboard',
-      name: 'Dashboard',
-      component: () => import('@/views/dashboard/index'),
-      meta: { title: '控制面板', icon: 'dashboard' }
-    }]
-  },
+    {
+        path: '/gotowechat',
+        component: () => import('@/views/gotowechat'),
+        hidden: true
+    },
 
-  {
-    path: '/data',
-    component: Layout,
-    redirect: '/user',
-    name: 'Data',
-    meta: { title: '数据管理', icon: 'form' },
-    children: [
-      {
-        path: 'user',
-        name: 'Table',
-        component: () => import('@/views/data/userdata'),
-        meta: { title: '用户管理', icon: 'table' }
-      },
-      {
-        path: 'product',
-        name: 'Tree',
-        component: () => import('@/views/data/productdata'),
-        meta: { title: '商品管理', icon: 'tree' }
-      },
-      {
-        path: 'order',
-        name: 'Tree',
-        component: () => import('@/views/data/orderdata'),
-        meta: { title: '订单管理', icon: 'example' }
-      },
-      /*
+    {
+        path: '/url_scan',
+        component: () => import('@/views/url_scan'),
+        hidden: true
+    },
+
+    {
+        path: '/',
+        component: Layout,
+        redirect: '/dashboard',
+        children: [{
+            path: 'dashboard',
+            name: 'Dashboard',
+            component: () => import('@/views/dashboard/index'),
+            meta: { title: '控制面板', icon: 'dashboard' }
+        }]
+    },
+
+    {
+        path: '/data',
+        component: Layout,
+        redirect: '/user',
+        name: 'Data',
+        meta: { title: '数据管理', icon: 'form' },
+        children: [
+            {
+                path: 'front',
+                name: 'front',
+                component: () => import('@/views/data/homemanage'),
+                meta: { title: '首页管理', icon: 'example' }
+            },
+            {
+                path: 'fenlei',
+                name: 'fenlei',
+                component: () => import('@/views/data/fenleimanage'),
+                meta: { title: '分类管理', icon: 'link' }
+            },
+            {
+                path: 'biaoqian',
+                name: 'biaoqian',
+                component: () => import('@/views/data/biaoqianmanage'),
+                meta: { title: '标签管理', icon: 'form' }
+            },
+            {
+                path: 'photomanage',
+                name: 'photomanage',
+                component: () => import('@/views/data/photomanage'),
+                meta: { title: '图片管理', icon: 'nested' }
+            },
+            {
+                path: 'user',
+                name: 'Table',
+                component: () => import('@/views/data/userdata'),
+                meta: { title: '用户管理', icon: 'table' }
+            },
+            {
+                path: 'product',
+                name: 'Tree',
+                component: () => import('@/views/data/productdata'),
+                meta: { title: '文章管理', icon: 'tree' }
+            },
+            /*
       {
         path: 'productRelated',
         name: 'Tree',
@@ -89,62 +119,62 @@ export const constantRoutes = [
         meta: { title: '商品关联管理', icon: 'form' }
       }
       */
-    ]
-  },
+        ]
+    },
 
-  {
-    path: '/history',
-    component: Layout,
-    name: 'Data',
-    meta: { title: '记录管理', icon: 'table' },
-    children: [
-      {
-        path: 'visitor',
-        name: 'Form',
-        component: () => import('@/views/history/visitor'),
-        meta: { title: '访客记录', icon: 'peoples' }
-      },
+    {
+        path: '/history',
+        component: Layout,
+        name: 'Data',
+        meta: { title: '记录管理', icon: 'table' },
+        children: [
+            {
+                path: 'visitor',
+                name: 'Form',
+                component: () => import('@/views/history/visitor'),
+                meta: { title: '访客记录', icon: 'peoples' }
+            },
    
-    ]
-  },
+        ]
+    },
 
-  {
-    path: '/user',
-    component: Layout,
-    name: 'user',
-    meta: { title: '信息', icon: 'user' },
-    children: [
-      {
-        path: 'info',
-        name: 'info',
-        component: () => import('@/views/otheruserinfo/VE'),
-        meta: { title: '个人信息', icon: 'user' }
-      },
+    {
+        path: '/user',
+        component: Layout,
+        name: 'user',
+        meta: { title: '信息', icon: 'user' },
+        children: [
+            {
+                path: 'info',
+                name: 'info',
+                component: () => import('@/views/otheruserinfo/VE'),
+                meta: { title: '个人信息', icon: 'user' }
+            },
    
-    ]
-  },
+        ]
+    },
 
 
 
 
 
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+    // 404 page must be placed at the end !!!
+    { path: '*', redirect: '/404', hidden: true }
 ]
 
 const createRouter = () => new Router({
-  mode: 'history', // require service support
-  scrollBehavior: () => ({ y: 0 }),
-  routes: constantRoutes,
-  base: '/xiba-shop-admin'
+    mode: 'history', // require service support
+    scrollBehavior: () => ({ y: 0 }),
+    routes: constantRoutes,
+    base: '/xiba-newblog-admin'
 })
 
 const router = createRouter()
 
 // Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
 export function resetRouter() {
-  const newRouter = createRouter()
-  router.matcher = newRouter.matcher // reset router
+    const newRouter = createRouter()
+    router.matcher = newRouter.matcher // reset router
 }
 
 export default router

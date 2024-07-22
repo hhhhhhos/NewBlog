@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  name: 'App'
+    name: 'App'
 }
 </script>
 
@@ -16,5 +16,9 @@ export default {
 }
 .el-dropdown-menu {
   padding: 0!important;
+}
+
+.fenlei .el-form-item__label{
+    text-align: center !important;
 }
 </style>

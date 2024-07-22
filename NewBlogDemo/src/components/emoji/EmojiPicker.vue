@@ -10,17 +10,17 @@
 import emojis from './emoji-compact.json';
 
 export default {
-  name: 'EmojiPicker',
-  data() {
-    return {
-      emojis
-    };
-  },
-  methods: {
-    selectEmoji(selectedEmoji) {
-      this.$emit('emoji-selected', selectedEmoji);
+    name: 'EmojiPicker',
+    data() {
+        return {
+            emojis
+        };
+    },
+    methods: {
+        selectEmoji(selectedEmoji) {
+            this.$emit('emoji-selected', selectedEmoji);
+        }
     }
-  }
 };
 </script>
 

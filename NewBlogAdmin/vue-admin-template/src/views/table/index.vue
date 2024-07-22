@@ -46,36 +46,36 @@
 <script>
 
 export default {
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'gray',
-        deleted: 'danger'
-      }
-      return statusMap[status]
+    filters: {
+        statusFilter(status) {
+            const statusMap = {
+                published: 'success',
+                draft: 'gray',
+                deleted: 'danger'
+            }
+            return statusMap[status]
+        }
+    },
+    data() {
+        return {
+            list: null,
+            listLoading: false
+        }
+    },
+    created() {
+        this.fetchData()
+    },
+    methods: {
+        fetchData() {
+            this.list = [{
+                id: '@id',
+                title: '@sentence(10, 20)',
+                'status|1': ['published', 'draft', 'deleted'],
+                author: 'name',
+                display_time: '@datetime',
+                pageviews: '@integer(300, 5000)'
+            }]
+        }
     }
-  },
-  data() {
-    return {
-      list: null,
-      listLoading: false
-    }
-  },
-  created() {
-    this.fetchData()
-  },
-  methods: {
-    fetchData() {
-      this.list = [{
-        id: '@id',
-        title: '@sentence(10, 20)',
-        'status|1': ['published', 'draft', 'deleted'],
-        author: 'name',
-        display_time: '@datetime',
-        pageviews: '@integer(300, 5000)'
-      }]
-    }
-  }
 }
 </script>

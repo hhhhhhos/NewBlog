@@ -10,26 +10,26 @@
 
 export default {
 
-  components: {
-  },
-  data() {
-    return{
-      msg:"404 not found"
-    }
-  },
-  methods:{
-    returnhome(){
-      this.$router.push('/')
+    components: {
     },
-    setmsg(){
-      if(this.$route.query.msg) this.msg = this.$route.query.msg
-    }
+    data() {
+        return{
+            msg:"404 not found"
+        }
+    },
+    methods:{
+        returnhome(){
+            this.$router.push('/')
+        },
+        setmsg(){
+            if(this.$route.query.msg) this.msg = this.$route.query.msg
+        }
     
-  },
-  mounted(){
-    this.$store.state.zhezhao_show = false
-    this.setmsg()
-  }
+    },
+    mounted(){
+        this.$store.state.zhezhao_show = false
+        this.setmsg()
+    }
 }
 </script>
 

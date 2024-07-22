@@ -1,16 +1,16 @@
 module.exports = {
 
-  title: '西巴商城管理系统',
+    title: '西巴博客管理系统',
 
-  /**
+    /**
    * @type {boolean} true | false
    * @description Whether fix the header
    */
-  fixedHeader: false,
+    fixedHeader: false,
 
-  /**
+    /**
    * @type {boolean} true | false
    * @description Whether show the logo in sidebar
    */
-  sidebarLogo: false
+    sidebarLogo: false
 }

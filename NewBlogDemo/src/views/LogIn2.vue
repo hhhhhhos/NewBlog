@@ -24,24 +24,24 @@
 
 <script>
 export default {
-  data() {
-    return {
-      phone: '',
-      agreed: false
-    };
-  },
-  methods: {
-    login() {
-      // 实现登录逻辑
-      console.log('手机号: ' + this.phone);
-      // 确保用户同意了条款
-      if (!this.agreed) {
-        alert('请同意用户协议和隐私政策');
-        return;
-      }
-      // TODO: 实现登录逻辑
+    data() {
+        return {
+            phone: '',
+            agreed: false
+        };
+    },
+    methods: {
+        login() {
+            // 实现登录逻辑
+            console.log('手机号: ' + this.phone);
+            // 确保用户同意了条款
+            if (!this.agreed) {
+                alert('请同意用户协议和隐私政策');
+                return;
+            }
+            // TODO: 实现登录逻辑
+        }
     }
-  }
 };
 </script>
 
