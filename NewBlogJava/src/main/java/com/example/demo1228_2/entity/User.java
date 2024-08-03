@@ -26,6 +26,7 @@ public class User {
     private String age;
     private String sex;
     private String phone;
+    private String email;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -39,7 +40,7 @@ public class User {
 
     private BigDecimal money;
 
-    @Version
+    //@Version
     private Integer version; // 乐观锁版本号
 
     String wechat_unionid;
@@ -50,6 +51,11 @@ public class User {
 
     public User(String name,String password){
         this.name = name;
+        this.password = password;
+    }
+    public User(String name,String email,String password){
+        this.name = name;
+        this.email = email;
         this.password = password;
     }
 

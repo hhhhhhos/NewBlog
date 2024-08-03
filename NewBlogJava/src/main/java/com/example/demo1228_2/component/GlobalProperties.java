@@ -33,6 +33,9 @@ public class GlobalProperties {
     @Value("${openai.key}")
     public String OPENAI_KEY;
 
+    @Value("${openai.model}")
+    public String OPENAI_MODEL;
+
     @Value("${file.saveurl}")
     public String  PHOTO_SAVE_URL;
 

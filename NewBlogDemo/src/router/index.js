@@ -111,6 +111,27 @@ const routes = [
                 ]
             },
             {
+                path: 'guidang',
+                name: 'guidang',
+                component: () => import(/* webpackChunkName: "aboutu4" */ '../views/guidang/VE.vue'),
+                meta: { title: '西巴BLOG -归档' },
+
+            },
+            {
+                path: 'friend',
+                name: 'friend',
+                component: () => import(/* webpackChunkName: "aboutu4" */ '../views/friend/VE.vue'),
+                meta: { title: '西巴BLOG -友链' },
+
+            },
+            {
+                path: 'about',
+                name: 'about',
+                component: () => import(/* webpackChunkName: "aboutu4" */ '../views/about/VE.vue'),
+                meta: { title: '西巴BLOG -关于' },
+
+            },
+            {
                 path: '/other',
                 name: 'other',
                 component: () => import(/* webpackChunkName: "about9" */ '../views/other/Index.vue'),
@@ -223,7 +244,7 @@ router.beforeEach((to, from, next) => {
     const allowedPaths = ['/login', '/product','/home','/login3','/url_scan','/gotowechat','/gotopay','/user/otheruserinfo'];
   
     // 首次路径保存
-    if (!store.state.IsLogin && !allowedPaths.includes(to.path)&& to.path!=='/404'&& to.path!=='/404msg=商品未找到') {
+    if (!store.state.IsLogin && !allowedPaths.includes(to.path)&& to.path!=='/404'&& to.path!=='/404msg=未找到') {
         sessionStorage.setItem('redirectPath', to.fullPath);
         console.log("保存:"+to.fullPath)
     }

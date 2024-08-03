@@ -128,7 +128,7 @@ public class HttpService {
 
          */
         HttpClient httpClient;
-        if(false) {
+        if(true) {
             httpClient = HttpClient.newBuilder()
                     .proxy(ProxySelector.of(new InetSocketAddress("localhost", 7890))) // 设置代理
                     .build();

@@ -27,11 +27,12 @@ export default {
         // 假设这里是你获取URL参数的代码
         const code = this.$route.query.code;
         const state = this.$route.query.state;
+        console.log(state)
 
         axios.post('/user/loginByWechat',{
             code,
             state,
-            is_mobile:state.startsWith('toutie')?false:this.$store.state.IsMobile
+            is_mobile:state?state.startsWith('toutie')?false:this.$store.state.IsMobile:false
         }).then(response=>{
             if(response.data.code===0){
                 this.$message.error(response.data.msg)

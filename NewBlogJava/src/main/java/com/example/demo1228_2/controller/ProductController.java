@@ -74,6 +74,14 @@ public class ProductController {
             if(FName != null)query.like(Product::getName,FName);
             // FType不为空 筛选种类
             if(FType != null)query.eq(Product::getType,FType);
+            // 不分类时（在主页）只展示主页允许展示的
+            else query.eq(Product::getIs_on_homepage,true);
+
+            // 只展示允许展示的
+            query.eq(Product::getIs_show,true);
+
+            // 添加置顶产品优先排序条件
+            query.orderByDesc(Product::getIs_top);
 
             if(value2 != null){
                 PageQueryValue2(query, value2);
@@ -126,6 +134,8 @@ public class ProductController {
         if(id ==-1)return R.error("id为空");
         try{
             product = productmapper.selectById(id);
+            if(!product.getIs_show())return R.error("已被隐藏");
+
             if(product != null && !Tool.IsUserAdmin(session)){
                 // 浏览量加一
                 product.setVisited_num(product.getVisited_num()+1);
@@ -231,6 +241,10 @@ public class ProductController {
             if(product.getName()==null )
                 throw new CustomException("标题不能为空");
 
+            // 防空
+            if(product.getType()==null )
+                throw new CustomException("分类不能为空");
+
             //名字防重复
             if(Db.lambdaQuery(Product.class).eq(Product::getName,product.getName()).one()!=null)
                 throw new CustomException("名字已存在，添加失败");
@@ -313,7 +327,7 @@ public class ProductController {
             ObjectMapper objectMapper = new ObjectMapper();
             // 序列化
             Product product = objectMapper.readValue(product_json, Product.class);
-            log.info("{}",product);
+            //log.info("{}",product);
             // 反序列化
             //String json_str = objectMapper.writeValueAsString(product);
             //log.info(json_str);
@@ -499,6 +513,16 @@ public class ProductController {
         return response;
     }
 
+    @GetMapping("/guidang") // 归档
+    public List<Map<String,Object>> FindPageProducts2(){
+        List<Map<String,Object>> res = productmapper.selectIdNameTime();
+        res.stream().peek(item-> {
+            item.put("id", item.get("id").toString());
+        }).toList();
+        return res;
+    }
+
+
     private void PageQueryValue2(LambdaQueryChainWrapper<Product> query, String value2) {
         switch(value2){
             case "a":
@@ -517,6 +541,9 @@ public class ProductController {
                 break;
             case "f":
                 query.orderByAsc(Product::getRate);
+                break;
+            case "g":
+                query.orderByDesc(Product::getLove_list);
                 break;
             default:
                 break;

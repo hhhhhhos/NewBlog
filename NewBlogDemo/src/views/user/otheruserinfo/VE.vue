@@ -6,11 +6,11 @@
 
         <!-- 左边 头像.ID 归属地 -->
         <div style="display: flex; flex-direction: column;">
-            <img
-              style="z-index:999;margin: 0px 0px 5px 25px;z-index: 2;cursor: pointer;width:70px;height: 70px;border-radius: 90px;border: 2px solid white;background-color: white;"
-              :src="obj?.wechat_headimgurl?obj.wechat_headimgurl:target_img_src"
-              @click="$openURL2(`${obj?.wechat_headimgurl?obj.wechat_headimgurl:target_img_src}`)"
-            >
+            <headimg 
+            @click="$openURL2(`${obj?.wechat_headimgurl?obj.wechat_headimgurl:target_img_src}`)"
+            the_style="z-index:999;margin: 0px 0px 5px 25px;z-index: 2;cursor: pointer;width:70px;height: 70px;border-radius: 90px;border: 2px solid white;background-color: white;"  
+            :target_img_src="target_img_src" 
+            :obj="obj" />
           <div class="name" style="z-index: 1;margin: 0 0 0 25px; display: flex; flex-direction: column; ">
               <div style="font-weight: bold;font-size: small;position: relative;">{{obj?.wechat_nickname?obj.wechat_nickname:this.obj?.name?this.obj.name:"用户不存在"}}<img style="position: absolute;right: -30;" v-if="obj?.wechat_nickname" width="18px" height="18px" :src="require('@/assets/wechat_confirm.png')"></div>
               <div style="font-size:11px;">ID:{{this.obj?.id?this.obj.id:"未知"}}</div>
@@ -89,10 +89,12 @@
 import { Toast } from 'vant';
 import { Dialog } from 'vant';
 import axios from '@/utils'
+import headimg from '@/components/headimg/VE.vue'
 
 export default {
     name: 'MyIndex',
     components: {
+        headimg
     },
     props: {},
     data () {

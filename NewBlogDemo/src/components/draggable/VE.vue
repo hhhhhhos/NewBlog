@@ -1,21 +1,40 @@
 <template>
     <div
-      ref="draggable"
-      :style="styleObject"
-      @mousedown="startDrag"
-      @mousemove="onDrag"
-      @mouseup="endDrag"
-      @mouseleave="endDrag"
-      class="draggable"
+        ref="draggable"
+        :style="styleObject"
+        @mousedown="startDrag"
+        @mousemove="onDrag"
+        @mouseup="endDrag"
+        @mouseleave="endDrag"
+        class="draggable"
+        v-if="show"
     >
-      <slot></slot>
+        <van-icon class="icon_close"  name="close" @click="show=false"/>
+        <slot class="slot"></slot>
     </div>
 </template>
-  
+
 <script>
+import { Icon } from 'vant';
+
 export default {
+    components:{
+        'van-icon':Icon
+    },
+    props: {
+        
+        X: {
+            type: Number,
+            default: 0
+        },
+        Y: {
+            type: Number,
+            default: 0
+        }
+    },
     data() {
         return {
+            show:true,
             dragging: false,
             styleObject: {
                 position: 'fixed',
@@ -47,15 +66,29 @@ export default {
             this.dragging = false;
         },
     },
+    mounted() {
+        this.offsetX = this.X;
+        this.offsetY = this.Y;
+        this.styleObject.left = `${this.X}px`;
+        this.styleObject.top = `${this.Y}px`;
+    }
 };
 </script>
-  
-  <style>
-  .draggable {
+
+<style>
+.draggable {
     cursor: grab;
-  }
-  .draggable:active {
+}
+.draggable:active {
     cursor: grabbing;
-  }
-  </style>
-  
+}
+.icon_close{
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 3px 12px 0 0;
+    cursor: pointer;
+    font-size: 12px;
+    color: ghostwhite;
+}
+</style>

@@ -194,6 +194,7 @@ export default {
                 }
                 else{
                     console.log("not admin")
+                    this.$message.error('只允许visitor或admin角色登录')
                 }
             })
         }

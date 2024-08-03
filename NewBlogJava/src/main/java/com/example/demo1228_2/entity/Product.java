@@ -74,4 +74,10 @@ public class Product {
     private List<Long> love_list;
 
     String visible;
+
+    Boolean is_top;
+
+    Boolean is_show;
+
+    Boolean is_on_homepage;
 }

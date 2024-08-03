@@ -49,7 +49,7 @@
     <div v-else style="display: flex;justify-content: center;align-items: center;">
 
       <div>
-          <div v-if="!IsRegis" class="login-box mobile" style="background-color: rgb(243, 243, 244);">
+          <div v-if="!IsRegis" class="login-box mobile" style="background-color: rgb(243, 243, 244);border-radius: 20px;">
             <h2>用户登录</h2>
             <form>
               <input type="text" v-model=name placeholder="用户名 / 邮箱">
@@ -61,7 +61,7 @@
               </div>
               <div style="margin: 20px 0;">
                 <div style="display: inline;">
-                  <a href="#" @click="IsRegis=true">去注册</a>
+                  <a href="#" @click="$message('已暂停注册功能')">去注册</a>
                 </div>
                 <div style="display: inline;margin-left: 20px;">
                   <a @click="$alert('请用微信或邮箱登录后修改')">忘记密码</a>
@@ -76,9 +76,11 @@
           <div v-else>
             <RE @ChangeToLogin="IsRegis=false,getCaptch()"></RE>
           </div>
-          <img v-if="!IsRegis" loading="lazy" :src="require(`@/assets/wechat_login.png`)" 
-          style="width: 40px;height: 40px;object-fit: cover;cursor: pointer;margin-top: 0;"
-          @click="login_wechat()">
+          <div class="login-choices">
+            <img v-if="!IsRegis" loading="lazy" :src="require(`@/assets/wechat_login.png`)" 
+            style="width: 40px;height: 40px;object-fit: cover;cursor: pointer;margin-top: 0;"
+            @click="login_wechat()">
+          </div>
           
       </div>
 
@@ -339,7 +341,11 @@ a:hover{
     
 }
 
-
+.login-choices{
+    margin-top: 4px;
+    border-radius: 100px;
+    background-color: var(--forth-color);
+}
 
 
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div ref="scrollContainer">
+  <div style="margin: 10px;" ref="scrollContainer">
     
       <!-- 无限滚动 -->
       <van-list

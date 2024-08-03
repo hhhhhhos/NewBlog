@@ -114,7 +114,8 @@ public class UserAgentDetailsServiceImpl extends ServiceImpl<UserAgentDetailsMap
 
         // region 初始化UserAgentDetails
         // 分析userAgent
-        UserAgent userAgent = Tool.uaa.parse(userAgent_s);
+        UserAgentAnalyzer uaa = UserAgentAnalyzer.newBuilder().build();
+        UserAgent userAgent = uaa.parse(userAgent_s);
         UserAgentDetails userAgentDetails = new UserAgentDetails(userAgent);
         // 和set 7个附加信息
         userAgentDetails.setRealIp(realIp);

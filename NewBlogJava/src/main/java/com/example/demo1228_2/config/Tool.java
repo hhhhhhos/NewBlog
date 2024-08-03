@@ -3,15 +3,22 @@ package com.example.demo1228_2.config;
 import cn.hutool.extra.mail.MailAccount;
 import cn.hutool.extra.mail.MailUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.example.demo1228_2.entity.DataResult;
+import com.example.demo1228_2.entity.User;
 import com.example.demo1228_2.mapper.DataResultMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.luciad.imageio.webp.WebPWriteParam;
 import lombok.extern.slf4j.Slf4j;
 import nl.basjes.parse.useragent.UserAgentAnalyzer;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -72,14 +79,16 @@ public final class Tool {
             .version(HttpClient.Version.HTTP_2)
             .build();
 
-    // user-agent-analyze分析器单例
-    public static final UserAgentAnalyzer uaa = UserAgentAnalyzer.newBuilder().build();
+    // user-agent-analyze分析器单例 // 造成内存泄漏 不能静态
+    //public static final UserAgentAnalyzer uaa = UserAgentAnalyzer.newBuilder().build();
+
+    // 文件分析器单例
+    public static final Tika tika = new Tika();
 
     // 私有构造器，防止实例化
     private Tool() {
         throw new AssertionError("Utility class cannot be instantiated");
     }
-
 
     /**
      * 返回用户在服务器session里的ID
@@ -427,6 +436,61 @@ public final class Tool {
     }
 
     /**
+     * 获取指定路径的文件
+     *
+     * @param filePath 文件路径
+     * @return 文件对象，如果路径不存在或不是文件则返回null
+     */
+    public static ResponseEntity<Resource> getFile(String filePath) {
+        try {
+            Path fileLocation = Paths.get(PHOTO_SAVE_URL + filePath);
+            Resource resource = new UrlResource(fileLocation.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                // 设置适当的 MIME 类型
+                String mimeType = "application/octet-stream";
+
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                        .header(HttpHeaders.CONTENT_TYPE, mimeType)
+                        .body(resource);
+            } else {
+                throw new RuntimeException("File not found or not readable");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 存文件到本地 有PHOTO_SAVE_URL前缀
+     * @param file 1
+     * @param url 2
+     * @return 3
+     * @throws IOException 4
+     */
+    public static boolean saveFile2(MultipartFile file, String url) throws IOException {
+        // 获取文件名
+        String fileName = file.getOriginalFilename();
+        if (fileName == null) return false;
+
+        // 创建目标文件对象
+        File destinationFile = new File(PHOTO_SAVE_URL+url, fileName);
+
+        // 确保目标目录存在
+        if (!destinationFile.getParentFile().exists()) {
+            destinationFile.getParentFile().mkdirs();
+        }
+
+        // 保存文件
+        try (FileOutputStream fos = new FileOutputStream(destinationFile)) {
+            fos.write(file.getBytes());
+        }
+
+        return true;
+    }
+
+    /**
      * 发邮件
      * @param to 给谁
      * @param subject 标题
@@ -464,6 +528,18 @@ public final class Tool {
      */
     public static boolean isValidEmail(String email) {
         return email.matches(EMAIL_REGEX);
+    }
+
+    /**
+     * 生成数据库不存在的名字
+     * @return 名字
+     */
+    public static String generateSqlNotExistName(){
+        String rand_name;
+        do{
+            rand_name = generateRandomString(6);
+        }while(Db.lambdaQuery(User.class).eq(User::getName,rand_name).exists());
+        return rand_name;
     }
 
     /**

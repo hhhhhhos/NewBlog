@@ -20,17 +20,34 @@
                 <p style="margin: 0;padding: 0;">默认位置是top，不填就</p>
             </el-form-item>
 
-            <el-form-item label="共用首页图片">
+            <!-- 废弃了 图床支持内外网了  -->
+            <el-form-item v-if="false" label="共用首页图片">
                 <HomePagePhotoDto :c_list="dataResult.co_list"/>
             </el-form-item>
 
-            <el-form-item label="外网首页图片">
+            <!-- 废弃了 图床支持内外网了  -->
+            <el-form-item v-if="false" label="外网首页图片">
                 <HomePagePhotoDto :c_list="dataResult.en_list"/>
             </el-form-item>
 
-            <el-form-item label="内网首页图片">
+            <el-form-item label="首页大图">
                 <HomePagePhotoDto :c_list="dataResult.cn_list"/>
             </el-form-item>
+
+            
+            <el-form-item label="开关">
+                <el-switch
+                v-model=dataResult.other_stuff_map.po_add_cn
+                active-color="#13ce66"
+                inactive-color="#ff4949">
+                </el-switch>
+                <spam style="margin: 0 20px;">卡底图是否加入首页大图</spam>
+            </el-form-item>
+
+            <el-form-item label="卡底默认图">
+                <HomePagePhotoDto :c_list="dataResult.po_list"/>
+            </el-form-item>
+
             
 
             <el-form-item>
@@ -60,6 +77,7 @@ export default {
                 en_list:null,
                 cn_list:null,
                 co_list:null,
+                po_list:null,
             },
         }
     },

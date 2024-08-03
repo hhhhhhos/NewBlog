@@ -1,7 +1,7 @@
 <template>
   <div>
     
-    <!-- 电脑 -->
+    <!-- 电脑（已废弃） -->
     <div v-if="false">
       
       <div style="width: 80%;margin: 30px auto;display: flex;" class="myborder">
@@ -74,30 +74,27 @@
     <div v-else>
 
       <!--信息 -->
-      <div style="width:90%;text-align: center;margin: 25px auto 5px;background-color: white;padding-left: 10px;" class="myborder">
+      <div :style="`width:${product_width}%;text-align: center;margin: 25px auto 5px;padding-left: 10px;`" class="myborder">
         <!--题目 -->
-        <h2 style="margin-top: 25px;margin-bottom: 5px;">{{OneData.name}}&nbsp;&nbsp;</h2>
+        <h2 style="margin-top: 25px;margin-bottom: 5px;color:var(--ptext-color);">{{OneData.name}}&nbsp;&nbsp;</h2>
         
         <!--描述信息 -->
-        <div style="margin-top: 10px;">
-          <i style="color: gray;" class="el-icon-view"></i>
-          <span style="margin-left: 3px;color: #00000060;">{{OneData.visited_num}}</span>
+        <div class="color0000060" style="margin-top: 10px;">
+          <i class="el-icon-view"></i>
+          <span style="margin-left: 3px;">{{OneData.visited_num}}</span>
 
-          <i style="margin-left: 10px;color: gray;" class="el-icon-chat-round" ></i>
-          <span style="margin-left: 3px;color: #00000060;">{{$route.query.comment_num}}</span>
+          <i style="margin-left: 10px;" class="el-icon-chat-round" ></i>
+          <span style="margin-left: 3px;">{{$route.query.comment_num}}</span>
 
-          <svg  style="transform: scale(1.3);color: #00000060;display:inline;margin:2px 0px 0px 10px;cursor: pointer;" t="1636093575017" class="icon hoverable2" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3323" width="14px" height="14px">
-            <path d="M594.176 151.168a34.048 34.048 0 0 0-29.184 10.816c-11.264 13.184-15.872 24.064-21.504 40.064l-1.92 5.632c-5.632 16.128-12.8 36.864-27.648 63.232-25.408 44.928-50.304 74.432-86.208 97.024-23.04 14.528-43.648 26.368-65.024 32.576v419.648a4569.408 4569.408 0 0 0 339.072-4.672c38.72-2.048 72-21.12 88.96-52.032 21.504-39.36 47.168-95.744 63.552-163.008a782.72 782.72 0 0 0 22.528-163.008c0.448-16.832-13.44-32.256-35.328-32.256h-197.312a32 32 0 0 1-28.608-46.336l0.192-0.32 0.64-1.344 2.56-5.504c2.112-4.8 5.12-11.776 8.32-20.16 6.592-17.088 13.568-39.04 16.768-60.416 4.992-33.344 3.776-60.16-9.344-84.992-14.08-26.688-30.016-33.728-40.512-34.944zM691.84 341.12h149.568c52.736 0 100.864 40.192 99.328 98.048a845.888 845.888 0 0 1-24.32 176.384 742.336 742.336 0 0 1-69.632 178.56c-29.184 53.44-84.48 82.304-141.76 85.248-55.68 2.88-138.304 5.952-235.712 5.952-96 0-183.552-3.008-244.672-5.76-66.432-3.136-123.392-51.392-131.008-119.872a1380.672 1380.672 0 0 1-0.768-296.704c7.68-72.768 70.4-121.792 140.032-121.792h97.728c13.76 0 28.16-5.504 62.976-27.456 24.064-15.104 42.432-35.2 64.512-74.24 11.904-21.184 17.408-36.928 22.912-52.8l2.048-5.888c6.656-18.88 14.4-38.4 33.28-60.416a97.984 97.984 0 0 1 85.12-32.768c35.264 4.096 67.776 26.88 89.792 68.608 22.208 42.176 21.888 84.864 16 124.352a342.464 342.464 0 0 1-15.424 60.544z m-393.216 477.248V405.184H232.96c-40.448 0-72.448 27.712-76.352 64.512a1318.912 1318.912 0 0 0 0.64 282.88c3.904 34.752 32.96 61.248 70.4 62.976 20.8 0.96 44.8 1.92 71.04 2.816z" p-id="3324" fill="#9499a0">
-            </path>
-          </svg>
-          <span style="margin-left: 3px;color: #00000060;">{{OneData.love_list?OneData.love_list.length:0}}</span>
+          <van-icon style="margin-left: 10px;" size="17" name="good-job-o" />
+          <span style="margin-left: 3px;">{{OneData.love_list?OneData.love_list.length:0}}</span>
       
-          <span style="margin-left: 15px;color: #00000060;">{{OneData.create_time?.slice(0,10)}}</span>
+          <span style="margin-left: 15px;">{{OneData.create_time?.slice(0,10)}}</span>
         
         </div>
 
         <!--正文 -->
-        <mavon-editor class="mdshow" v-model="OneData.content"/>
+        <mavon-editor class="mdshow" v-model="OneData.content" :xssOptions="xssOptions" />
 
         <!--点赞-->
         <div class="dianzanblog" @click="send_product_zan()">
@@ -113,10 +110,10 @@
         
         
         
-        <div style="margin: 10px auto;">
-          <div style="color: #00000060;">创建时间：{{OneData.create_time?.replace('T',' ') }}</div>
-          <div style="color: #00000060;">修改时间：{{OneData.update_time?.replace('T',' ') }}</div>
-          <div style="color: #00000060;">作者：{{product_user_name }}</div>
+        <div style="margin: 10px auto;" class="color0000060">
+          <div >创建时间：{{OneData.create_time?.replace('T',' ') }}</div>
+          <div >修改时间：{{OneData.update_time?.replace('T',' ') }}</div>
+          <div >作者：{{product_user_name }}</div>
         </div>
 
       </div>
@@ -128,8 +125,8 @@
       </van-dropdown-menu>
 
       <!--评价 -->
-      <div ref="commentdiv" style="width:90%;text-align: left;margin: 10px auto;background-color: white;padding-left: 10px;" class="myborder">
-        <h3>评论<span style="font-size: small;font-weight:inherit;color: rgba(0,0,0,0.6);">（{{ `共${$refs.comment?$refs.comment.total:'..'}条` }}）</span></h3>
+      <div ref="commentdiv" :style="`width:${product_width}%;text-align: left;margin: 10px auto;padding-left: 10px;`" class="myborder">
+        <h3 style="color:var(--ptext-color);">评论<span style="font-size: small;font-weight:inherit;color: rgba(0,0,0,0.6);color:var(--ptext-color)">（{{ `共${$refs.comment?$refs.comment.total:'..'}条` }}）</span></h3>
         <div style="margin: 10px 10px 10px 10px;color: #00000060;display: none;">暂无评论</div>
         
         <!--评价骨架 -->
@@ -183,6 +180,16 @@
 
     </div>
 
+    <draggable class="drag-tool" :X=$store.state.CURRENT_WIDTH-200 :Y=200>
+        <div style="width: 100px;margin: 20px auto;" @mousedown.stop >
+            <!-- 滑动选择宽度 -->
+            <el-slider style="margin: 0;padding: 0;"
+            title="调节阅读页宽"
+            :min=50  
+            v-model="product_width"></el-slider>
+        </div>
+    </draggable>
+
 
   </div>
 </template>
@@ -200,11 +207,11 @@ import C from '@/components/comment/My_Test.vue';
 import { throttle } from 'lodash';
 import EmojiPicker from '@/components/emoji/EmojiPicker.vue';
 import { Icon } from 'vant';
-
+import draggable from '@/components/draggable/VE.vue'
 
 export default {
     components: {
-
+        draggable,
         'van-rate': Rate,
         'van-skeleton':Skeleton,
         'van-dropdown-menu':DropdownMenu,
@@ -216,6 +223,19 @@ export default {
     },
     data() {
         return{
+            product_width:80,
+            xssOptions: {
+                whiteList: {
+                    a: ["href", "title", "target", "download"],
+                    img: ["src", "alt", "width", "height"],
+                    video: ["src", "type", "controls", "width", "height", "poster"],
+                    source: ["src", "type"],
+                    br: [],
+                    div: ["class","style"],
+                    iframe: ["style","src", "scrolling", "border", "frameborder", "framespacing", "allowfullscreen","width", "height"]
+                },
+                stripIgnoreTagBody: true
+            },
             product_user_name:"未知",
             Is_Zan:false, // 你点赞没啊
             //
@@ -391,7 +411,7 @@ export default {
             if(this.mobile.query_id===null)this.mobile.query_id = this.$route.query.id // 只在首次加载初始化
             if(this.$route.query.mobile_show)this.mobile.show = true
             await axios.get(`product/getone?id=${this.mobile.query_id?this.mobile.query_id:this.$route.query.id}`).then(response=>{
-                if(response.data.data===null)this.$router.push('/404?msg=商品未找到')
+                if(response.data.data===null)this.$router.push('/404?msg=文章未找到或者被隐藏啦')
                 this.OneData = response.data.data
                 this.$nextTick(() => { // dom之后加载
                     this.is_userId_in_loveList()
@@ -539,7 +559,7 @@ export default {
         // 监听滚动
         handleScroll(){
             const rect = this.$refs.commentdiv.getBoundingClientRect();
-            console.log("元素距离视口顶部的距离:", rect.top);
+            //console.log("元素距离视口顶部的距离:", rect.top);
             if(this.$store.state.CURRENT_HEIGHT>(rect.top+200)){
                 console.log("进入评论框")
                 this.comment_margin_bottom = "0"
@@ -581,6 +601,16 @@ export default {
 
 
 <style >
+.color0000060 > i{
+    color:gray;
+    margin-right: 4px;
+}
+.color0000060{
+    color:var(--ptext-color2);
+}
+.el-input{
+    background-color: var(--el-input--bg) !important;
+}
 .hljs {
   background-color: rgb(250,250,250) !important;
 }
@@ -588,13 +618,14 @@ export default {
 .markdown-body .highlight pre, .markdown-body pre {
     padding: 16px;
     overflow: auto;
-    font-size: var(--code-size) !important;
+    font-size: 1.1rem !important;
     line-height: 1.45;
     background-color: rgb(250,250,250) !important;
     border-radius: 3px;
 }
 .v-show-content{
-  background-color: white !important;
+  background-color: var(--product-bg) !important;
+  transition:background-color 0.5s ease;
 }
 .v-note-wrapper{
   box-shadow: none !important;
@@ -614,6 +645,7 @@ export default {
 .v-note-show{
   flex:0 0 100% !important;
   border:none !important;
+  color:var(--ptext-color) !important;
 }
 input[type="text"]{
       font-size: 16px; /* 调整为至少 16px 不会触发移动端缩放 */
@@ -649,8 +681,11 @@ input[type="text"]{
 
   .myborder {
   border-radius: 5px;
-  border: 5px solid rgb(255, 255, 255);
+  border: 5px solid var(--product-bg);
   box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+  background-color: var(--product-bg);
+  transition:background-color 0.5s ease, border 0.5s ease ;
+
 }
 .el-button--medium {
     padding: 20px 40px;
@@ -721,5 +756,14 @@ input[type="text"]{
 .mc2 .el-input-number {
   line-height: 65px;
   width:130px;
+}
+.drag-tool{
+    width: 150px;
+    height: 90px;
+    background-color: var(--fifth-color);
+    border-radius: 30px;
+}
+.el-slider{
+    margin: 5px auto 0  !important;
 }
 </style>

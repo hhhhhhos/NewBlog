@@ -36,6 +36,7 @@
                 <!-- 其他文件 -->
                 <div v-else-if="column.name.includes('.')">
                     <el-image style="cursor: pointer;" 
+                    @click.native="getfile(path+column.name)"
                     :preview-src-list="[photo_forward_url + column.name]" 
                     :title=column.name class="img" :src="photo_forward_url + 'unknown_icon.png'" />
                     <p :title=column.name>{{column.name}}</p>
@@ -80,8 +81,76 @@ export default {
         }
     },
     methods:{
-        addnewphotointhisurl(){
+        async getfile(url_and_name){
+            const formData = new FormData();  
+            // 将文件添加到formData对象中  
+            formData.append('url', url_and_name);
 
+            axios.post('/photo/getfile',formData,{
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                responseType: 'blob' // 确保服务器返回的是 Blob 对象
+            })
+                .then(response=>{
+                    if(response.data){
+                        // 从响应头中获取文件名
+                        const contentDisposition = response.headers['content-disposition'];
+                        const fileNameMatch = contentDisposition && contentDisposition.match(/filename="(.+)"/);
+                        const fileName = fileNameMatch ? fileNameMatch[1] : url_and_name;
+
+                        // 创建一个 URL 对象并触发下载
+                        const url = window.URL.createObjectURL(new Blob([response.data]));
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.setAttribute('download', fileName); // 设置下载的文件名
+                        document.body.appendChild(link);
+                        link.click();
+                        link.parentNode.removeChild(link);
+                    }else 
+                        this.$message.error("获取失败")
+                    
+                })
+
+           
+        },
+        addnewphotointhisurl(){
+            this.uploadImage()
+        },
+        uploadImage() {  
+            const fileInput = document.getElementById('imageInput');  
+            if (fileInput.files && fileInput.files[0]) {  
+                const file = fileInput.files[0]; // 获取用户选择的文件 
+                if(!file || !this.path)return  this.$message.error("不能为空"); 
+        
+                // 创建一个FormData实例  
+                const formData = new FormData();  
+        
+                // 将文件添加到formData对象中  
+                formData.append('photo', file);  
+                formData.append('url', this.path);  
+        
+                // 使用Axios发送POST请求  
+                axios.post('/photo/addonebyadmin', formData, {  
+                    headers: {  
+                        // 告诉服务器我们正在发送表单数据  
+                        'Content-Type': 'multipart/form-data'  
+                        // 注意：当你使用FormData时，Axios会自动设置Content-Type为multipart/form-data，  
+                        // 所以这行代码其实是可选的，但明确指定通常是个好习惯。  
+                    }  
+                })  
+                    .then(response => {  
+                        // 处理响应  
+                        if(response.data)this.$message.success('图片上传成功:', response), this.getphotoall() 
+                        else this.$message.error("上传失败");
+                    })  
+                    .catch(error => {  
+                        // 处理错误  
+                        this.$message.error('error:', error);  
+                    });  
+            }else{
+                this.$message.error("不能为空")
+            }  
         },
         postnewfolder(){
             this.$prompt('请输入文件夹名（或文件夹路径）', '提示', {
@@ -144,7 +213,7 @@ export default {
         },
         getphotoall(){
             this.ploading = true
-            axios.get('/photo/allbyadmin?path='+this.path)
+            axios.get('/photo/all?path='+this.path)
                 .then(response=>{
                     if(response.data.code){
                         this.photo_list = response.data.data

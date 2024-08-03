@@ -53,11 +53,31 @@
           :width="column.width"
           :align="column.align"
           >
+            <template slot="header" >
+                <el-dropdown trigger="click" placement="bottom"
+                v-if="['置顶', '显示', '主页显示','分类'].some(str => column.label.includes(str))" 
+                @command="handleCommand">
+                <span class="el-dropdown-link">
+                    {{ column.label }}<i class="el-icon-arrow-down el-icon--right"></i>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="a">黄金糕</el-dropdown-item>
+                    <el-dropdown-item command="b">狮子头</el-dropdown-item>
+                    <el-dropdown-item command="c">螺蛳粉</el-dropdown-item>
+                    <el-dropdown-item command="d" disabled>双皮奶</el-dropdown-item>
+                    <el-dropdown-item command="e" divided>蚵仔煎</el-dropdown-item>
+                </el-dropdown-menu>
+                </el-dropdown>
+                <div v-else>
+                    {{ column.label }}
+                </div>
+            </template>
+
           <template slot-scope="scope" >
             <div v-if="column.label==='创建时间' || column.label==='更新时间'">{{ tableData[scope.$index][column.prop]?tableData[scope.$index][column.prop].replace(/T/g, ' '):null }}</div>
             <div v-else-if="column.label==='图像'||column.label==='略缩图'">
               <a target="_blank" :href="`${staticPath}${tableData[scope.$index][column.prop]}.webp`">
-                <img v-if="tableData[scope.$index][column.prop]" loading="lazy"  :src="`${staticPath}${tableData[scope.$index][column.prop]}.webp`" style="height:80px;width:80px;object-fit: cover;">
+                <img v-if="tableData[scope.$index][column.prop] && tableData[scope.$index][column.prop]!=='noproduct'" loading="lazy"  :src="`${staticPath}${tableData[scope.$index][column.prop]}.webp`" style="height:80px;width:80px;object-fit: cover;">
               </a>
               </div>
               <div v-else-if="column.label==='url预览'">
@@ -66,6 +86,12 @@
                     lazy
                     :preview-src-list="[tableData[scope.$index][column.prop]]"
                     :title=tableData[scope.$index][column.prop] :src=tableData[scope.$index][column.prop] />
+              </div>
+              <div v-else-if="column.label==='点赞数'">
+                {{ tableData[scope.$index][column.prop]?.length}}
+              </div>
+              <div v-else-if="column.label==='分类'">
+                {{ tableData[scope.$index][column.prop]?dataResult?.fenlei_map?.[tableData[scope.$index][column.prop]]:"none"}}
               </div>
             <div v-else>
               {{ tableData[scope.$index][column.prop]}}
@@ -93,11 +119,37 @@
         <!-- 使用el-row和el-col创建栅格布局 -->
         <el-row :gutter="20">
 
-          <el-col :span="24" v-for="(column, index) in columns" :key="index">
-            <span v-if="column.label!=='标题' && column.label!=='描述信息'&& column.label!=='大类' && column.label!=='图像url'" />
+          <el-col :span="['置顶', '显示', '主页显示'].some(str => column.label.includes(str))?3:12" v-for="(column, index) in columns" :key="index">
+            <span v-if="column.label!=='标题' && column.label!=='描述信息'&& column.label!=='分类' && column.label!=='图像url'
+            && ['置顶', '显示', '主页显示'].every(str => !column.label.includes(str))" />
+            
+            <el-form-item v-else-if="column.label==='分类'" :label="column.label" :prop="column.prop">
+                
+                <el-radio-group v-model="radio1">R
+                    <el-radio-button 
+                        v-for="(item, index) in dataResult.fenlei_map" :key="index" 
+                        @click.native="dialogdata2[column.prop]=index"
+                        :label="item">
+                    </el-radio-button>   
+                </el-radio-group>
+                <span style="margin-left: 20px;">{{  dialogdata2[column.prop] }}</span>
+
+            </el-form-item>
+
+            <el-form-item v-else-if="['置顶', '显示', '主页显示'].some(str => column.label.includes(str))" :label="column.label" :prop="column.prop">
+                
+                <el-switch
+                v-model="dialogdata2[column.prop]"
+                active-color="#13ce66"
+                inactive-color="#ff4949">
+                </el-switch>
+
+            </el-form-item>
+            
             <el-form-item v-else :label="column.label" :prop="column.prop">
               <el-input v-model="dialogdata2[column.prop]" style="max-width: 300px;"></el-input>
             </el-form-item>
+
           </el-col>
           <el-col :span="24">
             <el-form-item label="封面图像" prop="photo" >
@@ -149,7 +201,8 @@
           <el-col :span="24">
             <el-form-item label="内容" prop="content" >
                 <mavon-editor :toolbars="markdownOption"
-                ref="editor" @imgAdd="$imgAdd" @imgDel="$imgDel"  v-model="dialogdata2.content">
+                ref="editor" @imgAdd="$imgAdd" @imgDel="$imgDel"  v-model="dialogdata2.content"
+                :xssOptions="xssOptions">
                     <!-- 左工具栏后加入自定义按钮  -->
                     <template slot="left-toolbar-after">
                         <button
@@ -160,6 +213,14 @@
                             class="but"
                             :style="`${show_emojiP?'background-color:#eaeaea;':''}`"
                         >emoji
+                        </button>
+                        <button
+                            type="button"
+                            @click="confirm_change()"
+                            aria-hidden="true"
+                            title="发送文章"
+                            class="but"
+                        >提交
                         </button>
 
                         <Draggable>
@@ -229,6 +290,22 @@ export default {
     },
     data() {
         return {
+            
+            xssOptions: {
+                whiteList: {
+                    a: ["href", "title", "target", "download"],
+                    img: ["src", "alt", "width", "height"],
+                    video: ["src", "type", "controls", "width", "height", "poster"],
+                    source: ["src", "type"],
+                    br: [],
+                    div: ["class","style"],
+                    iframe: ["style","src", "scrolling", "border", "frameborder", "framespacing", "allowfullscreen","width", "height"]
+                },
+                stripIgnoreTagBody: true
+            },
+            
+            radio1:null,
+            dataResult:null,
             show_emojiP:false,
             markdownOption: {
                 bold: true, // 粗体
@@ -266,14 +343,14 @@ export default {
                 preview: true, // 预览
             },
             // region vant主页筛选商品/排序
-            value2: 'a',
-            value2_text:'默认排序',
+            value2: 'b',
+            value2_text:'时间排序',
             option2: [
                 { text: '默认排序', value: 'a' },
                 { text: '时间排序', value: 'b' },
                 { text: '访问量排序', value: 'c' },
-                { text: '销量排序', value: 'd' },
-                { text: '评分排序', value: 'e' },
+                //{ text: '销量排序', value: 'd' },
+                //{ text: '评分排序', value: 'e' },
             ],
             dropdown_isclick:false,
             //endregion
@@ -295,6 +372,8 @@ export default {
             columns : [
                 { prop: 'id', label: 'ID', width: '80' },
                 { prop: 'name', label: '标题', width: '180' },
+                { prop: 'type', label: '分类' , width: '80',align:'center' },
+                //{ prop: 'type2', label: '分类2' , width: '80' ,align:'center'},
                 { prop: 'info', label: '描述信息' },
                 //{ prop: 'content', label: '内容', width: '80' },
                 //{ prop: 'price', label: '价格', width: '80' },
@@ -307,9 +386,10 @@ export default {
                 { prop: 'photo_url', label: '图像url', width: '100',align:'center' },
                 { prop: 'photo_url', label: 'url预览', width: '100',align:'center' },
                 //{ prop: 'photo_shot', label: '略缩图', width: '100',align:'center' },
-                { prop: 'type', label: '大类' , width: '80',align:'center' },
-                { prop: 'type2', label: '同类' , width: '80' ,align:'center'},
                 { prop: 'love_list', label: '点赞数' , width: '80' ,align:'center'},
+                { prop: 'is_top', label: '置顶', width: '80' },
+                { prop: 'is_show', label: '显示', width: '80' },
+                { prop: 'is_on_homepage', label: '主页显示', width: '100' },
                 //{ prop: 'photo_list', label: '图片列表' , width: '80' ,align:'center'},
                 { prop: 'create_time', label: '创建时间', width: '180' },
                 { prop: 'update_time', label: '更新时间', width: '180' },
@@ -329,10 +409,28 @@ export default {
             "create_time":null,
             "version":null,
             "content":null,
+            "is_top":false,
+            "is_show":true,
+            "is_on_homepage":true,
         },
             radio:null,
             addresses:[],
             rules: {
+                type: [
+                    { required: true, message: '选择分类', trigger: 'blur' },
+                    { 
+                        validator: (rule, value, callback) => {
+                            // 验证是否只包含数字
+                            if (!value || value==='0') {
+                                callback(new Error('请选择'));
+                            } else {
+                                // 如果验证通过
+                                callback();
+                            }
+                        }, 
+                        trigger: 'blur'
+                    }
+                ],
                 name: [
                     { required: true, message: '请输入标题', trigger: 'blur' },
                     { 
@@ -340,9 +438,9 @@ export default {
                             // 验证是否只包含数字
                             if (!value) {
                                 callback(new Error('请输入'));
-                            } else if (value.length < 0 || value.length >= 20) {
+                            } else if (value.length < 0 || value.length >= 30) {
                                 // 验证数字是否大于0且小于1000000
-                                callback(new Error('标题必须大于0且小于20位数'));
+                                callback(new Error('标题必须大于0且小于30位数'));
                             } else {
                                 // 如果验证通过
                                 callback();
@@ -352,50 +450,7 @@ export default {
                     }
                     //{ min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
                 ],
-                price: [
-                    { required: true, message: '请输入价格', trigger: 'blur' },
-                    //{ min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
-                    { 
-                        validator: (rule, value, callback) => {
-                            // 验证是否只包含数字
-                            if (!value) {
-                                callback(new Error('请输入数字值'));
-                            } else if (!/^\d+(\.\d+)?$/.test(value)) {
-                                // 正则表达式 ^\d+$ 用于检查字符串是否只包含数字
-                                callback(new Error('只能输入数字'));
-                            } else if (value < 0 || value >= 1000000) {
-                                // 验证数字是否大于0且小于1000000
-                                callback(new Error('数字必须大于等于0且小于7位数'));
-                            } else {
-                                // 如果验证通过
-                                callback();
-                            }
-                        }, 
-                        trigger: 'blur'
-                    }
-                ],
-                num: [
-                    { required: true, message: '请输入数量', trigger: 'blur' },
-                    //{ min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
-                    { 
-                        validator: (rule, value, callback) => {
-                            // 验证是否只包含数字
-                            if (!value) {
-                                callback(new Error('请输入数字值'));
-                            } else if (!/^\d+$/.test(value)) {
-                                // 正则表达式 ^\d+$ 用于检查字符串是否只包含数字
-                                callback(new Error('只能输入数字'));
-                            } else if (value < 0 || value >= 1000000) {
-                                // 验证数字是否大于0且小于1000000
-                                callback(new Error('数字必须大于等于0且小于7位数'));
-                            } else {
-                                // 如果验证通过
-                                callback();
-                            }
-                        }, 
-                        trigger: 'blur'
-                    }
-                ],
+
             },
             rows_selection:[],
             // 弹窗2（查询弹窗）
@@ -420,8 +475,33 @@ export default {
         }
     },
     methods:{
+        getall(){
+            axios.get('/data-result/all')
+                .then(response=>{
+                    console.log(response.data)
+                    this.dataResult = response.data
+                })
+        },
         emoji_selected(emoji){
-            this.dialogdata2.content += emoji
+            console.log(this.$refs.editor.$refs)
+            //console.log(this.$refs.editor.$refs.doms)
+            const editor = this.$refs.editor.$refs.vNoteTextarea.$refs.vTextarea;
+
+            // 保存当前的光标位置
+            const cursorPos = editor.selectionStart;
+            console.log
+            const textBeforeCursor = this.dialogdata2.content.substring(0, cursorPos);
+            const textAfterCursor = this.dialogdata2.content.substring(cursorPos);
+
+            this.dialogdata2.content = textBeforeCursor + emoji + textAfterCursor;
+
+            // 将光标位置移动到插入内容之后
+            this.$nextTick(() => {
+                editor.selectionStart = cursorPos + emoji.length;
+                editor.selectionEnd = cursorPos + emoji.length;
+                editor.focus();
+            });
+            
         },
         $imgDel(){
             this.$message("不想开发这个功能，去他的（我打算用正则在提交后，把正文有的图片从temp移到文章的文件夹，然后清空temp文件夹完事）")
@@ -618,7 +698,7 @@ export default {
           // 初始化验证 // ?.防止this.$refs.form为空报错 为空不运行
           this.$refs.form?.resetFields();
 
-          this.dialog_title2 = val
+          this.dialog_title2 = "新增"
           this.dialogVisible2 = true
 
           //初始化富文本
@@ -633,7 +713,7 @@ export default {
                     return
                 }
 
-                this.$confirm('确定删除这'+(this.rows_selection.length)+'个商品吗?', '提示', {
+                this.$confirm('确定删除这'+(this.rows_selection.length)+'个吗?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
@@ -654,7 +734,7 @@ export default {
                 }
 
                 if(this.rows_selection.length!==1){
-                    this.$message.error("一次只能修改一个商品")
+                    this.$message.error("一次只能修改一个")
                     return
                 }
 
@@ -663,9 +743,11 @@ export default {
                 // 初始化验证 // ?.防止this.$refs.form为空报错 为空不运行
                 this.$refs.form?.resetFields();
                 // 初始化标题
-                this.dialog_title2 = val
+                this.dialog_title2 = '修改'
                 // 初始化图片
                 this.init_dialogdata2_photo()
+                // 初始化分类
+                this.radio1 = this.dataResult.fenlei_map[this.dialogdata2.type]
 
                 this.dialogVisible2 = true
 
@@ -692,9 +774,9 @@ export default {
             this.$refs.form.validate(result => {
                 if (result) {
                     console.log("验证通过");
-                    if(this.dialog_title2==="新增商品")
+                    if(this.dialog_title2==="新增")
                         this.axios_add()
-                    else if(this.dialog_title2==="修改商品")
+                    else if(this.dialog_title2==="修改")
                         this.axios_update()
                     else
                         this.$message.error("error")
@@ -704,16 +786,42 @@ export default {
             })
 
         },
+        // iframe 视频插入高宽
+        insert_sth_to_content(iframeHtml){
+
+            // b站视频扩长
+            if(!iframeHtml.includes('width="100%" height="600"')){
+                iframeHtml = iframeHtml.replace(
+                    /<iframe([^>]*)>/,
+                    '<iframe$1 width="100%" height="600">'
+                );
+            }
+
+            // B站视频https 高清 danmaku关
+            if(!iframeHtml.includes('&high_quality=1')){
+                iframeHtml = iframeHtml.replace(
+                    /src="(\/\/player.bilibili.com\/player.html\?.*?)"/g,
+                    'src="https://$1&high_quality=1&danmaku=0"')
+            }
+
+
+            return iframeHtml
+        },
         // 添加一个
         axios_add(){
         //this.$refs.upload.submit();
             console.log(this.$refs.upload);
             console.log(this.dialogdata2)
             console.log(this.$refs.upload.uploadFiles?.[0]?.raw)
+
+            // iframe 视频插入高宽
+            this.dialogdata2.content = this.insert_sth_to_content(this.dialogdata2.content)
+
             let formData = new FormData()
             formData.append('photo', this.$refs.upload.uploadFiles?.[0]?.raw)
             formData.append('photo_shot', this.$refs.upload2.uploadFiles?.[0]?.raw)
             formData.append('product_json',JSON.stringify(this.dialogdata2)) // 序列化
+
             axios.post('/product/addonebyadmin',formData,{
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -737,10 +845,15 @@ export default {
             console.log(this.dialogdata2)
             console.log(this.$refs.upload)
             let formData = new FormData()
+
+            // iframe 视频插入高宽
+            this.dialogdata2.content = this.insert_sth_to_content(this.dialogdata2.content)
+
             // photo只有上传了新图片才会有
             formData.append('photo', this.$refs.upload.uploadFiles?.[0]?.raw)
             formData.append('photo_shot', this.$refs.upload2.uploadFiles?.[0]?.raw)
             formData.append('product_json',JSON.stringify(this.dialogdata2)) // 序列化
+
             axios.put('/product/updateonebyadmin',formData,{
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -890,6 +1003,7 @@ export default {
     mounted(){
         this.gettablebycondition()
         this.deletetempfolder()
+        this.getall()
     },
     watch:{
         dialogVisible2:function(){
@@ -929,5 +1043,20 @@ export default {
     padding: 10px;
     overflow-y: scroll;
 }
-
+.paiming{
+    cursor: pointer;
+    position: relative
+}
+.paimingbox{
+    z-index: 99999;
+    position: absolute;
+    width:100px;
+    height: 200px;
+    background-color: aquamarine;
+}
+.el-dropdown-link{
+    color:#909399;
+    font-size: 14px;
+    cursor: pointer;
+}
 </style>

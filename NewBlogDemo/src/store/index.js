@@ -18,6 +18,7 @@ export default new Vuex.Store({
         fanorguanzhu_name:'', // 标题显示是粉丝列表还是关注列表
         userchat_name:'', // 标题显示和谁聊天
         userchat_id:'', // 和谁聊天的用户id
-        chat_badge:'' // 未读消息数量
+        chat_badge:'', // 未读消息数量
+        light_svg_show:true
     }
 })

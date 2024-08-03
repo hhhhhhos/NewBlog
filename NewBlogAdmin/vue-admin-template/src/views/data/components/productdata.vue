@@ -262,7 +262,7 @@ export default {
                     return
                 }
 
-                this.$confirm('确定删除这'+(this.rows_selection.length)+'个商品吗?', '提示', {
+                this.$confirm('确定删除这'+(this.rows_selection.length)+'个吗?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
@@ -283,7 +283,7 @@ export default {
                 }
 
                 if(this.rows_selection.length!==1){
-                    this.$message.error("一次只能修改一个商品")
+                    this.$message.error("一次只能修改一个")
                     return
                 }
 

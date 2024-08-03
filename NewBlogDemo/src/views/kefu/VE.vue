@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="test_loading">
+  <div style="margin: 10px;" v-loading="test_loading">
     <!-- 电脑 -->
     <div v-if="false">
 
@@ -44,11 +44,11 @@
             {{ column.info }}
             <div v-if="column?.product_list?.length>0" >
               <van-card
-                :num="column?.product_list[0]?.num"
-                :price="column?.product_list[0]?.price"
+
+                style="cursor: pointer;"
                 :desc="column?.product_list[0]?.info"
                 :title="column?.product_list[0]?.name"
-                :thumb="column?.product_list[0]?.photo===undefined?require(`@/assets/noproduct.webp`):require(`@/assets/${column?.product_list[0]?.photo}.webp`)"
+                :thumb="column?.product_list[0]?.photo_url?column.product_list[0].photo_url:column?.product_list[0]?.photo===undefined?require(`@/assets/noproduct.webp`):require(`@/assets/${column?.product_list[0]?.photo}.webp`)"
                 @click="$router.push(`/product?id=${column?.product_list[0]?.id}`)"
               >
               </van-card>
@@ -212,7 +212,7 @@ export default {
                 let new_message_object = {
                     time: create_time,
                     role: role,
-                    info: product_list.length===0?"啊哦，商品没找到哦":"你要找的是下面这些商品吗",
+                    info: product_list.length===0?"啊哦，没找到哦":"你要找的是下面这些文章吗",
                     product_list:product_list
                 };
                 // 加到显示列表

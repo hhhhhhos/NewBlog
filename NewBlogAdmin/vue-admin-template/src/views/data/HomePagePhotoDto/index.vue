@@ -12,7 +12,7 @@
         </div>
 
         <el-button round style="margin-top: 10px;"
-        @click="c_list.push(HomePagePhotoDto)">新增</el-button>
+        @click="c_list.push(JSON.parse(JSON.stringify(HomePagePhotoDto_empty)))">新增</el-button>
 
     </div>
   </template>
@@ -29,6 +29,10 @@ export default {
     data() {
         return {
             HomePagePhotoDto:{
+                photo_url:"",
+                background_position:""
+            },
+            HomePagePhotoDto_empty:{
                 photo_url:"",
                 background_position:""
             }

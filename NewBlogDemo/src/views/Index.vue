@@ -6,7 +6,7 @@
     <div v-if="!this.$store.state.IsMobile" class="desktop">
       <!-- 导航栏 -->
       <div class="navbar">
-        <div class="xiba">西巴の博客</div>
+        <div @click="click_notfenlei(0)" style="cursor: pointer;" class="xiba" title="西八咯嘛">西巴の博客</div>
         
         <div   
         :class="['navbarItem', 
@@ -16,32 +16,40 @@
         >
           <div v-if="column.title==='分类'" class="dropdown-toggle">
             {{ column.title }}
+            <div v-if="show_fenlei" v-click-outside="fenlei_click_outside" class="dropdown-menu">
+                <a v-show="false" class="dropdown-item" href="#" @click.stop="click_fenlei(0)">无</a>
+                <!-- Here you can render the dropdown items -->
+                <a class="dropdown-item" href="#" 
+                    v-for="(item, index) in dataResult.fenlei_map" :key="index"
+                    @click.stop="click_fenlei(index)">
+                    {{item}}
+                </a>
+            </div>
           </div>
           <div v-else>{{ column.title }}</div>
         </div>
 
-        <div v-if="show_fenlei" v-click-outside="fenlei_click_outside" class="dropdown-menu">
-              <!-- Here you can render the dropdown items -->
-              <a class="dropdown-item" href="#" @click.stop="click_fenlei(1)">技术</a>
-              <a class="dropdown-item" href="#" @click.stop="click_fenlei(2)">日常</a>
-              <a class="dropdown-item" href="#" @click.stop="click_fenlei(3)">游戏</a>
-        </div>
 
        <div class="navR">
-          <Search
-            style="width: 100%;"
-            v-model="input"
-            shape="round"
-            placeholder="search"
-            @search="clicksearch(input)"
-          />
+            <div style="display: flex;justify-content: center;align-items: center;margin-right: 10px;cursor: pointer;" title="切换明暗主题色">
+                <svg v-if="$store.state.light_svg_show" @click="switch_change(true)" t="1721842952165" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1658" width="24" height="24"><path d="M480 160V64h64v96h-64z m180.288 31.168l48-83.136 55.424 32-48 83.136-55.424-32zM512 736a224 224 0 1 0 0-448 224 224 0 0 0 0 448z m0 64a288 288 0 1 0 0-576 288 288 0 0 0 0 576z m352-320h96v64h-96v-64z m19.968-219.712l-83.136 48 32 55.424 83.136-48-32-55.424zM260.288 140.032l48 83.136 55.424-32-48-83.136-55.424 32z m-69.12 223.68l-83.136-48 32-55.424 83.136 48-32 55.424zM480 864v96h64v-96h-64zM160 480H64v64h96v-64z m-51.968 228.288l83.136-48 32 55.424-83.136 48-32-55.424z m200.256 92.544l-48 83.168 55.424 32 48-83.168-55.424-32z m400 115.168l-48-83.168 55.424-32 48 83.168-55.424 32z m92.544-200.288l83.136 48 32-55.424-83.136-48-32 55.424z" fill="#F0F8FF" p-id="1659"></path></svg>
+                <svg v-else @click="switch_change(false)" t="1721845417024" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2757" width="24" height="24"><path d="M618.496 111.616c9.216 34.304 14.336 70.656 14.336 108.032 0 228.352-184.832 413.184-413.184 413.184-37.376 0-73.728-5.12-108.544-14.336 47.616 175.616 207.872 305.152 398.848 305.152 228.352 0 413.184-184.832 413.184-413.184 0-190.976-129.024-351.232-304.64-398.848z" fill="#F0F8FF" p-id="2758"></path></svg>
+            </div> 
+            <Search
+                style="width: 100%;"
+                v-model="input"
+                shape="round"
+                placeholder="search"
+                @search="clicksearch(input)"
+            />
         </div>
 
         <!-- 用户信息 -->
         <div   
-        class="navbarItem"
-        style="margin-right: -100px;"
+        class="navbarItem login"
+        style="width: fit-content;padding: 0 10px;"
         @click="$router.push('/user/info')"
+        title="登录或查看"
         >
         {{obj?obj.wechat_nickname?obj.wechat_nickname:obj.name?obj.name:"未知":"登录"}}
         </div>
@@ -166,6 +174,7 @@ import { Search } from 'vant';
 import { throttle } from 'lodash';
 import vClickOutside from 'v-click-outside'
 
+
 const root = document.documentElement;
 
 export default {
@@ -185,6 +194,7 @@ export default {
     },
     data() {
         return{
+            dataResult:null,
             show_fenlei:false,
             input:null,
             column:null,
@@ -194,14 +204,52 @@ export default {
             navbarItem:[
                 {title:"首页",path:"/home" ,active:false},
                 {title:"分类",path:"/home?FType",active:false},
-                {title:"归档",path:"/home3",active:false},
-                {title:"友链",path:"/home4",active:false},
-                {title:"关于",path:"/home5",active:false},
+                {title:"归档",path:"/guidang",active:false},
+                {title:"友链",path:"/friend",active:false},
+                {title:"关于",path:"/about",active:false},
             ],
             obj:null,
         }
     },
     methods:{
+        // 明暗切换
+        switch_change(todark){
+            // 暗色
+            if(todark){
+                root.style.setProperty('--html-bg', '#2c3e50f8'),this.$store.state.light_svg_show = false;
+                root.style.setProperty('--shaixuan-color','#ffffff') // 筛选文字
+                root.style.setProperty('--mybordert-bg','rgb(243, 243, 244)') // 商品卡描述背景色
+                root.style.setProperty('--el-input--bg','#3a4a60') // 评论输入框bg
+                root.style.setProperty('--product-bg','#3a4a60') // product背景
+                root.style.setProperty('--ptext-color','#f0f8ff') // 标题文字色
+                root.style.setProperty('--ptext-color2','white') // 标题描述色
+                root.style.setProperty('--zhezhao-color','#2c3e50f8') // 遮罩背景色
+                root.style.setProperty('--el-loading-mask-bg','#2c3e50f8') // v-loading背景色
+                root.style.setProperty('--shadow1-color','rgba(150, 150, 150, 0.514)')
+                root.style.setProperty('--shadow2-color','rgba(150, 150, 150, 0.377)')
+            }
+            // 明色
+            else{
+                root.style.setProperty('--html-bg', 'rgb(243, 243, 244)'),this.$store.state.light_svg_show = true;
+                root.style.setProperty('--shaixuan-color','#00000060')
+                root.style.setProperty('--mybordert-bg','white')
+                root.style.setProperty('--el-input--bg','white') 
+                root.style.setProperty('--product-bg','white') 
+                root.style.setProperty('--ptext-color','none') // 继承app类颜色
+                root.style.setProperty('--ptext-color2','#00000060')
+                root.style.setProperty('--zhezhao-color','rgba(255, 255, 255, 0.949)') // 遮罩背景色 
+                root.style.setProperty('--el-loading-mask-bg','rgb(243, 243, 244)') // v-loading背景色
+                root.style.setProperty('--shadow1-color','rgba(0, 0, 0, 0.514)')
+                root.style.setProperty('--shadow2-color','rgba(0, 0, 0, 0.377)')
+            }
+        },
+        getdataresult(){
+            axios.get('/data-result/all')
+                .then(response=>{
+                    console.log(response.data)
+                    this.dataResult = response.data
+                })
+        },
         logout(){
             this.obj = null
         },
@@ -332,7 +380,11 @@ export default {
         },
     },
     mounted(){
-    // 判断导航栏初始颜色
+        //
+        this.switch_change(!this.$store.state.light_svg_show)
+
+        this.getdataresult()
+        // 判断导航栏初始颜色
         const root = document.documentElement;
         if(this.$route.path!=='/home')root.style.setProperty('--background-color2', '#2c3e50');
     
@@ -393,7 +445,7 @@ export default {
   position: absolute;
   top: 100%;
   left: 0;
-  margin-left: 350px;
+
   background-color: #2c3e50;
   border-radius: 5px;
 }
@@ -427,13 +479,11 @@ export default {
   height:60px;
   background-color: var(--background-color2);
   display: flex;
-  padding: 0 100px;
   font-weight: 550;
   position: fixed;  /* 从 relative 改为 fixed */
   top: 0;           /* 定位到页面顶部 */
   left: 0;          /* 定位到页面左边 */
   width: 100%;      /* 让导航栏宽度扩展至全屏 */
-  min-width:1200px;
   box-sizing: border-box; /* 包含内边距和边框在内 */
   transition: background-color 0.2s ease;
   z-index: 2;
@@ -443,20 +493,24 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 50px;
+  margin: auto 3vw;
+  white-space: nowrap; /* 禁止换行 */
   font-size: 20px;
 }
 .navbarItem{
   height: 100%;
-  width: 100px;
+  max-width: 100px;
+  width:8vw;
   display: flex;
   justify-content: center;
   align-items: center;
   color:aliceblue;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  white-space: nowrap; /* 禁止换行 */
   position: relative;
 }
+
 .navbarItem:hover{
   background-color: var(--hover-color);
   transition: background-color 0.2s ease;
@@ -492,6 +546,7 @@ export default {
 
 .navR{
   margin-left: auto;
+  display: flex;
 }
 .navbar .van-search {
   background-color: var(--background-color2) !important;
@@ -544,18 +599,6 @@ export default {
 </style>
 
 <style>
-:root {
-  --primary-color: #3498db;
-  --secondary-color: #2ecc71;
-  --hover-color: #ffffff2e;
-  --background-color2: #2c3e5000;
-  --code-size: 1.2rem;
-}
-
-.el-loading-mask{
-  background-color: rgb(243, 243, 244);
-}
-
 .van-overflow-hidden {
     overflow: scroll !important;
     overflow-x: hidden !important;
@@ -601,7 +644,7 @@ export default {
   width: 100%;
   height: 100%;
   z-index:9999999;
-  background-color: rgba(255, 255, 255, 0.949);
+  background-color: var(--zhezhao-color);
   display: flex;
   align-items: center;
   justify-content: center;

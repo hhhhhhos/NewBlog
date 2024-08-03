@@ -76,7 +76,10 @@
 
     <div v-else>
       
-      <img v-lazy style="height:80px;margin: 15px 0 5px 0 ;border-radius: 66px;" :src="obj.wechat_headimgurl?obj.wechat_headimgurl:require('@/assets/default_headimg1.webp')">
+        <headimg 
+      the_style="height:80px;margin: 15px 0 5px 0 ;border-radius: 66px;"  
+      :target_img_src="target_img_src" 
+      :obj="obj" />
       
       <div v-loading="isloading1" class="myborder" style="padding: 10px; width: 90vw;margin: 8px auto 15px;">
         <div class="myhover" v-for="(data,index) in this.obj" :key="index" style="text-align: left;display: flex;">
@@ -117,7 +120,7 @@
           <div v-else style="margin: 5px 5px;display: flex;font-size: small;">
             <div style="width: 100px;">{{ trans_index[index] }}</div>:
             <div style="margin:0px 20px ;">
-              <el-input v-if="index!='id' && index!='ip_location'  &&index!='create_time'&&index!='role'&&index!='addresses'&&index!='money'&&index!='version'&&index!='wechat_nickname'&&index!='wechat_unionid'&&index!='wechat_headimgurl'&&index!='email'" v-model="obj[index]" size="mini" placeholder="请输入内容"></el-input>
+              <el-input v-if="index!='id' && index!='ip_location'  &&index!='create_time'&&index!='role'&&index!='addresses'&&index!='money'&&index!='version'&&index!='wechat_nickname'&&index!='wechat_unionid'&&index!='wechat_headimgurl' " v-model="obj[index]" size="mini" placeholder="请输入内容"></el-input>
               <div v-else-if="index==='addresses'">
                 <div style="margin:0 20px 20px 20px;" v-for="(data2,index2) in data" :key="index2">
                   <div class="div-spacing">
@@ -181,10 +184,12 @@
 import axios from '@/utils'
 
 import ElA from '/src/components/ElAddress'
+import headimg from '@/components/headimg/VE.vue'
 
 export default {
     components: {
-        ElA
+        ElA,
+        headimg
     },
     data() {
         return{
@@ -193,6 +198,7 @@ export default {
                 "name":"姓名",
                 "age":"年龄",
                 "sex":"性别",
+                "email":"邮箱",
                 "phone":"电话",
                 "create_time":"创建时间",
                 "role":"角色",
@@ -271,6 +277,7 @@ export default {
                         this.$message.success(response.data.data)
                         this.isloading1 = true
                         this.isupdateinfo = false
+                        this.$store.state.UserName = this.obj.name
                         this.getuserinfo()
                         result = true
                     }
@@ -370,7 +377,7 @@ export default {
 
 <style scoped>
 .myhover:hover{
-  background-color: rgb(247,248,255);
+  background-color: var(--el-loading-mask-bg);
 }
 .div-spacing > div {
   margin-bottom: 10px;

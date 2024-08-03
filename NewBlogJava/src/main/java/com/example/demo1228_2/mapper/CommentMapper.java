@@ -37,7 +37,7 @@ public interface CommentMapper extends BaseMapper<Comment> {
      * @param product_id 商品id
      * @return List
      */
-    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl " +
+    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
             "FROM t_comment AS c " +
             "LEFT JOIN (" +
             "    SELECT user_id, SUM(purchase_total_price) AS total_spent, SUM(purchase_num) AS total_quantity " +
@@ -57,7 +57,7 @@ public interface CommentMapper extends BaseMapper<Comment> {
      * @param product_id 商品id
      * @return List
      */
-    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl " +
+    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
             "FROM t_comment AS c " +
             "LEFT JOIN (" +
             "    SELECT user_id, SUM(purchase_total_price) AS total_spent, SUM(purchase_num) AS total_quantity " +
@@ -77,7 +77,7 @@ public interface CommentMapper extends BaseMapper<Comment> {
      * @param product_id 商品id
      * @return List
      */
-    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl " +
+    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
             "FROM t_comment AS c " +
             "LEFT JOIN (" +
             "    SELECT user_id, SUM(purchase_total_price) AS total_spent, SUM(purchase_num) AS total_quantity " +
@@ -97,7 +97,7 @@ public interface CommentMapper extends BaseMapper<Comment> {
      * @param product_id 商品id
      * @return List
      */
-    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl " +
+    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
             "FROM t_comment AS c " +
             "LEFT JOIN (" +
             "    SELECT user_id, SUM(purchase_total_price) AS total_spent, SUM(purchase_num) AS total_quantity " +
@@ -117,7 +117,7 @@ public interface CommentMapper extends BaseMapper<Comment> {
      * @param product_id 商品id
      * @return List
      */
-    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl " +
+    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
             "FROM t_comment AS c " +
             "LEFT JOIN (" +
             "    SELECT user_id, SUM(purchase_total_price) AS total_spent, SUM(purchase_num) AS total_quantity " +
@@ -139,7 +139,7 @@ public interface CommentMapper extends BaseMapper<Comment> {
      * @param product_id 商品id
      * @return List
      */
-    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl " +
+    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
             "FROM t_comment AS c " +
             "LEFT JOIN (" +
             "    SELECT user_id, SUM(purchase_total_price) AS total_spent, SUM(purchase_num) AS total_quantity " +

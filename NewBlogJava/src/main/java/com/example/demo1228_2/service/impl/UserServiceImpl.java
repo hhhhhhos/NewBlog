@@ -130,6 +130,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
             user_safe.setName(user.getName());
             user_safe.setPassword(Tool.encode(user.getPassword()));
+            user_safe.setEmail(user.getEmail());
             user_safe.setRole("user");
 
             if(userMapper.insert(user_safe)!=1)

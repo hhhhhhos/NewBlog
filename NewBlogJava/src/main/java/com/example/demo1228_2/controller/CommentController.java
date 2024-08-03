@@ -237,6 +237,7 @@ public class CommentController {
                     // 一些我想加的参数
                     new_entry.put("wechat_nickname",entry.getWechat_nickname());
                     new_entry.put("wechat_headimgurl",entry.getWechat_headimgurl());
+                    new_entry.put("email",entry.getEmail());
                     new_entry.put("totalPurchaseNum",entry.getTotal_quantity());
                     new_entry.put("totalPurchasePrice",entry.getTotal_spent());
                     new_entry.put("rate",entry.getRate());

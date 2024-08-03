@@ -9,15 +9,22 @@ import com.example.demo1228_2.config.R;
 import com.example.demo1228_2.config.Tool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tika.Tika;
+
 import static com.example.demo1228_2.config.Tool.PHOTO_SAVE_URL;
+import static com.example.demo1228_2.config.Tool.tika;
 
 /**
  * <p>
@@ -35,7 +42,7 @@ public class PhotoController {
     @Autowired
     GlobalProperties globalProperties;
 
-    @GetMapping("/allbyadmin")
+    @GetMapping("/all")
     public R<List<MyFile>> getAll(@RequestParam(defaultValue = "") String path) {
         List<MyFile> fileNames = new ArrayList<>();
         File directory = new File(globalProperties.getPHOTO_SAVE_URL()+path);
@@ -77,10 +84,50 @@ public class PhotoController {
     }
 
     /**
-     * 创建文件夹在路径
-     * @param path 1
-     * @return 是否成功
+     * 上传一张图片(或文件) 保存在url
+     * @param photo 图
+     * @param url 保存地址
+     * @return 布尔是否保存成功
      */
+    @PostMapping("/addonebyadmin")
+    public Boolean FindOneProduct(MultipartFile photo,String url){
+        if (photo == null || url == null) return false;
+
+        try {
+            // 使用 Apache Tika 来检测文件类型
+            String fileType = Tool.tika.detect(photo.getInputStream());
+            log.info(fileType);
+            log.info(photo.getOriginalFilename());
+
+            if (fileType.startsWith("image/")) {
+                String name = Tool.convertToWebp(photo, "");
+                return Tool.moveFile(name, url + '/' + name);
+            } else {
+                // 处理非图片文件
+                return Tool.saveFile2(photo,url);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
+    /**
+     * 获取文件
+     * @param url 文件路径
+     * @return 文件
+     */
+    @PostMapping("/getfile")
+    public ResponseEntity<Resource> getFile(String url){
+        return Tool.getFile(url);
+    }
+
+    /**
+* 创建文件夹在路径
+* @param path 1
+* @return 是否成功
+*/
     @PostMapping("/folderbyadmin")
     public Boolean createfolder(@RequestParam String path){
         File saveDir = new File(PHOTO_SAVE_URL + path);

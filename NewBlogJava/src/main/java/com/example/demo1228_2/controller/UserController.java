@@ -149,7 +149,7 @@ public class UserController {
                     "                    <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n" +
                     "                        <thead>\n" +
                     "                        <tr>\n" +
-                    "                            <td valign=\"middle\" style=\"padding-left:30px;background-color:#415A94;color:#fff;padding:20px 40px;font-size: 21px;\">西巴商城</td>\n" +
+                    "                            <td valign=\"middle\" style=\"padding-left:30px;background-color:#415A94;color:#fff;padding:20px 40px;font-size: 21px;\">西巴BLOG</td>\n" +
                     "                        </tr>\n" +
                     "                        </thead>\n" +
                     "                        <tbody>\n" +
@@ -173,7 +173,7 @@ public class UserController {
                     "                    <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n" +
                     "                        <tbody>\n" +
                     "                        <tr>\n" +
-                    "                            <td style=\"padding:20px 40px;font-size:12px;color:#999;line-height:20px;background:#f7f7f7\"><a href=\"https://www.yjztest.top/xiba-shop/\" style=\"font-size:14px;color:#929292\">返回商城</a></td>\n" +
+                    "                            <td style=\"padding:20px 40px;font-size:12px;color:#999;line-height:20px;background:#f7f7f7\"><a href=\"https://www.yjztest.top/new_blog/\" style=\"font-size:14px;color:#929292\">返回BLOG</a></td>\n" +
                     "                        </tr>\n" +
                     "                        </tbody>\n" +
                     "                    </table>\n" +
@@ -182,7 +182,7 @@ public class UserController {
                     "        </tbody>";
 
 
-            Tool.sendEmail(email,"西巴网-商城登录注册验证码",content);
+            Tool.sendEmail(email,"西巴网-BLOG登录注册验证码",content);
             log.info("给{}发送的邮件发送成功，验证码{}",email,sixDigitNumber);
             // redis 设置验证码 过期时间30min
             try (Jedis jedis = new Jedis("localhost")) {
@@ -272,6 +272,7 @@ public class UserController {
         log.info("收到loginByWechat，code:{}",params.get("code"));
 
         // 非重复登录判断
+        /*
         if(session.getAttribute("IsLogin")!=null){
             String loginname = "";
             if(session.getAttribute("LoginName")!=null)
@@ -280,6 +281,8 @@ public class UserController {
             log.info("{}:已登录，不能重复登录",loginname);
             return R.error("已登录，不能重复登录");
         }
+        */
+
 
 
         try{
@@ -386,17 +389,18 @@ public class UserController {
                 // 是
                 if(redis_mail_code!=null && redis_mail_code.equals(code)){
                     // 是否注册
-                    if(Db.lambdaQuery(User.class).eq(User::getName,email).exists()){
+                    if(Db.lambdaQuery(User.class).eq(User::getEmail,email).exists()){
                         //是 1登录状态 2删redis
-                        userService.setLoginSession(Db.lambdaQuery(User.class).eq(User::getName,email).one(),session,request);
+                        userService.setLoginSession(Db.lambdaQuery(User.class).eq(User::getEmail,email).one(),session,request);
                         jedis.del(email);
                         return R.success("登录成功");
                     }else{
                         //否 1注册
-                        if(!userService.regis(new User(email,UUID.randomUUID().toString())).getCode().equals(1))
-                            return R.error("注册失败");
+                        R res = userService.regis(new User(Tool.generateSqlNotExistName(),email,UUID.randomUUID().toString()));
+                        if(res.getCode().equals(0))
+                            return R.error(res.getMsg());
                         // 2登录状态
-                        userService.setLoginSession(Db.lambdaQuery(User.class).eq(User::getName,email).one(),session,request);
+                        userService.setLoginSession(Db.lambdaQuery(User.class).eq(User::getEmail,email).one(),session,request);
                         // 3删redis
                         jedis.del(email);
                         return R.success("登录成功");
@@ -439,7 +443,8 @@ public class UserController {
 
     @PostMapping("/regis") // 增加user
     public R<String> AddUser(@RequestBody User user){
-        return userService.regis(user);
+        return R.error("已暂停注册功能");
+       //return userService.regis(user);
     }
 
     @PutMapping("/update") // 更新user

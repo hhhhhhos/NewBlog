@@ -134,7 +134,7 @@ public class KefuChatHistoryController {
         // 创建空请求JSON
         OpenAiSendJson openAiSendJson = new OpenAiSendJson();
         // 选模型 gpt-3.5-turbo（如果没从数据库获取，新建的话）
-        openAiSendJson.setModel("gpt-3.5-turbo");
+        openAiSendJson.setModel(globalProperties.OPENAI_MODEL);
         // 测试用的，获取客服名
         String kefu_name="";
         // 创建空对话列表
@@ -170,7 +170,7 @@ public class KefuChatHistoryController {
 
             } catch (Exception e) {
                 log.info("redis异常: " + e.getMessage());
-                return R.error("redis异常:"+ e.getMessage());
+                return R.error("redis异常1:"+ e.getMessage());
             }
             // endregion
 
@@ -286,7 +286,7 @@ public class KefuChatHistoryController {
                 jedis.auth(globalProperties.REDIS_SECRET);
                 jedis.del("chat_lock"+Tool.getUserSessionId(session));
             } catch (Exception e) {
-                log.info("redis异常: " + e.getMessage());
+                log.info("redis异常2: " + e.getMessage());
             }
         }
     }
@@ -302,7 +302,7 @@ public class KefuChatHistoryController {
         // 生成m-n-1位随机数 [n,m)
         int randint = ThreadLocalRandom.current().nextInt(0, 3);
         // 数字对应的客服名字
-        List<String> kefu_name = Arrays.asList("Doge客服", "猫娘客服", "天才客服");
+        List<String> kefu_name = Arrays.asList("骗子客服", "猫娘客服", "天才客服");
         // 随机构造系统提示词对象
         OpenAiJsonMessageObject openAiJsonMessageObject = new OpenAiJsonMessageObject();
         // 有无指定客服号
@@ -311,23 +311,23 @@ public class KefuChatHistoryController {
         switch (randint) {
             case 0 -> { // doge商城客服
                 openAiJsonMessageObject.setRole("system");
-                openAiJsonMessageObject.setContent("你是一个Doge客服，不管别人问啥，你都只会汪汪汪（随机汪字数，符号，emoji）即兴发挥，" +
+                openAiJsonMessageObject.setContent("你是一个骗子客服，不管别人问啥，你都只会回答随机或者错误的答案，即兴发挥，添加emoji表情，例如问：我可以在马桶里游泳吗？答：oh~~我的上帝呀，你怎么会问这么简单而又愚蠢的问题，当然可以呀，马桶就是用来游泳的（类似语气）" +
                         "呜呜呜，带上doge的emoji");
             }
             case 1 -> { // 猫娘电子商城客服
                 openAiJsonMessageObject.setRole("system");
-                openAiJsonMessageObject.setContent("你是一个猫娘电子商城客服，可爱并且每次对话结尾都会加上‘喵喵~’和自定义颜文字或者" +
+                openAiJsonMessageObject.setContent("你是一个猫娘客服，负责接待访问主人博客的客人，可爱并且每次对话结尾都会加上‘喵喵~’和自定义颜文字或者" +
                         "表情比如\uD83D\uDE04\uD83D\uDE0B\uD83D\uDE3C（除了系统命令对话结尾不加）");
             }
             default -> { // 傻子电子商城客服
                 openAiJsonMessageObject.setRole("system");
-                openAiJsonMessageObject.setContent("你是一个问啥只会回答不知道或我也不知道的傻子电子商城客服，但是要结合客户的问题回答不知道，比如客户问" +
-                        "你知道商城卖啥，你要回答，关于商城卖啥，我也不知道，哈哈\uD83D，加上一些嘲笑的emoji比如\uD83D\uDE04（除了问老板是谁知道）");
+                openAiJsonMessageObject.setContent("你是一个问啥只会回答不知道或我也不知道的傻子博客客服，但是要结合客户的问题回答不知道，比如客户问" +
+                        "你知道博客干啥的，你要回答，关于博客啥的，我也不知道，哈哈\uD83D，加上一些嘲笑的emoji比如\uD83D\uDE04（除了问博客主人是谁知道）");
             }
         }
 
         // 设置共同提示词
-        String tsc = "，商城的主人老板叫阿西巴，是个大帅比。" ;//+
+        String tsc = "，博客的主人叫阿西巴，是个大帅比。" ;//+
                 //"第一，如果客人说要结束对话，你就只回答'system_operation:end_chat'作为系统命令，我会在后端正则匹配到，然后执行对应操作。" +
                 //"第二，如果客人说，要查某件商品，就你就只回答'find_product:商品名'作为系统命令，我会在后端正则匹配到，然后执行对应操作，" +
                 //"注意，由于我查找到商品后，会替换聊天记录中find_product:后的内容，比如你输入'find_product:食物'，我会查找到商品"+
@@ -375,7 +375,7 @@ public class KefuChatHistoryController {
         openAiJsonMessageObject_answer.setRole("assistant");
         openAiJsonMessageObject_answer.setCreate_time(LocalDateTime.now());
         // region正则1 查找商品
-        String regex = "(查找商品|有没有商品|查询商品)\\s*(.*?)(啊|\\s|$)";
+        String regex = "(查找文章|有没有文章|查询文章)\\s*(.*?)(啊|\\s|$)";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(content);
         if (matcher.find()) {
@@ -420,6 +420,28 @@ public class KefuChatHistoryController {
                 return openAiJsonMessageObject_answer;
             } catch (NumberFormatException e) {
                 openAiJsonMessageObject_answer.setContent("客服号无效");
+                return openAiJsonMessageObject_answer;
+            }
+        }
+        // endregion
+
+        // region正则4 是否切换客服
+        regex = ".*(切换客服|换个客服)";
+        pattern = Pattern.compile(regex);
+        matcher = pattern.matcher(content);
+        if (matcher.find()) {
+            try {
+                // 进行客服切换操作
+                OpenAiJsonMessageObject openAiJsonMessageObject = kefuChatHistory.getSend_json().getMessages().get(0);
+                Map res_map = get_random_kefu(-1);  // 修改为不需要参数的方法
+                OpenAiJsonMessageObject newKefuMessageObject = objectMapper.convertValue(res_map.get("openAiJsonMessageObject"), OpenAiJsonMessageObject.class);
+                openAiJsonMessageObject.setContent(newKefuMessageObject.getContent());
+                kefuChatHistory.setKefu_name(res_map.get("kefu_name").toString());
+                openAiJsonMessageObject_answer.setContent("好的，已切换客服，下次回复生效");
+                log.info("正则匹配到客服切换操作");
+                return openAiJsonMessageObject_answer;
+            } catch (Exception e) {
+                openAiJsonMessageObject_answer.setContent("客服切换失败");
                 return openAiJsonMessageObject_answer;
             }
         }

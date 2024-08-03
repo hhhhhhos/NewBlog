@@ -18,4 +18,6 @@ public class CommentOrderUserRateDto extends Comment {
     String wechat_nickname;
 
     String wechat_headimgurl;
+
+    String email;
 }

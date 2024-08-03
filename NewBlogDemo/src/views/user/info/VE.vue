@@ -3,11 +3,11 @@
     
     <div style="display: flex;background-color: rgb(54, 170, 237);">
       
-      <img
-        style="margin: 20px 0 25px 25px;cursor: pointer;width:70px;height: 70px;border-radius: 90px;border: 2px solid white;"
-        :src="obj?.wechat_headimgurl?obj.wechat_headimgurl:target_img_src"
-        @click="$router.push('/user/info/details')"
-      >
+      <headimg 
+      the_style="margin: 20px 0 25px 25px;cursor: pointer;width:70px;height: 70px;border-radius: 90px;border: 2px solid white;"  
+      :target_img_src="target_img_src" 
+      :obj="obj" />
+      
       <div style="margin:35px 0 0 15px ;display: block;justify-content: left;">
         
         <div style="display: flex;">  
@@ -72,10 +72,12 @@ import { Cell } from 'vant';
 import { Dialog } from 'vant';
 import axios from '@/utils'
 import { Icon } from 'vant';
+import headimg from '@/components/headimg/VE.vue'
 
 export default {
     name: 'MyIndex',
     components: {
+        headimg,
         'van-cell':Cell,
         'van-icon':Icon,
 

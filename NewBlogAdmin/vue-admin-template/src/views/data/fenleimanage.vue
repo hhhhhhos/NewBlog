@@ -1,7 +1,7 @@
 <template>
     <div class="fenlei">
 
-        <el-button type="primary" @click="new_item='',new_index='',dialogtitle='新增',dialogVisible = true">新增分类</el-button>
+        <el-button type="primary" @click="add_re(),dialogtitle='新增',dialogVisible = true">新增分类</el-button>
 
         <el-table
             :data="tableData"
@@ -10,6 +10,12 @@
                 prop="key"
                 align="center"
                 label="分类数字"
+                width="80">
+            </el-table-column>
+            <el-table-column
+                align="center"
+                prop="color"
+                label="分类颜色"
                 width="80">
             </el-table-column>
             <el-table-column
@@ -52,6 +58,10 @@
                     <el-input style="width: 300px;" v-model="new_item"></el-input>
                 </el-form-item>
 
+                <el-form-item label="类名颜色">
+                    <el-input style="width: 300px;" v-model="new_color"></el-input>
+                </el-form-item>
+
             </el-form>
 
             <span slot="footer" class="dialog-footer">
@@ -84,29 +94,42 @@ export default {
             },
             new_index:null,
             new_item:null,
+            new_color:null,
             dialogVisible:false,
             dialogtitle:"",
             row:null,
         }
     },
     methods:{
+        add_re(){
+            this.new_item='',
+            this.new_index='',
+            this.new_color=''
+        },
         handleDelete(index, row){
             delete this.dataResult.fenlei_map[row.key]
             this.updateall()
         },
         handleEdit(index, row){
             this.row=row
-            this.new_item=row.value,this.new_index=row.key,this.dialogtitle='修改'
+            this.new_item=row.value,
+            this.new_index=row.key,
+            this.new_color=row.color
+            this.dialogtitle='修改'
             this.dialogVisible = true
         },
         addorupdate(){
             if(!this.new_index || !this.new_item) return this.$message.error("为空")
             if(this.dialogtitle==='新增' && this.dataResult.fenlei_map[this.new_index]) return this.$message.error("index已存在，小心覆盖")
-            if(this.dialogtitle==='新增')
+            if(this.dialogtitle==='新增'){
                 this.dataResult.fenlei_map[this.new_index] = this.new_item
-            else{
+                this.dataResult.fenlei_color_map[this.new_index] = this.new_color
+            }else{
                 delete this.dataResult.fenlei_map[this.row.key]
                 this.dataResult.fenlei_map[this.new_index] = this.new_item
+
+                delete this.dataResult.fenlei_color_map[this.row.key]
+                this.dataResult.fenlei_color_map[this.new_index] = this.new_color
             }
             this.updateall()
         },
@@ -117,7 +140,7 @@ export default {
                     this.dataResult = response.data
                     var new_tableData = []
                     for (let [key, value] of Object.entries(this.dataResult.fenlei_map)) {
-                        new_tableData.push({ key: key, value: value });
+                        new_tableData.push({ key: key, value: value ,color:this.dataResult.fenlei_color_map[key]});
                     }
                     this.tableData = JSON.parse(JSON.stringify(new_tableData))
                 })

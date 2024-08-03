@@ -170,6 +170,7 @@ export default {
                 { prop: 'name', label: '姓名', width: '80' },
                 { prop: 'wechat_nickname', label: '微信名', width: '80' },
                 { prop: 'wechat_headimgurl', label: '微信头像', width: '100' },
+                { prop: 'email', label: '邮箱'},
                 { prop: 'age', label: '年龄', width: '80' },
                 { prop: 'sex', label: '性别', width: '80' },
                 { prop: 'phone', label: '电话', width: '80' },

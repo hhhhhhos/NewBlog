@@ -8,15 +8,10 @@
 
     <!-- 头像 .手机显示-->
     <div v-else class="mobile" style="position: absolute;cursor: pointer;" @click="scope_local.user_id===$store.state.UserId?$router.push('user/info'):$router.push(`/user/otheruserinfo?user_id=${scope_local.user_id}`)">
-      <van-image
-        v-if="scope_local.wechat_headimgurl!==null"
-        round
-        width="2.5rem"
-        height="2.5rem"
-        :src="scope_local.wechat_headimgurl"
-        :error-icon="require(`@/assets/wechat_confirm.jpg`)"
-      />
-      <el-avatar v-else size="large" :src="require(`@/assets/default_headimg5.webp`)" fit="fill"></el-avatar>
+        <headimg 
+      the_style="height:40px;width:40px;border-radius:20px;cursor:pointer"  
+      :target_img_src="require(`@/assets/default_headimg5.webp`)" 
+      :obj="scope_local" />
     </div>
 
     <!-- 评论框 -->
@@ -26,7 +21,7 @@
       <div style="margin-left: 50px;">
         <!-- 第一行 用户名 微信授权 评分 已购买.父评论-->
         <div v-if="!amisub || true" style="font-size: 13px;color: #61666D;margin: 0 0 4px;">
-            <span style="cursor: pointer;" @click="scope_local.user_id===$store.state.UserId?$router.push('user/info'):$router.push(`/user/otheruserinfo?user_id=${scope_local.user_id}`)">
+            <span style="cursor: pointer;color:var(--ptext-color);" @click="scope_local.user_id===$store.state.UserId?$router.push('user/info'):$router.push(`/user/otheruserinfo?user_id=${scope_local.user_id}`)">
               <span v-if="scope_local.wechat_nickname!==null" >{{ scope.wechat_nickname }} </span>
               <span v-else>{{ scope.name }} </span>
             </span>
@@ -54,7 +49,7 @@
 
         <!-- 评论内容 -->
         <div style="font-size:15px;color: #18191C;margin: 22px 0 10px;">
-          <i v-if="scope.is_top" class="top-icon">置顶</i>{{ scope.info }}
+          <i v-if="scope.is_top" class="top-icon">置顶</i><spam style="color:var(--ptext-color);">{{ scope.info }}</spam>
         </div>
 
         <!-- 日期 点赞 回复 下拉查看子评论 .电脑显示-->
@@ -249,18 +244,20 @@ import axios from '@/utils';
 import { Toast } from 'vant';
 import { Rate } from 'vant';
 import { Tag } from 'vant';
-import { Image as VanImage } from 'vant';
+//import { Image as VanImage } from 'vant';
 import { Dialog } from 'vant';
+import headimg from '@/components/headimg/VE.vue'
 
 export default {
     name: 'CoM',
     components: {
     //sendwinc
+        headimg,
         'van-popup':Popup,
         EmojiPicker,
         'van-rate': Rate,
         'van-tag':Tag,
-        'van-image':VanImage
+        //'van-image':VanImage
     },
     props: {
         product_id:null,

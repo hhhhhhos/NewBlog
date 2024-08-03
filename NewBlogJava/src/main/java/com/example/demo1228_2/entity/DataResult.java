@@ -64,9 +64,18 @@ public class DataResult implements Serializable {
     private List<HomePagePhotoDto> co_list;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<HomePagePhotoDto> po_list;
+
+    @TableField(typeHandler = JacksonTypeHandler.class)
     private Map<String,String> fenlei_map;
 
     @TableField(typeHandler = JacksonTypeHandler.class)
+    private Map<String,String> fenlei_color_map;
+
+    @TableField(typeHandler = JacksonTypeHandler.class)
     private Map<String,String> biaoqian_map;
+
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private Map<String,Object> other_stuff_map;
 
 }

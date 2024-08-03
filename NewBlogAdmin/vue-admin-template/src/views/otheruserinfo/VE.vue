@@ -97,10 +97,14 @@ export default {
             await axios.get('/user/session')
                 .then(response=>{
                     console.log(response.data)
-                    this.name = response.data?.[0].slice(6)
-                    this.$store.state.app.UserId =  response.data[3].slice(9)
-                    console.log("!!!!!!!"+response.data[3].slice(9))
-                    console.log("name = response.data")
+                    for(const str of response.data){
+                        console.log(str)
+                        if(str.startsWith('LoginName'))
+                            this.name = str.slice(9)
+                        if(str.startsWith('IsLogin'))
+                            this.$store.state.app.UserId =  str.slice(8)
+                    }
+
                 }).catch(error=>{
                     this.$message.error("error")
                     console.log(error)

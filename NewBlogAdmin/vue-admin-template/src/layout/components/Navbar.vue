@@ -17,7 +17,7 @@
             </el-dropdown-item>
           </router-link>
           <a target="_blank" :href=url>
-            <el-dropdown-item>商城首页</el-dropdown-item>
+            <el-dropdown-item>前台首页</el-dropdown-item>
           </a>
           <div @click="searchsession">
             <el-dropdown-item>session</el-dropdown-item>
