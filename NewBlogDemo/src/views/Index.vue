@@ -3,7 +3,7 @@
   <div>
 
     <!-- 电脑 -->
-    <div v-if="!this.$store.state.IsMobile" class="desktop">
+    <div v-if="!this.$store.state.IsMobile" class="desktop my-wrapper">
       <!-- 导航栏 -->
       <div class="navbar">
         <div @click="click_notfenlei(0)" style="cursor: pointer;" class="xiba" title="西八咯嘛">西巴の博客</div>
@@ -19,11 +19,11 @@
             <div v-if="show_fenlei" v-click-outside="fenlei_click_outside" class="dropdown-menu">
                 <a v-show="false" class="dropdown-item" href="#" @click.stop="click_fenlei(0)">无</a>
                 <!-- Here you can render the dropdown items -->
-                <a class="dropdown-item" href="#" 
+                <div class="dropdown-item" 
                     v-for="(item, index) in dataResult.fenlei_map" :key="index"
                     @click.stop="click_fenlei(index)">
                     {{item}}
-                </a>
+                </div>
             </div>
           </div>
           <div v-else>{{ column.title }}</div>
@@ -62,7 +62,7 @@
     </div>
 
     <!-- 手机端 -->
-    <div v-else>
+    <div v-else class="my-wrapper">
       <!-- 返回头标 -->
       <div v-if="true" class="demo-nav" style="">
         <div class="demo-nav__title">{{this.$route.meta.title.replace("席巴商城 -","")}}
@@ -173,7 +173,7 @@ import { Dialog } from 'vant';
 import { Search } from 'vant';
 import { throttle } from 'lodash';
 import vClickOutside from 'v-click-outside'
-
+import { allowedPaths } from '@/router'
 
 const root = document.documentElement;
 
@@ -289,7 +289,7 @@ export default {
                 return
             }
             // 更新滚动高度
-            console.log("当前滚动:"+window.scrollY)
+            //console.log("当前滚动:"+window.scrollY)
             if(window.scrollY>200){
                 root.style.setProperty('--background-color2', '#2c3e50');
             }else{
@@ -401,7 +401,6 @@ export default {
         axios.get('/user/name')
             .then(response=>{
                 if(response.data.code){
-        
                     this.$store.state.IsLogin = true
                     this.$store.state.UserName = response.data.data
                     this.$store.state.UserId = response.data.map.user_id
@@ -410,6 +409,12 @@ export default {
                     //this.$message.error("error:"+response.data.msg);
                     this.$store.state.IsLogin = false
                     this.target_img_src = require('@/assets/default_headimg5.webp')
+                    if(!allowedPaths.includes(this.$route.path)){
+                        this.$router.push('/login')
+                    }
+                    //console.log('路径研究')
+                    //onsole.log(this.$route.path)
+                    //console.log(this.$route.fullPath)
                 }
             })
             .catch(error=>{
@@ -599,6 +604,10 @@ export default {
 </style>
 
 <style>
+.my-wrapper{
+    position: relative; 
+    z-index: 20; 
+}
 .van-overflow-hidden {
     overflow: scroll !important;
     overflow-x: hidden !important;

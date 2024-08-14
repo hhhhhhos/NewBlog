@@ -422,7 +422,7 @@ export default {
                     else if(this.dialog_title2==="修改用户")
                         this.axios_update()
                     else
-                        this.$message.error("error")
+                        this.$message.error('error')
                 } else{
                     console.log("验证失败");
                 }
@@ -458,7 +458,7 @@ export default {
                     }
                 }).catch(error=>{
                     if(error.data?.msg)this.$message.error(error.data.msg)
-                    else this.$message.error("error")
+                    else this.$message.error(error)
                     console.log(error)
                 })
         },

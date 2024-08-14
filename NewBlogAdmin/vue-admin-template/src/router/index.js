@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from '@/store'
 
 Vue.use(Router)
 
@@ -76,6 +77,12 @@ export const constantRoutes = [
         meta: { title: '数据管理', icon: 'form' },
         children: [
             {
+                path: 'product',
+                name: 'Tree',
+                component: () => import('@/views/data/productdata'),
+                meta: { title: '文章管理', icon: 'tree' }
+            },
+            {
                 path: 'front',
                 name: 'front',
                 component: () => import('@/views/data/homemanage'),
@@ -99,18 +106,6 @@ export const constantRoutes = [
                 component: () => import('@/views/data/photomanage'),
                 meta: { title: '图片管理', icon: 'nested' }
             },
-            {
-                path: 'user',
-                name: 'Table',
-                component: () => import('@/views/data/userdata'),
-                meta: { title: '用户管理', icon: 'table' }
-            },
-            {
-                path: 'product',
-                name: 'Tree',
-                component: () => import('@/views/data/productdata'),
-                meta: { title: '文章管理', icon: 'tree' }
-            },
             /*
       {
         path: 'productRelated',
@@ -122,22 +117,36 @@ export const constantRoutes = [
         ]
     },
 
+    
     {
-        path: '/history',
+        path: '/user',
         component: Layout,
         name: 'Data',
-        meta: { title: '记录管理', icon: 'table' },
+        meta: { title: '用户管理', icon: 'peoples' },
         children: [
+            {
+                path: 'allinfo',
+                name: 'Table',
+                component: () => import('@/views/data/userdata'),
+                meta: { title: '用户管理', icon: 'peoples' }
+            },
             {
                 path: 'visitor',
                 name: 'Form',
                 component: () => import('@/views/history/visitor'),
                 meta: { title: '访客记录', icon: 'peoples' }
             },
+            {
+                path: 'selfinfo',
+                name: 'info',
+                component: () => import('@/views/otheruserinfo/VE'),
+                meta: { title: '个人信息', icon: 'user' }
+            },
    
         ]
     },
 
+    /*
     {
         path: '/user',
         component: Layout,
@@ -153,6 +162,7 @@ export const constantRoutes = [
    
         ]
     },
+    */
 
 
 
@@ -176,5 +186,30 @@ export function resetRouter() {
     const newRouter = createRouter()
     router.matcher = newRouter.matcher // reset router
 }
+
+// 在完成路由跳转后执行一些逻辑
+router.afterEach((to, from) => {
+
+    // 示例：输出一条日志
+    console.log(`Navigated from ${from.path} to ${to.path}`);
+    if(to.fullPath!=='/login')sessionStorage.setItem('redirectPath', to.fullPath);
+
+    // 在这里可以执行其他需要在路由跳转后进行的操作
+});
+
+// 在完成路由跳转后执行一些逻辑
+router.beforeEach((to, from, next) => {
+    // 示例：输出一条日志
+    console.log(`Ready to navigate from ${from.path} to ${to.path}`);
+
+    // login
+    if(!store.state.app.UserId && to.path!=='/login'){
+        console.log("状态未登录:"+store.state.app.UserId)
+        router.push('/login')
+    }
+
+    next();
+});
+
 
 export default router

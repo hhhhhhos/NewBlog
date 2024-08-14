@@ -76,7 +76,7 @@
       
       <div class="item_in" v-for="(column, index) in this.obj" :key="index">
         <div v-if="index!=='last_visited_time' && index!=='version' &&index!=='id' && index!=='addresses' && index!=='password' && index!=='wechat_unionid' && index!=='wechat_headimgurl' && index!=='wechat_nickname'" style="display: flex;">
-          <div style="width: 100px;">{{trans_index[index]}}:</div><span>{{ index==='create_time'?column.replace('T',' '):column }}</span>
+          <div style="width: 100px;">{{trans_index[index]?trans_index[index]:index}}:</div><span>{{ index==='create_time'?column.replace('T',' '):column }}</span>
         </div>
       </div>
 

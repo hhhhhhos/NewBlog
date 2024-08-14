@@ -16,7 +16,13 @@
                 align="center"
                 prop="color"
                 label="分类颜色"
-                width="80">
+                width="120">
+                <template slot-scope="scope">
+                    <div class="juzhong">
+                        <p class="juzhong" :style="`margin-right:5px;width: 16px;height: 16px;background-color: ${scope.row.color};`"></p>
+                        <p class="juzhong" >{{ scope.row.color }}</p>
+                    </div>
+                </template>
             </el-table-column>
             <el-table-column
                 align="center"
@@ -58,9 +64,19 @@
                     <el-input style="width: 300px;" v-model="new_item"></el-input>
                 </el-form-item>
 
+
                 <el-form-item label="类名颜色">
-                    <el-input style="width: 300px;" v-model="new_color"></el-input>
+                    <div>
+                        <div style="display: flex; align-items: center;">
+                            <el-input style="width: 300px;" v-model="new_color"></el-input>
+                            <div class="card-type" :style="`background-color: ${new_color};`">
+                                <div> {{ new_item }} </div>
+                            </div>
+                        </div>
+                        <p style="margin-top: 5px;">颜色必须十六进制，不填默认#555555</p>
+                    </div>
                 </el-form-item>
+
 
             </el-form>
 
@@ -170,6 +186,27 @@ export default {
 <style scoped>
 .fenlei{
     margin: 40px;
+}
+.juzhong{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.card-type{
+    margin-left: 20px;
+    padding: 7px 0;
+    width: 120px;
+    /*background-color: #555;*/
+    color:white;
+    font-weight: bold;
+    font-size: 1rem; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.514), 0 0 6px rgba(0, 0, 0, 0.377);
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: normal !important;
+    font-weight: 700 !important;
 }
 
 </style>

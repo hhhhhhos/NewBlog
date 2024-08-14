@@ -79,7 +79,7 @@ public final class Tool {
             .version(HttpClient.Version.HTTP_2)
             .build();
 
-    // user-agent-analyze分析器单例 // 造成内存泄漏 不能静态
+    // user-agent-analyze分析器单例
     //public static final UserAgentAnalyzer uaa = UserAgentAnalyzer.newBuilder().build();
 
     // 文件分析器单例

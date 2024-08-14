@@ -8,10 +8,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import eu.bitwalker.useragentutils.Browser;
+import eu.bitwalker.useragentutils.OperatingSystem;
+import eu.bitwalker.useragentutils.UserAgent;
 import lombok.Data;
-import nl.basjes.parse.useragent.UserAgent;
+
 
 import java.time.LocalDateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Data //自动生成get set方法
 @TableName(value = "t_user_agent_details", autoResultMap = true)
@@ -81,9 +86,42 @@ public class UserAgentDetails {
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime create_time;
 
+    String user_agent;
+
     public UserAgentDetails(){}
 
-    public UserAgentDetails(UserAgent userAgent) {
+    public UserAgentDetails(UserAgent userAgent,String user_agent) {
+
+        /*
+        System.out.println("操作系统名: " + userAgent.getOperatingSystem().getName() + ", ");
+        System.out.println("操作系统设备类型: " + userAgent.getOperatingSystem().getDeviceType() + ", ");
+        System.out.println("操作系统制造商: " + userAgent.getOperatingSystem().getManufacturer() + ", ");
+        System.out.println("是否为移动设备: " + userAgent.getOperatingSystem().isMobileDevice() + ", ");
+        System.out.println("浏览器名: " + userAgent.getBrowser().getName() + ", ");
+        System.out.println("浏览器版本: " + userAgent.getBrowserVersion() + ", ");
+        System.out.println("浏览器类型: " + userAgent.getBrowser().getBrowserType() + ", ");
+        System.out.println("浏览器组: " + userAgent.getBrowser().getGroup() + ", ");
+        System.out.println("浏览器制造商: " + userAgent.getBrowser().getManufacturer() + ", ");
+        System.out.println("UserAgent ID: " + userAgent.getId() + ", ");
+        System.out.println("UserAgent 字符串: " + userAgent.toString());
+        */
+
+        Pattern pattern = Pattern.compile("(?:\\b(?:OS|NT|Version|Android)\\s*)(\\d+(?:[._]\\d+)+)");
+        Matcher matcher = pattern.matcher(user_agent);
+        if(matcher.find()){
+            //System.out.println("版本号: " + matcher.group(1));
+        }
+
+        this.deviceClass = userAgent.getOperatingSystem().getDeviceType().toString();
+        this.deviceBrand = userAgent.getOperatingSystem().getManufacturer().toString();
+        this.deviceFirmwareVersion = matcher.group(1);
+        this.operatingSystemName = userAgent.getOperatingSystem().getName();
+        this.operatingSystemVersion = matcher.group(1);
+        this.agentName = userAgent.getBrowser().getName();
+        this.agentVersion = userAgent.getBrowserVersion().toString();
+
+
+        /*
         this.deviceClass = userAgent.getValue("DeviceClass");
         this.deviceName = userAgent.getValue("DeviceName");
         this.deviceBrand = userAgent.getValue("DeviceBrand");
@@ -115,5 +153,7 @@ public class UserAgentDetails {
         this.webviewAppNameVersionMajor = userAgent.getValue("WebviewAppNameVersionMajor");
         this.networkType = userAgent.getValue("NetworkType");
         this.syntaxError = Boolean.parseBoolean(userAgent.getValue("__SyntaxError__"));
+
+         */
     }
 }

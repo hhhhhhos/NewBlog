@@ -71,10 +71,10 @@
     </div>
 
     <!-- 手机 -->
-    <div v-else>
+    <div v-else-if="!is404">
 
       <!--信息 -->
-      <div :style="`width:${product_width}%;text-align: center;margin: 25px auto 5px;padding-left: 10px;`" class="myborder">
+      <div v-if="!pinglun_id" :style="`width:${product_width}%;text-align: center;margin: 25px auto 5px;padding-left: 10px;`" class="myborder">
         <!--题目 -->
         <h2 style="margin-top: 25px;margin-bottom: 5px;color:var(--ptext-color);">{{OneData.name}}&nbsp;&nbsp;</h2>
         
@@ -113,14 +113,14 @@
         <div style="margin: 10px auto;" class="color0000060">
           <div >创建时间：{{OneData.create_time?.replace('T',' ') }}</div>
           <div >修改时间：{{OneData.update_time?.replace('T',' ') }}</div>
-          <div >作者：{{product_user_name }}</div>
+          <div style="cursor: pointer;" title="查看作者信息" @click="$router.push(`/user/otheruserinfo?user_id=${obj.user_id}`)">作者：{{ obj?.user_wechat_nickname?obj.user_wechat_nickname:obj?.user_name }}</div>
         </div>
 
       </div>
 
 
       <!-- 筛选排序 -->
-      <van-dropdown-menu :style="`position: relative;margin-bottom: -3px;margin-left: ${$store.state.IsMobile?'-5px;':'3%;'}`" class="my">
+      <van-dropdown-menu :style="`position: relative;margin-bottom: -3px;margin-left: ${left()}px;`" class="my">
         <van-dropdown-item v-model="value2" :options="option2" @closed="dropdown_closed(value2)" @change="dropdown_isclick = true"/>
       </van-dropdown-menu>
 
@@ -146,6 +146,12 @@
 
 
 
+    </div>
+
+    <!-- 找不到文章或隐藏 -->
+    <div v-else-if="is404" style="margin-top: 30vh;color:darkgray;">
+        <svg  t="1722757539374" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6006" width="32" height="32"><path d="M59.37 0l-0.17 0.02C26.488 0.132 0 25.8 0 57.52v907.09a59.374 59.374 0 0 0 59.37 59.37h905.59a59.374 59.374 0 0 0 59.38-59.37V57.52c0-31.72-26.488-57.388-59.2-57.5l-0.18-0.02H59.37z m676.9 63.92a32.016 32.016 0 0 1 0 64.03H96.12a32.01 32.01 0 0 1 0-64.02h639.99l0.16-0.01z m96.02 0a32.025 32.025 0 0 1 0.03 64.05 32.025 32.025 0 1 1-0.03-64.05z m96.02 0a32.025 32.025 0 0 1 0.04 64.05 32.025 32.025 0 1 1-0.04-64.05zM62.38 195.39h896.21v736.16a32.008 32.008 0 0 1-32.01 32.02H94.39a32.008 32.008 0 0 1-32.01-32.02V195.39z m463.09 191.63c-39.16 0-68.447 12.452-87.88 37.29-19.453 24.838-29.17 58.049-29.17 99.51 0 41.5 9.717 74.683 29.17 99.54 19.433 24.838 48.72 37.27 87.88 37.27s68.447-12.432 87.88-37.27c19.453-24.838 29.17-58.04 29.17-99.54 0-41.461-9.717-74.653-29.17-99.51-19.453-24.838-48.74-37.29-87.88-37.29z m-256.49 0.12l-95.37 161.89v46.65h107.64v65.44h57.44v-65.44h30.26v-52.9h-30.26v-47.82h-57.44v47.82h-37.93l90.79-155.64h-65.13z m507.23 0l-95.37 161.89v46.65h107.64v65.44h57.45v-65.44h30.26v-52.9h-30.26v-47.82h-57.45v47.82h-37.93l90.79-155.64h-65.13z m-250.76 48.74c18.906 0 32.823 8.054 41.72 24.19 8.917 16.175 13.38 37.483 13.38 63.96 0 26.477-4.463 47.785-13.38 63.94-8.897 16.136-22.814 24.21-41.72 24.21s-32.813-8.074-41.71-24.21c-8.917-16.155-13.39-37.463-13.39-63.94 0-26.477 4.473-47.785 13.39-63.96 8.897-16.136 22.804-24.19 41.71-24.19z" p-id="6007"></path></svg>
+        <p>啥都没有诶..</p>
     </div>
 
     <!--评论 -->
@@ -180,12 +186,13 @@
 
     </div>
 
-    <draggable class="drag-tool" :X=$store.state.CURRENT_WIDTH-200 :Y=200>
+    <draggable v-if="!pinglun_id" class="drag-tool" :X=$store.state.CURRENT_WIDTH-$store.state.CURRENT_WIDTH*0.15 :Y=200>
         <div style="width: 100px;margin: 20px auto;" @mousedown.stop >
             <!-- 滑动选择宽度 -->
             <el-slider style="margin: 0;padding: 0;"
             title="调节阅读页宽"
-            :min=50  
+            :min=30  
+            :max=95
             v-model="product_width"></el-slider>
         </div>
     </draggable>
@@ -210,6 +217,11 @@ import { Icon } from 'vant';
 import draggable from '@/components/draggable/VE.vue'
 
 export default {
+    props: {
+        pinglun_id: {
+            type: String,
+        },
+    },
     components: {
         draggable,
         'van-rate': Rate,
@@ -223,7 +235,9 @@ export default {
     },
     data() {
         return{
-            product_width:80,
+            obj:{},// product返回体的map
+            is404:false,
+            product_width:50,
             xssOptions: {
                 whiteList: {
                     a: ["href", "title", "target", "download"],
@@ -283,6 +297,10 @@ export default {
         }
     },
     methods:{
+        left(){
+            console.log(this.$store.state.CURRENT_WIDTH*(1-this.product_width*0.01)*0.5-50 )
+            return this.$store.state.CURRENT_WIDTH*(1-this.product_width*0.01)*0.5-25
+        },
         is_userId_in_loveList(){
             axios.get('/user/name')
                 .then(response=>{
@@ -408,16 +426,26 @@ export default {
         async test(){
             console.log(this.$route.query.id)
             console.log("mobile_show:"+this.$route.query.mobile_show)
-            if(this.mobile.query_id===null)this.mobile.query_id = this.$route.query.id // 只在首次加载初始化
+            if(!this.mobile.query_id){
+                this.mobile.query_id = this.$route.query.id // 只在首次加载初始化
+                if(this.pinglun_id){
+                    this.mobile.query_id = this.pinglun_id // 作为组件时
+                    console.log('this.pinglun_id'+this.pinglun_id)
+                }
+            }
             if(this.$route.query.mobile_show)this.mobile.show = true
             await axios.get(`product/getone?id=${this.mobile.query_id?this.mobile.query_id:this.$route.query.id}`).then(response=>{
-                if(response.data.data===null)this.$router.push('/404?msg=文章未找到或者被隐藏啦')
+                if(response.data.data===null){
+                    this.$store.state.zhezhao_show = false
+                    this.is404 = true
+                    return this.$message.error('不存在或被隐藏')
+                }
                 this.OneData = response.data.data
                 this.$nextTick(() => { // dom之后加载
                     this.is_userId_in_loveList()
                 });
                 this.IsTableLoading = false
-                this.product_user_name = response.data.map.user_name
+                this.obj = response.data.map
                 this.mobile.rate_click_value = response.data.map.rate_value
                 this.mobile.rate_num = response.data.map.rate_num
                 console.log(response)
@@ -589,6 +617,10 @@ export default {
         this.throttlehandleScroll = throttle(this.handleScroll,300) // 节流
         window.addEventListener('scroll', this.throttlehandleScroll);
         document.addEventListener('click', this.handleOutsideClick);
+        if(this.pinglun_id)this.product_width = 95
+        else if(this.$store.state.CURRENT_WIDTH>1400)this.product_width = 50
+        else if(this.$store.state.CURRENT_WIDTH>900)this.product_width = 80
+        else this.product_width = 95
         this.test()
     },
     beforeDestroy(){

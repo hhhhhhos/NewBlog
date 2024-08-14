@@ -62,7 +62,7 @@
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:15px;" @click.native.prevent="handleLogin">登录</el-button>
 
       <div style="display: flex;justify-content: center;align-items: center;margin-top: 0;padding-top: 0;">
-        <img class="weixin" v-if="!IsRegis" loading="lazy" :src="require(`@/assets/wechat_login.png`)" 
+        <img class="weixin"  loading="lazy" :src="require(`@/assets/wechat_login.png`)" 
             style="width: 40px;height: 40px;object-fit: cover;cursor: pointer;margin-top: 0;border-radius: 20px;"
         @click="login_wechat()">
       </div>
@@ -153,9 +153,12 @@ export default {
                 if (valid) {
                     this.loading = true
                     this.$store.dispatch('user/login', this.loginForm).then(() => {
+                        console.log('到validate(') 
+                        setToken(123)
                         this.$router.push({ path: this.redirect || '/' })
                         this.loading = false
-                    }).catch(() => {
+                    }).catch(res => {
+                        console.log(res)
                         this.loading = false
                         this.getCaptch()
                     })
@@ -186,16 +189,29 @@ export default {
         },
         getsession(){
             axios.get('/user/session').then(response=>{
+                console.log('this is index')
                 console.log(response.data)
                 console.log(response.data[0])
-                if(response.data[0]==="Role: admin"){
-                    setToken(123)
-                    this.$router.push({ path: this.redirect || '/' })
+                if(response.data.code===0){
+                    console.log('未登录啥也不做')
+                }else{
+                    if(response.data.length>0){
+                        console.log('大于0settoken')
+                        response.data.forEach(item=>{
+                            if(item.includes("IsLogin: "))
+                                this.$store.state.app.UserId = item.replace("IsLogin: ","")
+                        })
+                        setToken(123)
+                        const redirect = sessionStorage.getItem('redirectPath') || '/';
+                        sessionStorage.removeItem('redirectPath'); // 清除保存的路径
+                        console.log("跳转："+redirect)
+                        return this.$router.push(redirect); 
+                    }
                 }
-                else{
-                    console.log("not admin")
-                    this.$message.error('只允许visitor或admin角色登录')
-                }
+
+                
+            }).catch(error=>{
+                alert(error)
             })
         }
     },

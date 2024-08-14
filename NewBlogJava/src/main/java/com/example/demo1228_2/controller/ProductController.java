@@ -134,7 +134,7 @@ public class ProductController {
         if(id ==-1)return R.error("id为空");
         try{
             product = productmapper.selectById(id);
-            if(!product.getIs_show())return R.error("已被隐藏");
+            if(!product.getIs_show() && !Tool.IsUserAdmin(session)  && !Tool.getUserSessionId(session).equals(product.getUser_id()))return R.error("已被隐藏");
 
             if(product != null && !Tool.IsUserAdmin(session)){
                 // 浏览量加一
@@ -146,9 +146,14 @@ public class ProductController {
             return R.error(e.getMessage());
         }
 
+        User user = userMapper.selectById(product.getUser_id());
+        if(user==null)user = new User();
         //log.info("{},{}",averageRate,productRateList.size());
-        return R.success(product).add("user_name",userMapper.selectById(product.getUser_id()).getName())
-                .add("rate_num",product.getRate_num());
+        return R.success(product)
+                .add("user_name",user.getName())
+                .add("rate_num",product.getRate_num())
+                .add("user_id",user.getId().toString())
+                .add("user_wechat_nickname",user.getWechat_nickname());
     }
 
     @GetMapping("/getalltye2") // 查所有相同type2商品
@@ -343,8 +348,8 @@ public class ProductController {
             Product db_product = productService.getById(product.getId());
 
             // 改名了，就检查名字防重复
-            if(!db_product.getName().equals(product.getName()) && Db.lambdaQuery(Product.class).eq(Product::getName,product.getName()).one()!=null)
-                throw new CustomException("名字已存在，添加失败");
+            //if(!db_product.getName().equals(product.getName()) && Db.lambdaQuery(Product.class).eq(Product::getName,product.getName()).one()!=null)
+            //    throw new CustomException("名字已存在，添加失败");
 
 
             // 有删除（或者本身是noproduct）
@@ -505,6 +510,14 @@ public class ProductController {
             page = new Page<>(Long.parseLong(params.get("currentPage")),Long.parseLong(params.get("PageSize")));
         // 执行分页查询
         Page<Product> result = query.page(page);
+        List newRe = result.getRecords().stream().map(item->{
+            Map<String,Object> new_item;
+            new_item = objectMapper.convertValue(item,Map.class);
+            new_item.put("user_name",userMapper.selectById(item.getUser_id())!=null?
+                    userMapper.selectById(item.getUser_id()).getName():"");
+            return new_item;
+        }).collect(Collectors.toList());
+        result.setRecords(newRe);
 
         // map返回筛选
         R<Page<Product>> response = R.success(result);
@@ -514,8 +527,10 @@ public class ProductController {
     }
 
     @GetMapping("/guidang") // 归档
-    public List<Map<String,Object>> FindPageProducts2(){
-        List<Map<String,Object>> res = productmapper.selectIdNameTime();
+    public List<Map<String,Object>> FindPageProducts2(@RequestParam(defaultValue = "-1") int type,
+                                                      @RequestParam(defaultValue = "") String is){
+        List<Map<String,Object>> res;
+        res = productmapper.selectIdNameTime3(type,is);
         res.stream().peek(item-> {
             item.put("id", item.get("id").toString());
         }).toList();

@@ -61,13 +61,22 @@
 
                 <svg v-if="product.is_top" style="position: absolute;right: 0;margin: -5px -5px 0 0;" t="1722121138299" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4266" width="24" height="24"><path d="M951.296 424.96L1024 352.256 671.744 0 599.04 72.704l70.144 70.656-168.96 168.96a296.96 296.96 0 0 0-286.72 75.264L143.36 458.24 72.704 387.584 0 460.8l245.248 245.248-139.776 139.776 72.704 72.704 140.288-140.288L563.2 1024l72.704-72.704-70.144-70.656 70.144-70.144a296.96 296.96 0 0 0 75.776-287.232l168.96-168.96z" fill="#333333" p-id="4267"></path></svg>
         
-                <div class="card-type">
+                <div class="card-type" 
+                v-if="true"
+                :style="`background-color:${dataResult.fenlei_color_map[product.type]?dataResult.fenlei_color_map[product.type]:'#555555'} ;`">
                     <div>
                         {{dataResult.fenlei_map[product.type]}}
                     </div>
 
-                    <div class="card-type-triangle" />
+                    <div 
+                    v-if="false"
+                    :style="`border-color:${darkenColor(dataResult.fenlei_color_map[product.type]?dataResult.fenlei_color_map[product.type]:'#555555', 20)} ${darkenColor(dataResult.fenlei_color_map[product.type]?dataResult.fenlei_color_map[product.type]:'#555555', 20)}  transparent transparent;`" 
+                    class="card-type-triangle" />
                 </div>
+
+                <div 
+                    :style="`border-color:${darkenColor(dataResult.fenlei_color_map[product.type]?dataResult.fenlei_color_map[product.type]:'#555555', 20)} ${darkenColor(dataResult.fenlei_color_map[product.type]?dataResult.fenlei_color_map[product.type]:'#555555', 20)}  transparent transparent;`" 
+                    class="card-typetriangle" />
             
                 <div class="card-out"
                 @click="cardclick(product.id,product.comment_num)"
@@ -328,6 +337,23 @@ export default {
         }
     },
     methods:{
+        darkenColor(hex, percent) {
+            // 移除 # 符号（如果存在）
+            hex = hex.replace(/^#/, '')
+            
+            // 将十六进制转换为 RGB
+            let r = parseInt(hex.substr(0, 2), 16)
+            let g = parseInt(hex.substr(2, 2), 16)
+            let b = parseInt(hex.substr(4, 2), 16)
+            
+            // 计算加深后的值
+            r = Math.floor(r * (100 - percent) / 100)
+            g = Math.floor(g * (100 - percent) / 100)
+            b = Math.floor(b * (100 - percent) / 100)
+            
+            // 转换回十六进制
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+        },
         extractText(input) {
             let result
             // 移除形如 ![](URL) 的图片链接
@@ -358,21 +384,19 @@ export default {
         },
         onMouseEnter(event) {
             this.initialX = event.clientX;
-            console.log("enter!!!!!")
         },
         onMouseMove(event) {
             if(this.donghua)this.donghua=''
-            console.log(this.backgroundPositionX)
+            //console.log(this.backgroundPositionX)
             const windowWidth = window.innerWidth;
             const currentX = event.clientX;
             const deltaX = currentX - this.initialX;
             const maxOffset = 2.5; // 最大偏移量 vx px
-            console.log("deltaX:"+deltaX)
+            //console.log("deltaX:"+deltaX)
 
             this.backgroundPositionX = deltaX * (maxOffset / windowWidth) + this.Xmove
         },
         onMouseLeave() {
-            console.log("leave!!!!!")
             setTimeout(() => {
                 this.backgroundPositionX = this.Xmove; // 复位到初始位置
             }, 300); // 监听器延迟 防止复位失败
@@ -739,28 +763,39 @@ export default {
 .card-type{
     position: absolute;
     top: 5vh;
-    margin-left: -40px;
-    padding: 10px 0;
+    margin-left: -35px;
+    padding: 7px 0;
     width: 120px;
-    background-color: #555;
+    /*background-color: #555;*/
     color:white;
     font-weight: bold;
     font-size: 1rem; 
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.514), 0 0 6px rgba(0, 0, 0, 0.377);
-    z-index: 1;
+    z-index: 2;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 .card-type-triangle {
     position: absolute;
-    bottom: -30px;
+    bottom: -23.5px;
     left: 0;
     width: 0;
     height: 0;
     border-style: solid;
-    border-width: 15px 20px 15px 20px; /* 顺序是：上、右、下、左 */
-    border-color:  #555 #555 transparent transparent; /* 设置颜色 */
+    border-width: 12px 17.5px 12px 17.5px; /* 顺序是：上、右、下、左 */
+    z-index: 0;
+    /*border-color:  #555 #555 transparent transparent;  设置颜色 */
+}
+.card-typetriangle {
+    position: absolute;
+    top: 5vh;
+    margin-left: -35px;
+    margin-top: 35px;
+    border-style: solid;
+    border-width: 12px 18px 12px 18px; /* 顺序是：上、右、下、左 */
+    z-index: 0;
+    /*border-color:  #555 #555 transparent transparent;  设置颜色 */
 }
 
 .card-out{
@@ -778,6 +813,7 @@ export default {
   cursor: pointer;
   margin: 0;
   box-shadow: 0 2px 4px var(--shadow1-color), 0 0 6px var(--shadow2-color);
+  z-index: 1;
 }
 .card-right-out{
     width: 80%;

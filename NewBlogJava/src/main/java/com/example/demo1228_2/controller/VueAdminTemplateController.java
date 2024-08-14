@@ -50,8 +50,8 @@ public class VueAdminTemplateController {
             if(!Tool.matches(user.getPassword(),db_user.getPassword()))
                 throw new CustomException("密码错误");
 
-            if(!db_user.getRole().equals("admin") && !db_user.getRole().equals("visitor"))
-                throw new CustomException("用户无后台登录权限");
+            //if(!db_user.getRole().equals("admin") && !db_user.getRole().equals("visitor"))
+            //   throw new CustomException("用户无后台登录权限");
 
             // 验证码验证
             userService.login_check_before(user.getCaptch(),session);
@@ -60,7 +60,7 @@ public class VueAdminTemplateController {
             log.info("设置session登录IsLogin为用户Id");
             userService.setLoginSession(db_user,session,request);
 
-            return new R<>(20000,null,vueAdminToken );
+            return new R<>(20000,Tool.getUserSessionId(session).toString(),vueAdminToken );
 
         }catch (Exception e){
             log.info("异常:{}",e.getMessage());

@@ -48,7 +48,7 @@ service.interceptors.response.use(
         // if the custom code is not 20000, it is judged as an error.
         if (res.code !== 20000) {
             Message({
-                message: res.message || 'Error',
+                message: res.msg||res.message || 'Error',
                 type: 'error',
                 duration: 5 * 1000
             })
@@ -68,6 +68,9 @@ service.interceptors.response.use(
             }
             return Promise.reject(new Error(res.message || 'Error'))
         } else {
+            store.state.app.UserId = res.message
+            console.log('res:')
+            console.log(res)
             return res
         }
     },

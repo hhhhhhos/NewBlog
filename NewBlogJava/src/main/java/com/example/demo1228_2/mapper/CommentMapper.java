@@ -57,18 +57,11 @@ public interface CommentMapper extends BaseMapper<Comment> {
      * @param product_id 商品id
      * @return List
      */
-    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
+    @Select("SELECT c.*, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
             "FROM t_comment AS c " +
-            "LEFT JOIN (" +
-            "    SELECT user_id, SUM(purchase_total_price) AS total_spent, SUM(purchase_num) AS total_quantity " +
-            "    FROM t_order2 " +
-            "    WHERE product_id = #{product_id} " +
-            "    GROUP BY user_id" +
-            ") AS o ON c.user_id = o.user_id " +
-            "LEFT JOIN t_product_rate AS r ON c.user_id = r.user_id AND c.product_id = r.product_id " +
             "LEFT JOIN t_user AS u ON c.user_id = u.id " +
             "WHERE c.product_id = #{product_id} AND (c.father_comm_id = 0 OR c.father_comm_id IS NULL) " +
-            "ORDER BY c.create_time DESC " // 次排序create_time
+            "ORDER BY c.is_top DESC, c.create_time DESC " // 次排序create_time
     )
     IPage<CommentOrderUserRateDto> selectByProductIdLeftJoinOrderByTime(Page<CommentOrderUserRateDto> page, Long product_id);
 
@@ -97,15 +90,8 @@ public interface CommentMapper extends BaseMapper<Comment> {
      * @param product_id 商品id
      * @return List
      */
-    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
+    @Select("SELECT c.*, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
             "FROM t_comment AS c " +
-            "LEFT JOIN (" +
-            "    SELECT user_id, SUM(purchase_total_price) AS total_spent, SUM(purchase_num) AS total_quantity " +
-            "    FROM t_order2 " +
-            "    WHERE product_id = #{product_id} " +
-            "    GROUP BY user_id" +
-            ") AS o ON c.user_id = o.user_id " +
-            "LEFT JOIN t_product_rate AS r ON c.user_id = r.user_id AND c.product_id = r.product_id " +
             "LEFT JOIN t_user AS u ON c.user_id = u.id " +
             "WHERE c.product_id = #{product_id} AND c.father_comm_id = #{father_comm_id} " +
             "ORDER BY c.love_list DESC, create_time DESC "
@@ -117,18 +103,11 @@ public interface CommentMapper extends BaseMapper<Comment> {
      * @param product_id 商品id
      * @return List
      */
-    @Select("SELECT c.*, o.total_spent, o.total_quantity, r.rate, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
+    @Select("SELECT c.*, u.name, u.wechat_nickname, u.wechat_headimgurl, u.email " +
             "FROM t_comment AS c " +
-            "LEFT JOIN (" +
-            "    SELECT user_id, SUM(purchase_total_price) AS total_spent, SUM(purchase_num) AS total_quantity " +
-            "    FROM t_order2 " +
-            "    WHERE product_id = #{product_id} " +
-            "    GROUP BY user_id" +
-            ") AS o ON c.user_id = o.user_id " +
-            "LEFT JOIN t_product_rate AS r ON c.user_id = r.user_id AND c.product_id = r.product_id " +
             "LEFT JOIN t_user AS u ON c.user_id = u.id " +
             "WHERE c.product_id = #{product_id} AND (c.father_comm_id = 0 OR c.father_comm_id IS NULL) " +
-            "ORDER BY c.love_list DESC, create_time DESC " // 次排序create_time
+            "ORDER BY c.is_top DESC, c.love_list DESC, create_time DESC " // 次排序create_time
             )
     IPage<CommentOrderUserRateDto> selectByProductIdLeftJoinOrderByLike(Page<CommentOrderUserRateDto> page, Long product_id);
 

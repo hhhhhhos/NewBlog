@@ -303,9 +303,6 @@ export default {
                 .then(response=>{
                     console.log(response.data)
                     this.name = response.data?.[0].slice(6)
-                    this.$store.state.app.UserId =  response.data?.[0].Is
-                    console.log("!!!!!!!"+response.data?.[0].IsLogin)
-                    console.log("name = response.data")
                 }).catch(error=>{
                     this.$message.error("error")
                     console.log(error)

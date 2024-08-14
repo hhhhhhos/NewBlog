@@ -209,6 +209,11 @@ const routes = [
     }
 ]
 
+// 前端登录跳转
+export const allowedPaths = ['/login', '/product','/home','/login3','/url_scan','/gotowechat','/gotopay','/user/otheruserinfo'
+    ,'/friend','/guidang','/about'
+];
+
 const router = new VueRouter({
     routes,
     mode: 'history',
@@ -240,8 +245,6 @@ router.beforeEach((to, from, next) => {
         document.title = to.meta.title
     }
 
-    // 前端登录跳转
-    const allowedPaths = ['/login', '/product','/home','/login3','/url_scan','/gotowechat','/gotopay','/user/otheruserinfo'];
   
     // 首次路径保存
     if (!store.state.IsLogin && !allowedPaths.includes(to.path)&& to.path!=='/404'&& to.path!=='/404msg=未找到') {

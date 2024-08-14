@@ -9,9 +9,11 @@ import com.example.demo1228_2.mapper.UserAgentDetailsMapper;
 import com.example.demo1228_2.mapper.UserMapper;
 import com.example.demo1228_2.service.IUserAgentDetailsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import eu.bitwalker.useragentutils.Browser;
+import eu.bitwalker.useragentutils.OperatingSystem;
+import eu.bitwalker.useragentutils.UserAgent;
 import lombok.extern.slf4j.Slf4j;
-import nl.basjes.parse.useragent.UserAgent;
-import nl.basjes.parse.useragent.UserAgentAnalyzer;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -113,11 +115,17 @@ public class UserAgentDetailsServiceImpl extends ServiceImpl<UserAgentDetailsMap
 
 
         // region 初始化UserAgentDetails
+
         // 分析userAgent
-        UserAgentAnalyzer uaa = UserAgentAnalyzer.newBuilder().build();
-        UserAgent userAgent = uaa.parse(userAgent_s);
-        UserAgentDetails userAgentDetails = new UserAgentDetails(userAgent);
-        // 和set 7个附加信息
+        //UserAgentAnalyzer uaa = UserAgentAnalyzer.newBuilder().build();
+        //UserAgent userAgent = UserAgentAnalyzer.newBuilder().build().parse(userAgent_s);
+        String agent=userAgent_s;
+        System.out.println(userAgent_s);
+        //解析agent字符串
+        UserAgent userAgent = UserAgent.parseUserAgentString(agent);
+        UserAgentDetails userAgentDetails = new UserAgentDetails(userAgent,userAgent_s);
+        // 和set 8个附加信息
+        userAgentDetails.setUser_agent(userAgent_s);
         userAgentDetails.setRealIp(realIp);
         userAgentDetails.setForwardedProto(forwardedProto);
         userAgentDetails.setOriginalURI(originalURI);
@@ -129,7 +137,10 @@ public class UserAgentDetailsServiceImpl extends ServiceImpl<UserAgentDetailsMap
         userAgentDetails.setWechat_headimgurl(wechat_headimgurl);
         userAgentDetails.setWechat_unionid(wechat_unionid);
         userAgentDetails.setUser_id(user_id);
+
         // endregion
+
+
 
         // region插入访客数据库
         if(insert){

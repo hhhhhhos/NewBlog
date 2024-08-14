@@ -118,12 +118,21 @@
             <version>0.1.6</version>
         </dependency>
 
-        <!-- 访客报头分析 -->
+        <!-- 访客报头分析 这玩意疯狂内存泄漏 垃圾玩意 -->
         <dependency>
             <groupId>nl.basjes.parse.useragent</groupId>
             <artifactId>yauaa</artifactId>
             <version>7.25.0</version>
         </dependency>
+
+        <!-- 访客报头分析2 -->
+        <dependency>
+            <groupId>eu.bitwalker</groupId>
+            <artifactId>UserAgentUtils</artifactId>
+            <version>1.21</version>
+        </dependency>
+
+
 
         <!-- 邮箱 -->
         <dependency>

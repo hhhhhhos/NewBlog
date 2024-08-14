@@ -450,62 +450,11 @@ public class UserController {
     @PutMapping("/update") // 更新user
     public R<String> UserInfoChange(@RequestBody User user,HttpSession session){
 
-        if(user.getId().equals(Long.parseLong("1766859847220883457")))
-            return R.error("visitor角色数据锁定，不允许更改");
-
-        log.info("{}",user);
-        User db_user = usermapper.selectById(session.getAttribute("IsLogin").toString());
-
-        // 未更改任何数据
-        if(db_user.equals(user))return R.error("未改动任何数据");
-        // 不能改角色
-        if(!Objects.equals(db_user.getRole(), user.getRole()))return R.error("不能更改角色");
-
-        // 不能改钱数 //這裡不能用equals 不然100.00比100返回false
-        if (db_user.getMoney().compareTo(user.getMoney()) != 0)return R.error("不能更改钱数");
-
-        // 不能改版本 (插入最后访问时间 导致版本号会变 无法维护 注释掉)
-        //if(!Objects.equals(db_user.getVersion(), user.getVersion())){
-        //    log.info("db_user:"+db_user);
-        //    log.info("user:"+user);
-        //    return R.error("不能更改版本");
-        //}
-
-        // 不能改版本
-        if(!Objects.equals(db_user.getIp_location(), user.getIp_location()))return R.error("不能更改归属地");
-
-        // 用.equals(回报空异常
-        //if (!db_user.getWechat_nickname().equals(user.getWechat_nickname()))return R.error("不能更改微信数据");
-        if (!Objects.equals(db_user.getWechat_nickname(), user.getWechat_nickname()))
-            return R.error("不能更改微信数据");
-        user.setWechat_unionid(db_user.getWechat_unionid());
-        if (!Objects.equals(db_user.getWechat_headimgurl(), user.getWechat_headimgurl()))
-            return R.error("不能更改微信数据");
-
-        // 创建时间和id不能改
-        // 在 Java 中，!= 和 == 运算符用于比较两个对象的引用，而不是它们的值
-        if(!db_user.getCreate_time().equals(user.getCreate_time())){
-            log.info(db_user.getCreate_time().toString());
-            log.info(user.getCreate_time().toString());
-            return R.error("不能更改创建时间");
+        try {
+            check_user_info_with_db_is_valid_or_not(user, session);
+        }catch (Exception e){
+            return R.error(e.getMessage());
         }
-        if(!db_user.getId().equals(user.getId()))return R.error("不能更改Id");
-
-        // (如果不是本名，改名字了)查数据库有没相同名
-        if(!Objects.equals(session.getAttribute("LoginName").toString(), user.getName())){
-            if(user.getName().length()>6)return R.error("名字要小于7个字符");
-
-            // 创造筛选条件
-            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-            // 有这个名字吗
-            queryWrapper.eq(User::getName,user.getName());
-            // 有相同名就不能更新 更新数据库也会报错
-            if(usermapper.selectOne(queryWrapper)!=null)return R.error("名字已存在");
-        }
-
-        // 改密码了 sha256化
-        if(!db_user.getPassword().equals(user.getPassword()))
-            user.setPassword(Tool.encode(user.getPassword()));
 
         // 注入数据库 防数据和数据库长度不对 抛异常
         try{
@@ -788,6 +737,10 @@ public class UserController {
             if(Db.lambdaQuery(User.class).eq(User::getName,user.getName()).one()!=null)
                 throw new CustomException("名字已存在，添加失败");
 
+            // 邮箱防重复
+            if(user.getEmail()!=null && Db.lambdaQuery(User.class).eq(User::getEmail,user.getEmail()).one()!=null)
+                throw new CustomException("邮箱已存在，添加失败");
+
             user.setCreate_time(null);
             user.setVersion(null);
             user.setId(null);
@@ -839,18 +792,9 @@ public class UserController {
             if(!session.getAttribute("Role").toString().equals("admin"))
                 throw new CustomException("不是管理员，禁止操作");
 
-            // 防空
-            if(user.getName()==null || user.getPassword()==null)
-                throw new CustomException("用户或密码不能为空");
+            // 和数据库验证信息是否存在重复
+            check_user_info_with_db_is_valid_or_not(user,session);
 
-            //名字防重复(不是原来的名字 且重复（和别人重复，而不是自己）)
-            User db_user = usermapper.selectById(user.getId());
-            if(!db_user.getName().equals(user.getName()) && Db.lambdaQuery(User.class).eq(User::getName,user.getName()).one()!=null)
-                throw new CustomException("名字已存在，修改失败");
-
-            // 改密码了 sha256化
-            if(!db_user.getPassword().equals(user.getPassword()))
-                user.setPassword(Tool.encode(user.getPassword()));
 
             if(usermapper.updateById(user)!=1)
                 throw new CustomException("数据库插入失败，返回0");
@@ -895,5 +839,93 @@ public class UserController {
         response.setMap(params);
 
         return response;
+    }
+
+    /**
+     * 更新用户信息时 和数据库验证新信息是否重复
+     * @param user 用户发的
+     * @param session 我的
+     * @throws CustomException 重复或者其他错抛异常
+     */
+    private void check_user_info_with_db_is_valid_or_not(User user,HttpSession session) throws CustomException{
+        // 防空
+        if(user.getName()==null || user.getPassword()==null)
+            throw new CustomException("用户或密码不能为空");
+
+        // 非管理员验证
+        if(!Tool.IsUserAdmin(session)){
+            if(user.getId().equals(Long.parseLong("1766859847220883457")))
+                throw new CustomException("visitor角色数据锁定，不允许更改");
+
+            log.info("{}",user);
+            User db_user = usermapper.selectById(session.getAttribute("IsLogin").toString());
+
+            // 未更改任何数据
+            if(db_user.equals(user))throw new CustomException("未改动任何数据");
+            // 不能改角色
+            if(!Objects.equals(db_user.getRole(), user.getRole()))throw new CustomException("不能更改角色");
+
+            // 不能改钱数 //這裡不能用equals 不然100.00比100返回false
+            if (db_user.getMoney().compareTo(user.getMoney()) != 0)throw new CustomException("不能更改钱数");
+
+            // 不能改版本 (插入最后访问时间 导致版本号会变 无法维护 注释掉)
+            //if(!Objects.equals(db_user.getVersion(), user.getVersion())){
+            //    log.info("db_user:"+db_user);
+            //    log.info("user:"+user);
+            //    return R.error("不能更改版本");
+            //}
+
+            // 不能改版本
+            if(!Objects.equals(db_user.getIp_location(), user.getIp_location()))throw new CustomException("不能更改归属地");
+
+            // 用.equals(回报空异常
+            //if (!db_user.getWechat_nickname().equals(user.getWechat_nickname()))return R.error("不能更改微信数据");
+            if (!Objects.equals(db_user.getWechat_nickname(), user.getWechat_nickname()))
+                throw new CustomException("不能更改微信数据");
+            user.setWechat_unionid(db_user.getWechat_unionid());
+            if (!Objects.equals(db_user.getWechat_headimgurl(), user.getWechat_headimgurl()))
+                throw new CustomException("不能更改微信数据");
+
+            // 创建时间和id不能改
+            // 在 Java 中，!= 和 == 运算符用于比较两个对象的引用，而不是它们的值
+            if(!db_user.getCreate_time().equals(user.getCreate_time())){
+                log.info(db_user.getCreate_time().toString());
+                log.info(user.getCreate_time().toString());
+                throw new CustomException("不能更改创建时间");
+            }
+            if(!db_user.getId().equals(user.getId()))throw new CustomException("不能更改Id");
+
+            // (如果不是本名，改名字了)查数据库有没相同名
+            if(!Objects.equals(session.getAttribute("LoginName").toString(), user.getName())){
+                if(user.getName().length()>6)throw new CustomException("名字要小于7个字符");
+
+                // 创造筛选条件
+                LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+                // 有这个名字吗
+                queryWrapper.eq(User::getName,user.getName());
+                // 有相同名就不能更新 更新数据库也会报错
+                if(usermapper.selectOne(queryWrapper)!=null)throw new CustomException("名字已存在");
+            }
+        }
+
+        // 所有人验证
+        // 更新(有旧user)
+        if(user.getId()!=null) {
+            //名字防重复(不是原来的名字 且重复（和别人重复，而不是自己）)
+            User db_user = usermapper.selectById(user.getId());
+            if (!db_user.getName().equals(user.getName()) && Db.lambdaQuery(User.class).eq(User::getName, user.getName()).one() != null)
+                throw new CustomException("名字已存在，修改失败");
+
+            // 同上邮箱查重 1空不查重 2没修改的话不和原来自己查重 3
+            if (db_user.getEmail()!=null && user.getEmail() != null && !user.getEmail().equals("") && !db_user.getEmail().equals(user.getEmail()) && Db.lambdaQuery(User.class).eq(User::getEmail, user.getEmail()).one() != null)
+                throw new CustomException("邮箱已存在，修改失败");
+
+            // 改密码了 sha256化
+            if (!db_user.getPassword().equals(user.getPassword()))
+                user.setPassword(Tool.encode(user.getPassword()));
+        }else{
+        // 新增
+            throw new CustomException("你玩呢》？更新旧信息，原id哪去了");
+        }
     }
 }

@@ -10,7 +10,7 @@ const state = {
     VUE_APP_STATIC_PATH:process.env.VUE_APP_STATIC_PATH,
     scrollbar_width:0,
     is_mobile:false,
-    UserId:null
+    UserId:'0'
 }
 
 const mutations = {

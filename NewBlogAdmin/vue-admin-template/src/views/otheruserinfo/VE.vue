@@ -9,7 +9,7 @@
           <div style="display: flex; flex-direction: column;">
               <img
                 style="z-index:999;margin: 0px 0px 5px 25px;z-index: 2;width:70px;height: 70px;border-radius: 90px;border: 2px solid white;background-color: white;"
-                :src="obj?.wechat_headimgurl?obj.wechat_headimgurl:target_img_src"
+                :src="obj?.wechat_headimgurl?obj.wechat_headimgurl:obj?.email?.includes('@qq.com')?`https://q1.qlogo.cn/g?b=qq&nk=${obj.email.replace('@qq.com','')}&s=100`:target_img_src"
 
               >
             <div class="name" style="z-index: 1;margin: 0 0 0 25px; display: flex; flex-direction: column; ">
@@ -46,7 +46,7 @@
         
         <div class="item_in" v-for="(column, index) in this.obj" :key="index">
           <div v-if="index!=='last_visited_time' && index!=='version' &&index!=='id' && index!=='addresses' && index!=='password' && index!=='wechat_unionid' && index!=='wechat_headimgurl' && index!=='wechat_nickname'" style="display: flex;">
-            <div style="width: 100px;">{{trans_index[index]}}:</div><span>{{ index==='create_time'?column.replace('T',' '):column }}</span>
+            <div style="width: 100px;">{{trans_index[index]?trans_index[index]:index}}:</div><span>{{ index==='create_time'?column.replace('T',' '):column }}</span>
           </div>
         </div>
 
@@ -106,7 +106,7 @@ export default {
                     }
 
                 }).catch(error=>{
-                    this.$message.error("error")
+                    this.$message.error(error)
                     console.log(error)
                 })
 

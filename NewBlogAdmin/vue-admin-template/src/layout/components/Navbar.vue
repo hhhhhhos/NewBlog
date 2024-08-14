@@ -7,7 +7,7 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img  loading="lazy"  :src=return_avata() class="user-avatar" @click.stop="goToProfile">
+          <img  loading="lazy"  :src="obj?.wechat_headimgurl?obj.wechat_headimgurl:obj?.email?.includes('@qq.com')?`https://q1.qlogo.cn/g?b=qq&nk=${obj.email.replace('@qq.com','')}&s=100`:target_img_src" class="user-avatar" @click.stop="goToProfile">
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
@@ -45,7 +45,9 @@ export default {
     },
     data() {
         return {
-            url:process.env.VUE_APP_SHOP_URL
+            url:process.env.VUE_APP_SHOP_URL,
+            obj:null,
+            target_img_src:require(`@/assets/default_headimg5.webp`) 
         }
     },
     computed: {
@@ -66,7 +68,7 @@ export default {
                         message: response.data.join('<br>')
                     });
                 }).catch(error=>{
-                    this.$message.error("error")
+                    this.$message.error(error)
                     console.log(error)
                 })
         },
@@ -83,7 +85,20 @@ export default {
         async logout() {
             await this.$store.dispatch('user/logout')
             this.$router.push(`/login?redirect=${this.$route.fullPath}`)
-        }
+        },
+        async getuserinfo(){
+            await axios.get('/user/info')
+                .then(response=>{
+                    if(response.data.code)this.obj = response.data.data
+                    else this.$message.error("获取失败："+response.data.msg)
+                }).catch(error=>{
+                    console.log(error)
+                    this.$message.error("获取失败："+error.data.msg)
+                })
+        },
+    },
+    mounted(){
+        this.getuserinfo()
     }
 }
 </script>

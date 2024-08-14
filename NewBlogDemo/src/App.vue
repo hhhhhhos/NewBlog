@@ -21,8 +21,8 @@ export default {
             const CURRENT_HEIGHT = window.innerHeight;
             this.$store.state.CURRENT_WIDTH = CURRENT_WIDTH
             this.$store.state.CURRENT_HEIGHT = CURRENT_HEIGHT
-            //console.log("当前宽度："+CURRENT_WIDTH)
-            //console.log("当前高度："+CURRENT_HEIGHT)
+            console.log("当前宽度："+CURRENT_WIDTH)
+            console.log("当前高度："+CURRENT_HEIGHT)
             // 当前宽度为手机时
             if(CURRENT_HEIGHT/CURRENT_WIDTH>1.2 || CURRENT_WIDTH<600){
                 this.$store.state.MIN_WIDTH = "300px"
@@ -91,7 +91,17 @@ export default {
   background-color: var(--product-bg);
   transition: border 0.4s ease,background-color 0.4s ease;
 }
+.juzhong{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 .width80{
+    width: 80%;
+    margin: 0 auto;
+}
+
+.width50{
     width: 80%;
     margin: 0 auto;
 }
@@ -133,6 +143,10 @@ input[type="text"]{
     border:1px solid transparent !important;
 }
 .el-message--success{
+    background-color:var(--third-color) !important;
+    border:1px solid var(--third-color) !important;
+}
+.el-message--error{
     background-color:var(--third-color) !important;
     border:1px solid var(--third-color) !important;
 }

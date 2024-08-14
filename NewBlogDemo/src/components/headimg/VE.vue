@@ -1,8 +1,10 @@
 <template>
     <img
         :style="the_style"
-        :src="obj?.wechat_headimgurl?obj.wechat_headimgurl:obj?.email?.includes('@qq.com')?`https://q1.qlogo.cn/g?b=qq&nk=${obj.email.replace('@qq.com','')}&s=100`:target_img_src"
-        @click="$router.push('/user/info/details')"
+        :src="obj?.wechat_headimgurl?
+        obj.wechat_headimgurl:obj?.email?.includes('@qq.com')?
+        `https://q1.qlogo.cn/g?b=qq&nk=${obj.email.replace('@qq.com','')}&s=100`:target_img_src"
+        @click="click"
       >
 </template>
 
@@ -19,6 +21,27 @@ export default {
         }
     },
     methods:{
+        click(){
+            if(this.goanother())return
+            if(this.obj?.user_id){
+                this.$store.state.UserId===this.obj?.user_id?
+                    this.$router.push('/user/info/details'):
+                    this.$router.push('/user/otheruserinfo?user_id='+this.obj.user_id)
+            }else{
+                this.$store.state.UserId===this.obj?.id?
+                    this.$router.push('/user/info/details'):
+                    this.$router.push('/user/otheruserinfo?user_id='+this.obj.id)
+            }
+        },
+        goanother(){
+            if(this.$route.path==='/user/info/details'){
+                if(this.obj?.id)this.$router.push('/user/otheruserinfo?user_id='+this.obj.id)
+                else this.$router.push('/user/otheruserinfo?user_id='+this.obj.user_id)
+                return true
+            }
+            return false
+        }
+
     }
 }
 </script>

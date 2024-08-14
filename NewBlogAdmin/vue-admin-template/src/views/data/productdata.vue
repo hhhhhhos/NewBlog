@@ -119,13 +119,14 @@
         <!-- 使用el-row和el-col创建栅格布局 -->
         <el-row :gutter="20">
 
-          <el-col :span="['置顶', '显示', '主页显示'].some(str => column.label.includes(str))?3:12" v-for="(column, index) in columns" :key="index">
+          <el-col :span="['置顶', '显示', '主页显示'].some(str => column.label.includes(str))?3:12" 
+            v-for="(column, index) in columns" :key="index">
             <span v-if="column.label!=='标题' && column.label!=='描述信息'&& column.label!=='分类' && column.label!=='图像url'
-            && ['置顶', '显示', '主页显示'].every(str => !column.label.includes(str))" />
+            && ['置顶', '显示', '主页显示'].every(str => !column.label?.includes(str))" />
             
             <el-form-item v-else-if="column.label==='分类'" :label="column.label" :prop="column.prop">
                 
-                <el-radio-group v-model="radio1">R
+                <el-radio-group v-if="dataResult" v-model="dataResult.fenlei_map[dialogdata2[column.prop]]">R
                     <el-radio-button 
                         v-for="(item, index) in dataResult.fenlei_map" :key="index" 
                         @click.native="dialogdata2[column.prop]=index"
@@ -151,6 +152,7 @@
             </el-form-item>
 
           </el-col>
+
           <el-col :span="24">
             <el-form-item label="封面图像" prop="photo" >
               <el-upload
@@ -221,6 +223,14 @@
                             title="发送文章"
                             class="but"
                         >提交
+                        </button>
+                        <button
+                            type="button"
+                            @click="confirm_change(true)"
+                            aria-hidden="true"
+                            title="发送文章"
+                            class="but"
+                        >保存
                         </button>
 
                         <Draggable>
@@ -373,6 +383,7 @@ export default {
                 { prop: 'id', label: 'ID', width: '80' },
                 { prop: 'name', label: '标题', width: '180' },
                 { prop: 'type', label: '分类' , width: '80',align:'center' },
+                { prop: 'user_name', label: '作者' , width: '80',align:'center' },
                 //{ prop: 'type2', label: '分类2' , width: '80' ,align:'center'},
                 { prop: 'info', label: '描述信息' },
                 //{ prop: 'content', label: '内容', width: '80' },
@@ -380,13 +391,14 @@ export default {
                 //{ prop: 'num', label: '数量', width: '80' },
                 //{ prop: 'sold_num', label: '销量', width: '80' },
                 { prop: 'visited_num', label: '浏览量', width: '80' },
+                { prop: 'love_list', label: '点赞数' , width: '80' ,align:'center'},
                 //{ prop: 'rate', label: '评分', width: '80' },
                 //{ prop: 'rate_num', label: '评分人数', width: '80' },
                 { prop: 'photo', label: '图像', width: '100',align:'center' },
                 { prop: 'photo_url', label: '图像url', width: '100',align:'center' },
                 { prop: 'photo_url', label: 'url预览', width: '100',align:'center' },
                 //{ prop: 'photo_shot', label: '略缩图', width: '100',align:'center' },
-                { prop: 'love_list', label: '点赞数' , width: '80' ,align:'center'},
+                
                 { prop: 'is_top', label: '置顶', width: '80' },
                 { prop: 'is_show', label: '显示', width: '80' },
                 { prop: 'is_on_homepage', label: '主页显示', width: '100' },
@@ -416,41 +428,12 @@ export default {
             radio:null,
             addresses:[],
             rules: {
-                type: [
-                    { required: true, message: '选择分类', trigger: 'blur' },
-                    { 
-                        validator: (rule, value, callback) => {
-                            // 验证是否只包含数字
-                            if (!value || value==='0') {
-                                callback(new Error('请选择'));
-                            } else {
-                                // 如果验证通过
-                                callback();
-                            }
-                        }, 
-                        trigger: 'blur'
-                    }
-                ],
                 name: [
-                    { required: true, message: '请输入标题', trigger: 'blur' },
-                    { 
-                        validator: (rule, value, callback) => {
-                            // 验证是否只包含数字
-                            if (!value) {
-                                callback(new Error('请输入'));
-                            } else if (value.length < 0 || value.length >= 30) {
-                                // 验证数字是否大于0且小于1000000
-                                callback(new Error('标题必须大于0且小于30位数'));
-                            } else {
-                                // 如果验证通过
-                                callback();
-                            }
-                        }, 
-                        trigger: 'blur'
-                    }
-                    //{ min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+                    { required: true, message: '请输入标题', trigger: 'blur' }
                 ],
-
+                type: [
+                    { required: true, message: '请选择分类', trigger: 'blur' }
+                ],
             },
             rows_selection:[],
             // 弹窗2（查询弹窗）
@@ -475,6 +458,9 @@ export default {
         }
     },
     methods:{
+        handleCommand(){
+
+        },
         getall(){
             axios.get('/data-result/all')
                 .then(response=>{
@@ -691,9 +677,9 @@ export default {
 
                 // 初始化数据
                 this.dialogdata2 = 
-          {
-
-          }
+                {
+                    'type':null
+                }
           
           // 初始化验证 // ?.防止this.$refs.form为空报错 为空不运行
           this.$refs.form?.resetFields();
@@ -769,7 +755,7 @@ export default {
         
         },
         // 展开框1的确定
-        confirm_change(){
+        confirm_change(is_baocun){
 
             this.$refs.form.validate(result => {
                 if (result) {
@@ -777,7 +763,7 @@ export default {
                     if(this.dialog_title2==="新增")
                         this.axios_add()
                     else if(this.dialog_title2==="修改")
-                        this.axios_update()
+                        this.axios_update(is_baocun)
                     else
                         this.$message.error("error")
                 } else{
@@ -788,6 +774,8 @@ export default {
         },
         // iframe 视频插入高宽
         insert_sth_to_content(iframeHtml){
+            // 防空
+            if(!iframeHtml)return ""
 
             // b站视频扩长
             if(!iframeHtml.includes('width="100%" height="600"')){
@@ -797,11 +785,11 @@ export default {
                 );
             }
 
-            // B站视频https 高清 danmaku关
+            // B站视频 https 高清 danmaku关 autoplay=0
             if(!iframeHtml.includes('&high_quality=1')){
                 iframeHtml = iframeHtml.replace(
                     /src="(\/\/player.bilibili.com\/player.html\?.*?)"/g,
-                    'src="https://$1&high_quality=1&danmaku=0"')
+                    'src="https://$1&high_quality=1&danmaku=1&autoplay=0"')
             }
 
 
@@ -841,7 +829,7 @@ export default {
         },
         // 更新一个
         // 新范例 防404报错
-        axios_update(){
+        axios_update(is_baocun){
             console.log(this.dialogdata2)
             console.log(this.$refs.upload)
             let formData = new FormData()
@@ -862,13 +850,19 @@ export default {
                 .then(response=>{
                     if(response.data.code===0)this.$message.error(response.data.msg)
                     else {
-                        this.dialogVisible2 = false
-                        this.$message.success("更新成功")
-                        this.gettablebycondition()
+                        if(is_baocun){
+                            this.$message.success("保存成功")
+                            this.gettablebycondition()
+                        }else{
+                            this.dialogVisible2 = false
+                            this.$message.success("更新成功")
+                            this.gettablebycondition()
+                        }
+                        
                     }
                 }).catch(error=>{
                     if(error.data?.msg)this.$message.error(error.data.msg)
-                    else this.$message.error("error")
+                    else this.$message.error(error)
                     console.log(error)
                 })
         },
@@ -884,7 +878,7 @@ export default {
                     }
                 }).catch(error=>{
                     if(error.data?.msg)this.$message.error(error.data.msg)
-                    else this.$message.error("error")
+                    else this.$message.error(error)
                     console.log(error)
                 })
         },

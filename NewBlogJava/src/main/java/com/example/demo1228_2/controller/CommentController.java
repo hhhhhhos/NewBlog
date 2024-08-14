@@ -81,6 +81,7 @@ public class CommentController {
 
         page = query
                 .eq(Comment::getProduct_id,product_id)
+                .orderByDesc(Comment::getIs_top)
                 .page(page);
 
 
@@ -106,12 +107,13 @@ public class CommentController {
 
 
         // 获取所有相关订单
-        List<Order2> orders = Db.lambdaQuery(Order2.class)
-                .eq(Order2::getProduct_id, product_id)
-                .in(Order2::getUser_id, userIdList)
-                .list();
+        //List<Order2> orders = Db.lambdaQuery(Order2.class)
+        //        .eq(Order2::getProduct_id, product_id)
+        //        .in(Order2::getUser_id, userIdList)
+        //        .list();
 
         // 聚合每个用户的订单数据
+        /*
         Map<Long, Map<String, Object>> userOrderStatsMap = orders.stream()
                 .collect(Collectors.groupingBy(
                         Order2::getUser_id,
@@ -131,13 +133,14 @@ public class CommentController {
                                 }
                         )
                 ));
+         */
 
         // 拿评分
-        Map<Long,BigDecimal> userRateMap = Db.lambdaQuery(ProductRate.class)
-                .eq(ProductRate::getProduct_id,product_id)
-                .list()
-                .stream()
-                .collect(Collectors.toMap(ProductRate::getUser_id, ProductRate::getRate));
+        //Map<Long,BigDecimal> userRateMap = Db.lambdaQuery(ProductRate.class)
+        //        .eq(ProductRate::getProduct_id,product_id)
+        //        .list()
+        //        .stream()
+        //        .collect(Collectors.toMap(ProductRate::getUser_id, ProductRate::getRate));
 
 
         List<Map<String,Object>> re = commentList.stream()
@@ -157,9 +160,9 @@ public class CommentController {
                     // 一些我想加的参数
                     new_entry.put("wechat_nickname",userMap.get(entry.getUser_id())==null?null:userMap.get(entry.getUser_id()).getWechat_nickname());
                     new_entry.put("wechat_headimgurl",userMap.get(entry.getUser_id())==null?null:userMap.get(entry.getUser_id()).getWechat_headimgurl());
-                    new_entry.put("totalPurchaseNum",userOrderStatsMap.get(entry.getUser_id())==null?null:userOrderStatsMap.get(entry.getUser_id()).get("totalPurchaseNum").toString());
-                    new_entry.put("totalPurchasePrice",userOrderStatsMap.get(entry.getUser_id())==null?null:userOrderStatsMap.get(entry.getUser_id()).get("totalPurchasePrice").toString());
-                    new_entry.put("rate",userRateMap.get(entry.getUser_id())==null?null:Double.parseDouble(userRateMap.get(entry.getUser_id()).toString()));
+                    //new_entry.put("totalPurchaseNum",userOrderStatsMap.get(entry.getUser_id())==null?null:userOrderStatsMap.get(entry.getUser_id()).get("totalPurchaseNum").toString());
+                    //new_entry.put("totalPurchasePrice",userOrderStatsMap.get(entry.getUser_id())==null?null:userOrderStatsMap.get(entry.getUser_id()).get("totalPurchasePrice").toString());
+                    //new_entry.put("rate",userRateMap.get(entry.getUser_id())==null?null:Double.parseDouble(userRateMap.get(entry.getUser_id()).toString()));
                     return new_entry;
                 }).collect(Collectors.toList());
 
@@ -247,7 +250,6 @@ public class CommentController {
         //log.info("re:"+re);
         return R.success(commentListPage.setRecords(re));
     }
-
 
 
 
@@ -392,13 +394,14 @@ public class CommentController {
                 return commentMapper.selectByProductIdLeftJoinOrderByLike(page,product_id);
             case "b": // 时间排序
                 return commentMapper.selectByProductIdLeftJoinOrderByTime(page,product_id);
+            /*
             case "c": // 土豪排序
                 return commentMapper.selectByProductIdLeftJoinOrderByPrice(page,product_id);
             case "d": // 评分高排序
                 return commentMapper.selectByProductIdLeftJoinOrderByRate(page,product_id);
             case "e": // 评分低排序
                 return commentMapper.selectByProductIdLeftJoinOrderByRateLow(page,product_id);
-
+            */
             default:
                 break;
         }

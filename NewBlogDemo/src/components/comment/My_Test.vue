@@ -49,7 +49,7 @@ export default {
     },
     data () {
         return {
-            product_id_fast_local:this.product_id,
+            //product_id_fast_local:this.product_id,
             tableData: [],
             total: 0, //总个数
             current:0, // 当前页数
@@ -70,7 +70,7 @@ export default {
         async dropdown_closed(product_id) {
             //var oldScrollPosition
             console.log("重新获取,参数"+product_id+"props"+this.product_id) //参数传的没这么快 要手动
-            if(product_id)this.product_id_fast_local = product_id
+            //if(product_id)this.product_id_fast_local = product_id
             // 重新初始化一些数据
             this.tableData = []
             this.total = 0
@@ -90,6 +90,11 @@ export default {
         async onLoad() {
             //var oldScrollPosition
             console.log("滚到底部，触发加载")
+            //console.log("此时this.product_id_fast_local为"+this.product_id_fast_local)
+            console.log("此时product_id为"+this.product_id)
+            if (!this.product_id) {
+                return
+            }
             // 异步更新数据
             // setTimeout 仅做示例，真实场景中一般为 ajax 请求
             this.currentPage +=1
@@ -97,7 +102,8 @@ export default {
                 params: {
                     currentPage: this.currentPage,
                     PageSize: this.PageSize,
-                    product_id:this.product_id_fast_local,
+                    //product_id:this.product_id_fast_local,
+                    product_id:this.product_id,
                     value2:this.value2,
                     father_comment_id:"0"
                 }
@@ -139,7 +145,15 @@ export default {
     created () {
     // 节流OnLoad 1._.throttle 每n秒钟只调用一次 2._.debounce n秒之后无操作 调用
         this.debouncedOnLoad = throttle(this.onLoad, 1000);
-    }
+    },
+    watch: {
+        product_id: function(newV, oldV) {
+            if(!oldV && newV){
+                console.log('加载出来了！重新onLoad()')
+                this.onLoad()
+            }
+        }
+    },
 }
 </script>
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo1228_2.mapper.ProductMapper">
+    <select id="selectIdNameTime3" resultType="map">
+        SELECT id, name, create_time, update_time, type, is_top, is_show, is_on_homepage
+        FROM t_product
+        <where>
+            <if test="type != -1">
+                AND type = #{type}
+            </if>
+            <if test="is != null and is != ''">
+                <choose>
+                    <when test="is == '本人可见'">
+                        AND is_show = false
+                    </when>
+                    <when test="is == '首页可见'">
+                        AND is_on_homepage = true AND is_show = true
+                    </when>
+                    <when test="is == '分类可见'">
+                        AND is_on_homepage = false AND is_show = true
+                    </when>
+                </choose>
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+</mapper>
+
+
