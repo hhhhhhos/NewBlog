@@ -135,6 +135,7 @@ export default {
                             .then(response=>{
                                 //console.log("名字是："+response.data.data)
                                 this.$store.state.IsLogin = true
+                                this.$store.state.UserId = response.data.map.user_id
                                 this.$store.state.UserName = response.data.data
                                 setTimeout(() => {this.$router.push('/home')}, 1000);
                             })
@@ -147,6 +148,7 @@ export default {
                 else {
                     this.$message.success(response.data.data)
                     this.$store.state.IsLogin = true
+                    this.$store.state.UserId = response.data.map.user_id
                     this.$store.state.UserName = this.name
                     setTimeout(() => {this.$router.push('/home')}, 1000);
                 }

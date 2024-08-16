@@ -28,6 +28,8 @@ public class User {
     private String phone;
     private String email;
 
+
+
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @TableField(fill = FieldFill.INSERT)
@@ -60,6 +62,8 @@ public class User {
     }
 
     String ip_location;
+
+    String blog;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)

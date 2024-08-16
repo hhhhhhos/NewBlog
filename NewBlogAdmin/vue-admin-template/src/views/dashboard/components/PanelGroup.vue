@@ -1,88 +1,75 @@
 <template>
   <el-row :gutter="40" class="panel-group">
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
-        <div class="card-panel-icon-wrapper icon-people">
-          <svg-icon icon-class="peoples" class-name="card-panel-icon" />
-        </div>
+  
+    <el-col v-for="(item,key) in dashboard" :key="key"  
+    :xs="12" :sm="8" :lg="4" class="card-panel-col">
+      <div class="card-panel">
         <div class="card-panel-description">
           <div class="card-panel-text">
-            访客数量
+            {{dashboard_name[key]}}
           </div>
-          <count-to :start-val="0" :end-val=p1 :duration="2600" class="card-panel-num" />
+          <div class="card-panel-num">
+            {{item}}
+        </div>
         </div>
       </div>
     </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('messages')">
-        <div class="card-panel-icon-wrapper icon-message">
-          <svg-icon icon-class="message" class-name="card-panel-icon" />
-        </div>
-        <div class="card-panel-description">
-          <div class="card-panel-text">
-            留言数量
-          </div>
-          <count-to :start-val="0" :end-val=p2 :duration="3000" class="card-panel-num" />
-        </div>
-      </div>
-    </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('purchases')">
-        <div class="card-panel-icon-wrapper icon-money">
-          <svg-icon icon-class="money" class-name="card-panel-icon" />
-        </div>
-        <div class="card-panel-description">
-          <div class="card-panel-text">
-            订单数量
-          </div>
-          <count-to :start-val="0" :end-val=p3 :duration="3200" class="card-panel-num" />
-        </div>
-      </div>
-    </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('shoppings')">
-        <div class="card-panel-icon-wrapper icon-shopping">
-          <svg-icon icon-class="shopping" class-name="card-panel-icon" />
-        </div>
-        <div class="card-panel-description">
-          <div class="card-panel-text">
-            购物数量
-          </div>
-          <count-to :start-val="0" :end-val=p4 :duration="3600" class="card-panel-num" />
-        </div>
-      </div>
-    </el-col>
+
   </el-row>
 </template>
 
 <script>
-import CountTo from 'vue-count-to'
+//import CountTo from 'vue-count-to'
 import axios from '@/utils/axios';
 
 export default {
     components: {
-        CountTo
+        //CountTo
     },
     data(){
         return{
-            p1:2543,
-            p2:3445,
-            p3:3246,
-            p4:2344,
+            dashboard:{
+                role: null,            // 对应后端的 "role"
+                //name: null,            // 对应后端的 "name"
+                home_visit_num: null,  // 对应后端的 "home_visit_num"
+                request_num: null,     // 对应后端的 "request_num"
+
+                product_num: null,     // 对应后端的 "product_num"
+                user_num: null,        // 对应后端的 "user_num"
+                comment_num: null,     // 对应后端的 "comment_num"
+                chat_num: null,        // 对应后端的 "chat_num"
+                kefu_num: null         // 对应后端的 "kefu_num"
+            },
+            dashboard_name:{
+                name: '姓名',            // 对应后端的 "name"
+                role: '角色',            // 对应后端的 "role"
+                home_visit_num: '首页访客',  // 对应后端的 "home_visit_num"
+                request_num: '总请求数',     // 对应后端的 "request_num"
+
+                product_num: '文章数',     // 对应后端的 "product_num"
+                user_num: '用户数',        // 对应后端的 "user_num"
+                comment_num: '评论数',     // 对应后端的 "comment_num"
+                chat_num: '聊天条数',        // 对应后端的 "chat_num"
+                kefu_num: 'GPT对话'         // 对应后端的 "kefu_num"
+            },
         }
     },
     methods: {
         handleSetLineChartData(type) {
             this.$emit('handleSetLineChartData', type)
+        },
+        return_color(){
+            const l = ['shopping','money','message','people']
+            return l[Math.floor(Math.random() * l.length)]
         }
     },
     mounted(){
-        axios.get('/user-agent-details/init_dashboard_four')
+        axios.get('/user-agent-details/init_dashboard')
             .then(response=>{
                 console.log(response.data)
-                this.p1 = response.data.p1
-                this.p3 = response.data.p3
-                this.p4 = response.data.p4
+                for (let [key, value] of Object.entries(response.data)) {
+                    this.dashboard[key]=value;
+                }
             }).catch(error=>{
                 console.log(error)
             })
@@ -99,7 +86,6 @@ export default {
   }
 
   .card-panel {
-    height: 108px;
     cursor: pointer;
     font-size: 12px;
     position: relative;
@@ -107,9 +93,12 @@ export default {
     color: #666;
     background: #fff;
     box-shadow: 4px 4px 40px rgba(0, 0, 0, .05);
+    border-radius: 20px;
     border-color: rgba(0, 0, 0, .05);
 
     &:hover {
+        background: #f3f3f3;
+
       .card-panel-icon-wrapper {
         color: #fff;
       }
@@ -147,6 +136,7 @@ export default {
       color: #34bfa3
     }
 
+
     .card-panel-icon-wrapper {
       float: left;
       margin: 14px 0 0 14px;
@@ -158,43 +148,24 @@ export default {
     .card-panel-icon {
       float: left;
       font-size: 48px;
+
     }
 
     .card-panel-description {
-      float: right;
       font-weight: bold;
       margin: 26px;
-      margin-left: 0px;
 
       .card-panel-text {
         line-height: 18px;
         color: rgba(0, 0, 0, 0.45);
         font-size: 16px;
         margin-bottom: 12px;
+        text-align: left;
       }
 
       .card-panel-num {
         font-size: 20px;
       }
-    }
-  }
-}
-
-@media (max-width:550px) {
-  .card-panel-description {
-    display: none;
-  }
-
-  .card-panel-icon-wrapper {
-    float: none !important;
-    width: 100%;
-    height: 100%;
-    margin: 0 !important;
-
-    .svg-icon {
-      display: block;
-      margin: 14px auto !important;
-      float: none !important;
     }
   }
 }

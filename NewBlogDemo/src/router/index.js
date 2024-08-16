@@ -108,6 +108,13 @@ const routes = [
                         component: () => import(/* webpackChunkName: "aboutu10" */ '../views/user/chat/history/VE.vue'),
                         meta: { title: '西巴BLOG -聊天历史' },
                     },
+                    {
+                        path: 'option',
+                        name: 'option',
+                        component: () => import(/* webpackChunkName: "aboutu11" */ '../views/user/option/VE.vue'),
+                        meta: { title: '西巴BLOG -用户首页' },
+
+                    },
                 ]
             },
             {
@@ -211,7 +218,7 @@ const routes = [
 
 // 前端登录跳转
 export const allowedPaths = ['/login', '/product','/home','/login3','/url_scan','/gotowechat','/gotopay','/user/otheruserinfo'
-    ,'/friend','/guidang','/about'
+    ,'/friend','/guidang','/about','/user/otheruserinfo',
 ];
 
 const router = new VueRouter({

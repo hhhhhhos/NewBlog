@@ -21,7 +21,7 @@
       <div style="margin-left: 50px;">
         <!-- 第一行 用户名 微信授权 评分 已购买.父评论-->
         <div v-if="!amisub || true" style="font-size: 13px;color: #61666D;margin: 0 0 4px;">
-            <span style="cursor: pointer;color:var(--ptext-color);" @click="scope_local.user_id===$store.state.UserId?$router.push('user/info'):$router.push(`/user/otheruserinfo?user_id=${scope_local.user_id}`)">
+            <span title="查看个人信息" style="cursor: pointer;color:var(--ptext-color);" @click="scope_local.user_id===$store.state.UserId?$router.push('user/info'):$router.push(`/user/otheruserinfo?user_id=${scope_local.user_id}`)">
               <span v-if="scope_local.wechat_nickname!==null" >{{ scope.wechat_nickname }} </span>
               <span v-else>{{ scope.name }} </span>
             </span>
@@ -37,7 +37,7 @@
         </div>
 
         <!-- 用户名 .子评论-->
-        <div v-else style="float:left;font-size: 13px;color: #61666D;margin: 0 16px 4px 0;padding: 0;">
+        <div title="查看个人信息" v-else style="float:left;font-size: 13px;color: #61666D;margin: 0 16px 4px 0;padding: 0;">
             {{ scope.name }}
         </div>
 
@@ -89,18 +89,18 @@
 
           <div style="display: flex;flex-grow: 1;">
 
-            <svg v-if="!scope_local.is_loved"  @click="svg_change(scope.id)" style="display:block;margin:4px 4px 0 0;cursor: pointer;" t="1636093575017" class="icon " viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3323" width="14px" height="14px">
+            <svg v-if="!scope_local.is_loved" @click="svg_change(scope.id)" style="display:block;margin:4px 4px 0 0;cursor: pointer;" t="1636093575017" class="icon " viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3323" width="14px" height="14px">
               <path d="M594.176 151.168a34.048 34.048 0 0 0-29.184 10.816c-11.264 13.184-15.872 24.064-21.504 40.064l-1.92 5.632c-5.632 16.128-12.8 36.864-27.648 63.232-25.408 44.928-50.304 74.432-86.208 97.024-23.04 14.528-43.648 26.368-65.024 32.576v419.648a4569.408 4569.408 0 0 0 339.072-4.672c38.72-2.048 72-21.12 88.96-52.032 21.504-39.36 47.168-95.744 63.552-163.008a782.72 782.72 0 0 0 22.528-163.008c0.448-16.832-13.44-32.256-35.328-32.256h-197.312a32 32 0 0 1-28.608-46.336l0.192-0.32 0.64-1.344 2.56-5.504c2.112-4.8 5.12-11.776 8.32-20.16 6.592-17.088 13.568-39.04 16.768-60.416 4.992-33.344 3.776-60.16-9.344-84.992-14.08-26.688-30.016-33.728-40.512-34.944zM691.84 341.12h149.568c52.736 0 100.864 40.192 99.328 98.048a845.888 845.888 0 0 1-24.32 176.384 742.336 742.336 0 0 1-69.632 178.56c-29.184 53.44-84.48 82.304-141.76 85.248-55.68 2.88-138.304 5.952-235.712 5.952-96 0-183.552-3.008-244.672-5.76-66.432-3.136-123.392-51.392-131.008-119.872a1380.672 1380.672 0 0 1-0.768-296.704c7.68-72.768 70.4-121.792 140.032-121.792h97.728c13.76 0 28.16-5.504 62.976-27.456 24.064-15.104 42.432-35.2 64.512-74.24 11.904-21.184 17.408-36.928 22.912-52.8l2.048-5.888c6.656-18.88 14.4-38.4 33.28-60.416a97.984 97.984 0 0 1 85.12-32.768c35.264 4.096 67.776 26.88 89.792 68.608 22.208 42.176 21.888 84.864 16 124.352a342.464 342.464 0 0 1-15.424 60.544z m-393.216 477.248V405.184H232.96c-40.448 0-72.448 27.712-76.352 64.512a1318.912 1318.912 0 0 0 0.64 282.88c3.904 34.752 32.96 61.248 70.4 62.976 20.8 0.96 44.8 1.92 71.04 2.816z" p-id="3324" fill="#9499a0">
               </path>
             </svg>
-            <svg v-else   @click="svg_change(scope.id)" style="display:block;margin:4px 4px 0 0;cursor: pointer;" t="1636093991833" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4447" width="14px" height="14px">
+            <svg v-else  @click="svg_change(scope.id)" style="display:block;margin:4px 4px 0 0;cursor: pointer;" t="1636093991833" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4447" width="14px" height="14px">
               <path d="M860.032 341.12h-182.08c7.488-17.408 14.72-38.528 18.048-60.544 5.952-39.872 4.992-87.36-18.368-129.088-21.76-38.848-50.304-60.928-83.52-61.376-30.72-0.384-53.888 18.176-65.728 33.408a199.296 199.296 0 0 0-32.064 59.264l-1.92 5.184c-5.44 14.976-10.88 29.952-23.04 51.456-19.712 34.816-48.832 56.128-77.696 74.368a391.936 391.936 0 0 1-30.976 17.92v552.448a4621.952 4621.952 0 0 0 351.872-5.312c51.264-2.752 100.672-28.544 127.488-76.032 24.32-43.136 55.168-108.16 74.368-187.264 20.416-84.16 24.64-152.704 24.576-195.968-0.128-46.336-38.72-78.4-80.96-78.4z m-561.344 541.312V341.12H215.808c-59.712 0-113.408 42.048-120.896 104.32a1376 1376 0 0 0 0.64 330.368c7.36 58.688 56.128 100.032 113.024 102.848 25.024 1.28 55.552 2.56 90.112 3.712z" p-id="4448" fill="#00aeec">
               </path>
             </svg>
             <span style="min-width: 30px;margin-top: 3px;">{{ scope?.love_num===0?null:scope?.love_num }}</span>
             <div style="margin:4px 20px 0 0px;cursor: pointer;">
               <!--v-b-toggle="'collapse-sendcomm-' + scope.id + amisub"-->
-              <div @click=handleCommentClick>
+              <div title="评论" @click=handleCommentClick>
                 <i class="el-icon-chat-square hoverable3" ></i>
               </div>
             </div>

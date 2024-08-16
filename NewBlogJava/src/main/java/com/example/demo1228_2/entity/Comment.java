@@ -92,4 +92,6 @@ public class Comment implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long replay_to_user_id;
 
+    Boolean is_show;
+
 }

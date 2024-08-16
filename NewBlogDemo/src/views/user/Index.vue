@@ -1,8 +1,9 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div>
-
-    <router-view/>
+    <vue-page-transition name="slide-left">
+        <router-view/>
+    </vue-page-transition>
 
   </div>
 </template>

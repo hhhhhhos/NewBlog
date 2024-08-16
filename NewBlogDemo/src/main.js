@@ -19,10 +19,13 @@ import mavonEditor from 'mavon-editor'
 import 'mavon-editor/dist/css/index.css'
 Vue.use(mavonEditor)
 
+import VuePageTransition from 'vue-page-transition'
+Vue.use(VuePageTransition)
 
 // 添加一个全局方法
 // 新窗口打开
 Vue.prototype.$openURL = function (url) {
+    console.log(url)
     window.open(url)
 };
 

@@ -199,6 +199,7 @@ export default {
                 "age":"年龄",
                 "sex":"性别",
                 "email":"邮箱",
+                "blog":"博客",
                 "phone":"电话",
                 "create_time":"创建时间",
                 "role":"角色",

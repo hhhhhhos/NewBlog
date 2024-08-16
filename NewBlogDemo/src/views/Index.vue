@@ -216,6 +216,7 @@ export default {
         switch_change(todark){
             // 暗色
             if(todark){
+                localStorage.setItem('light_svg_show', false);
                 root.style.setProperty('--html-bg', '#2c3e50f8'),this.$store.state.light_svg_show = false;
                 root.style.setProperty('--shaixuan-color','#ffffff') // 筛选文字
                 root.style.setProperty('--mybordert-bg','rgb(243, 243, 244)') // 商品卡描述背景色
@@ -230,6 +231,7 @@ export default {
             }
             // 明色
             else{
+                localStorage.setItem('light_svg_show', true);
                 root.style.setProperty('--html-bg', 'rgb(243, 243, 244)'),this.$store.state.light_svg_show = true;
                 root.style.setProperty('--shaixuan-color','#00000060')
                 root.style.setProperty('--mybordert-bg','white')
@@ -238,7 +240,7 @@ export default {
                 root.style.setProperty('--ptext-color','none') // 继承app类颜色
                 root.style.setProperty('--ptext-color2','#00000060')
                 root.style.setProperty('--zhezhao-color','rgba(255, 255, 255, 0.949)') // 遮罩背景色 
-                root.style.setProperty('--el-loading-mask-bg','rgb(243, 243, 244)') // v-loading背景色
+                root.style.setProperty('--el-loading-mask-bg','transparent') // v-loading背景色
                 root.style.setProperty('--shadow1-color','rgba(0, 0, 0, 0.514)')
                 root.style.setProperty('--shadow2-color','rgba(0, 0, 0, 0.377)')
             }
@@ -380,6 +382,9 @@ export default {
         },
     },
     mounted(){
+        if (localStorage.getItem('light_svg_show') !== null) {
+            this.$store.state.light_svg_show = localStorage.getItem('light_svg_show') === 'true';
+        }
         //
         this.switch_change(!this.$store.state.light_svg_show)
 

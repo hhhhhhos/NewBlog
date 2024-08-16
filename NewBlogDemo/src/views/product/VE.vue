@@ -74,7 +74,7 @@
     <div v-else-if="!is404">
 
       <!--信息 -->
-      <div v-if="!pinglun_id" :style="`width:${product_width}%;text-align: center;margin: 25px auto 5px;padding-left: 10px;`" class="myborder">
+      <div v-if="pinglun_id!=='45698'" :style="`width:${product_width}%;text-align: center;margin: 25px auto 5px;padding-left: 10px;`" class="myborder">
         <!--题目 -->
         <h2 style="margin-top: 25px;margin-bottom: 5px;color:var(--ptext-color);">{{OneData.name}}&nbsp;&nbsp;</h2>
         
@@ -186,7 +186,7 @@
 
     </div>
 
-    <draggable v-if="!pinglun_id" class="drag-tool" :X=$store.state.CURRENT_WIDTH-$store.state.CURRENT_WIDTH*0.15 :Y=200>
+    <draggable v-if="pinglun_id!=='45698' && !$store.state.IsMobile" class="drag-tool" :X=$store.state.CURRENT_WIDTH-$store.state.CURRENT_WIDTH*0.15 :Y=200>
         <div style="width: 100px;margin: 20px auto;" @mousedown.stop >
             <!-- 滑动选择宽度 -->
             <el-slider style="margin: 0;padding: 0;"

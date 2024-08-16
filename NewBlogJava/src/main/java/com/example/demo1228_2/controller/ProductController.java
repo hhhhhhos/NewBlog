@@ -78,7 +78,7 @@ public class ProductController {
             else query.eq(Product::getIs_on_homepage,true);
 
             // 只展示允许展示的
-            query.eq(Product::getIs_show,true);
+            query.eq(Product::getIs_show,true).notBetween(Product::getId,45698L,46000L);
 
             // 添加置顶产品优先排序条件
             query.orderByDesc(Product::getIs_top);

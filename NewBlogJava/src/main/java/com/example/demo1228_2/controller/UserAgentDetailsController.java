@@ -287,13 +287,21 @@ public class UserAgentDetailsController {
     @Autowired
     DataResultMapper dataResultMapper;
 
-    @GetMapping("/init_dashboard_four")
-    public Map Dashboard3(){
+    @GetMapping("/init_dashboard")
+    public Map Dashboard3(HttpSession session){
         Map<String,Object> params = new HashMap<>();
         //params.put("p1",userAgentDetailsMapper.countDistinctUserUuid());
-        params.put("p1", dataResultMapper.selectById(45698).getHome_visitors());
-        params.put("p3",Db.lambdaQuery(Order.class).count());
-        params.put("p4",Db.lambdaQuery(Buylist.class).count());
+        params.put("name", session.getAttribute("LoginName"));    // 姓名
+        params.put("role", session.getAttribute("Role"));
+        params.put("home_visit_num", dataResultMapper.selectById(45698).getHome_visitors());
+        params.put("request_num",Db.lambdaQuery(UserAgentDetails.class).count());
+
+        params.put("product_num",Db.lambdaQuery(Product.class).count());
+        params.put("user_num",Db.lambdaQuery(User.class).count());
+        params.put("comment_num",Db.lambdaQuery(Comment.class).count());
+        params.put("chat_num",Db.lambdaQuery(Chat.class).count());
+        params.put("kefu_num",Db.lambdaQuery(KefuChatHistory.class).count());
+
         return params;
     }
 

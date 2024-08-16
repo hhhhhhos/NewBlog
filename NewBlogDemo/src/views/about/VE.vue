@@ -1,12 +1,16 @@
 <template>
   <div>
-    <h1>..</h1>
+    <pinglun pinglun_id="45699"/>
   </div>
 </template>
 
 <script>
+import pinglun from '@/views/product/VE.vue'
 
 export default {
+    components:{
+        pinglun
+    },
     data() {
         return{
         }

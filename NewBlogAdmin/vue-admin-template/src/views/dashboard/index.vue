@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <div class="dashboard-text">Role: {{ this.name }}</div>
+    <div v-if="false" class="dashboard-text">Role: {{ this.name }}</div>
     
     <panel-group @handleSetLineChartData="handleSetLineChartData" />
     

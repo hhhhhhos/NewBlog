@@ -75,7 +75,7 @@ export default {
   --ptext-color:none; /* 标题颜色 */
   --ptext-color2:#00000060; /* 描述信息颜色 */
   --zhezhao-color:rgba(255, 255, 255, 0.949);
-  --el-loading-mask-bg:rgb(243, 243, 244);
+  --el-loading-mask-bg:transparent;
   --shadow1-color:rgba(0, 0, 0, 0.514);
   --shadow2-color:rgba(0, 0, 0, 0.377);
 }

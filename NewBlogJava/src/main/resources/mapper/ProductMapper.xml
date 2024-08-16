@@ -5,6 +5,7 @@
         SELECT id, name, create_time, update_time, type, is_top, is_show, is_on_homepage
         FROM t_product
         <where>
+            id NOT BETWEEN 45698 AND 46000
             <if test="type != -1">
                 AND type = #{type}
             </if>

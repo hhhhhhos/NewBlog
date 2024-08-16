@@ -1,5 +1,7 @@
 <template>
     <img
+    title="查看个人信息"
+        ref="myImage"
         :style="the_style"
         :src="obj?.wechat_headimgurl?
         obj.wechat_headimgurl:obj?.email?.includes('@qq.com')?
@@ -38,6 +40,10 @@ export default {
                 if(this.obj?.id)this.$router.push('/user/otheruserinfo?user_id='+this.obj.id)
                 else this.$router.push('/user/otheruserinfo?user_id='+this.obj.user_id)
                 return true
+            }else{
+                if(this.$route.path==='/user/otheruserinfo'){
+                    this.$openURL2(this.$refs.myImage.src)
+                }
             }
             return false
         }

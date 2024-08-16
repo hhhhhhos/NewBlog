@@ -59,7 +59,7 @@
       <van-cell icon="edit" title-style="margin-left: 5px;" style="margin-top: 8px;" title="用户反馈" is-link @click.native="handleClick('feedback')" />
       <van-cell icon="smile-o" title-style="margin-left: 5px;" title="客服二号" is-link to="/kefu" />
       <van-cell icon="orders-o" title-style="margin-left: 5px;" title="客服记录" is-link to="/kefu/history" />
-      <van-cell icon="setting-o" title-style="margin-left: 5px;" style="margin-bottom: 8px;" title="系统设置" is-link @click.native="handleClick('settings')" />
+      <van-cell icon="setting-o" title-style="margin-left: 5px;" style="margin-bottom: 8px;" title="系统设置" is-link to="/user/option" />
       <van-cell style="cursor: pointer;text-align: center;height: 50px;align-items: center;font-size: medium;" title="退出登录"  @click="logout"  />
     </div>
 
@@ -120,12 +120,13 @@ export default {
                 })
         },
         logout(){
-            axios.get('/user/logout')
+            axios.get('/user/logout') // 似乎是唯一退出口
                 .then(response=>{
                     console.log(response)
                     if(response.data.code){
                         this.$message.success("退出登录成功")
                         this.$store.state.IsLogin = false
+                        this.$store.state.UserId = null
                         this.$root.$emit('logout')
                         this.$router.push('/home')
                     }
