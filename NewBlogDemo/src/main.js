@@ -19,9 +19,6 @@ import mavonEditor from 'mavon-editor'
 import 'mavon-editor/dist/css/index.css'
 Vue.use(mavonEditor)
 
-import VuePageTransition from 'vue-page-transition'
-Vue.use(VuePageTransition)
-
 // 添加一个全局方法
 // 新窗口打开
 Vue.prototype.$openURL = function (url) {
@@ -37,6 +34,7 @@ Vue.prototype.$openProduct = function (id) {
     this.$router.push(`/product?id=${id}`)
 };
 
+// 个人资料显示的上次在线时间
 Vue.prototype.$FormDate = function (date) {
     if (!date) return '未知' // 防空报错
     const now = moment()
@@ -60,6 +58,7 @@ Vue.prototype.$FormDate = function (date) {
     }
 }
 
+// 聊天显示的时间
 Vue.prototype.$formatDate = function (date) {
     //var date = "2024-05-20T05:04:57.000+00:00"
     const now = moment().startOf('day'); // 获取当前日期并清除时分秒，保持当天开始的时间
@@ -82,6 +81,7 @@ Vue.prototype.$formatDate = function (date) {
     }
 }
 
+// error消息
 Vue.prototype.$fail = function (msg) {
     Toast.fail(msg)
 }

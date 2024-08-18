@@ -78,6 +78,13 @@ const routes = [
                         meta: { title: '西巴BLOG -用户信息详情' }
                     },
                     {
+                        path: 'info/option',
+                        name: 'option',
+                        component: () => import(/* webpackChunkName: "aboutu11" */ '../views/user/info/option/VE.vue'),
+                        meta: { title: '西巴BLOG -用户设置' },
+
+                    },
+                    {
                         path: 'buylist',
                         name: 'userbuylist',
                         component: () => import(/* webpackChunkName: "aboutu6" */ '../views/user/buylist/VE.vue'),
@@ -108,13 +115,7 @@ const routes = [
                         component: () => import(/* webpackChunkName: "aboutu10" */ '../views/user/chat/history/VE.vue'),
                         meta: { title: '西巴BLOG -聊天历史' },
                     },
-                    {
-                        path: 'option',
-                        name: 'option',
-                        component: () => import(/* webpackChunkName: "aboutu11" */ '../views/user/option/VE.vue'),
-                        meta: { title: '西巴BLOG -用户首页' },
-
-                    },
+                    
                 ]
             },
             {
@@ -156,6 +157,12 @@ const routes = [
                 path: 'vue2-editor',
                 name: 'vue2-editor',
                 component: () => import(/* webpackChunkName: "about10" */ '../views/other/vue2-editor.vue'),
+                meta: { title: '西巴BLOG -vue2-editor' },
+            },
+            {
+                path: 'test_video',
+                name: 'test_video',
+                component: () => import(/* webpackChunkName: "about10" */ '../views/other/test_video.vue'),
                 meta: { title: '西巴BLOG -vue2-editor' },
             },
             {

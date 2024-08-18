@@ -186,7 +186,7 @@
 
     </div>
 
-    <draggable v-if="pinglun_id!=='45698' && !$store.state.IsMobile" class="drag-tool" :X=$store.state.CURRENT_WIDTH-$store.state.CURRENT_WIDTH*0.15 :Y=200>
+    <draggable v-if="pinglun_id!=='45698' && !$store.state.IsMobile && $store.state.option.show_product_scale_win" class="drag-tool" :X=$store.state.CURRENT_WIDTH-$store.state.CURRENT_WIDTH*0.15 :Y=200>
         <div style="width: 100px;margin: 20px auto;" @mousedown.stop >
             <!-- 滑动选择宽度 -->
             <el-slider style="margin: 0;padding: 0;"

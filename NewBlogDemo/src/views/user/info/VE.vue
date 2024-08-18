@@ -59,7 +59,7 @@
       <van-cell icon="edit" title-style="margin-left: 5px;" style="margin-top: 8px;" title="用户反馈" is-link @click.native="handleClick('feedback')" />
       <van-cell icon="smile-o" title-style="margin-left: 5px;" title="客服二号" is-link to="/kefu" />
       <van-cell icon="orders-o" title-style="margin-left: 5px;" title="客服记录" is-link to="/kefu/history" />
-      <van-cell icon="setting-o" title-style="margin-left: 5px;" style="margin-bottom: 8px;" title="系统设置" is-link to="/user/option" />
+      <van-cell icon="setting-o" title-style="margin-left: 5px;" style="margin-bottom: 8px;" title="系统设置" is-link :to="`/user/info/option?id=${obj.id}`" />
       <van-cell style="cursor: pointer;text-align: center;height: 50px;align-items: center;font-size: medium;" title="退出登录"  @click="logout"  />
     </div>
 

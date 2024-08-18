@@ -174,6 +174,7 @@ import { Search } from 'vant';
 import { throttle } from 'lodash';
 import vClickOutside from 'v-click-outside'
 import { allowedPaths } from '@/router'
+import { getuseroption } from '@/utils/methods'
 
 const root = document.documentElement;
 
@@ -252,6 +253,7 @@ export default {
                     this.dataResult = response.data
                 })
         },
+        
         logout(){
             this.obj = null
         },
@@ -382,13 +384,14 @@ export default {
         },
     },
     mounted(){
+        // 判断明暗布局色
         if (localStorage.getItem('light_svg_show') !== null) {
             this.$store.state.light_svg_show = localStorage.getItem('light_svg_show') === 'true';
         }
-        //
         this.switch_change(!this.$store.state.light_svg_show)
 
         this.getdataresult()
+        //this.getuseroption() 在
         // 判断导航栏初始颜色
         const root = document.documentElement;
         if(this.$route.path!=='/home')root.style.setProperty('--background-color2', '#2c3e50');
@@ -409,6 +412,8 @@ export default {
                     this.$store.state.IsLogin = true
                     this.$store.state.UserName = response.data.data
                     this.$store.state.UserId = response.data.map.user_id
+                    console.log(response.data.map.user_id)
+                    getuseroption(response.data.map.user_id)
                     this.getuserinfo()
                 }else{
                     //this.$message.error("error:"+response.data.msg);

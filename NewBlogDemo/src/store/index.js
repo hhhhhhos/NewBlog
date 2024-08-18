@@ -19,6 +19,10 @@ export default new Vuex.Store({
         userchat_name:'', // 标题显示和谁聊天
         userchat_id:'', // 和谁聊天的用户id
         chat_badge:'', // 未读消息数量
-        light_svg_show:true
+        light_svg_show:true,
+        option:{
+            show_product_scale_win:true // 是否显示product的缩放调节窗
+        }
+
     }
 })
