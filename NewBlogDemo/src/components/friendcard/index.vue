@@ -6,6 +6,7 @@
     <div class="right">
         <h2 class="username" @click.stop="goOther()" title="查看个人信息">{{ username }}</h2>
         <p class="quote">{{ quote }}</p>
+        <p class="create_time">{{ create_time?.slice(0,10) }}</p>
     </div>
   </div>
 </template>
@@ -34,6 +35,10 @@ export default {
             type: String,
             required: true
         },
+        create_time:{
+            type: String,
+            required: true
+        }
     },
     data() {
         return{
@@ -65,6 +70,7 @@ export default {
   display: flex;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   cursor: pointer;
+  position: relative;
 }
 
 .avatar img {
@@ -98,10 +104,17 @@ export default {
   color:rgb(166, 166, 166);
   height: 1.9rem;
   width: 100%;
-    overflow:hidden;
     text-overflow:ellipsis;
     display: -webkit-box;
     -webkit-line-clamp:2;
     -webkit-box-orient: vertical;
+}
+
+.create_time {
+    position: absolute;
+    color:rgb(166, 166, 166);
+    margin: 0 0 5px 70px;
+    bottom: 0;
+    left: 0;
 }
 </style>

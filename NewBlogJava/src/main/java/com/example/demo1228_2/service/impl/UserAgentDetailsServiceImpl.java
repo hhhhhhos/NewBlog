@@ -115,46 +115,49 @@ public class UserAgentDetailsServiceImpl extends ServiceImpl<UserAgentDetailsMap
 
 
         // region 初始化UserAgentDetails
+        try {
 
-        // 分析userAgent
-        //UserAgentAnalyzer uaa = UserAgentAnalyzer.newBuilder().build();
-        //UserAgent userAgent = UserAgentAnalyzer.newBuilder().build().parse(userAgent_s);
-        String agent=userAgent_s;
-        System.out.println(userAgent_s);
-        //解析agent字符串
-        UserAgent userAgent = UserAgent.parseUserAgentString(agent);
-        UserAgentDetails userAgentDetails = new UserAgentDetails(userAgent,userAgent_s);
-        // 和set 8个附加信息
-        userAgentDetails.setUser_agent(userAgent_s);
-        userAgentDetails.setRealIp(realIp);
-        userAgentDetails.setForwardedProto(forwardedProto);
-        userAgentDetails.setOriginalURI(originalURI);
-        userAgentDetails.setMethod(method);
-        userAgentDetails.setUser_uuid(uuid);
-        userAgentDetails.setCity(location);
-        userAgentDetails.setVisitor_name(visitor_name);
-        userAgentDetails.setWechat_nickname(wechat_nickname);
-        userAgentDetails.setWechat_headimgurl(wechat_headimgurl);
-        userAgentDetails.setWechat_unionid(wechat_unionid);
-        userAgentDetails.setUser_id(user_id);
+            // 分析userAgent
+            //UserAgentAnalyzer uaa = UserAgentAnalyzer.newBuilder().build();
+            //UserAgent userAgent = UserAgentAnalyzer.newBuilder().build().parse(userAgent_s);
+            String agent = userAgent_s;
+            System.out.println(userAgent_s);
+            //解析agent字符串
+            UserAgent userAgent = UserAgent.parseUserAgentString(agent);
+            UserAgentDetails userAgentDetails = new UserAgentDetails(userAgent, userAgent_s);
+            // 和set 8个附加信息
+            userAgentDetails.setUser_agent(userAgent_s);
+            userAgentDetails.setRealIp(realIp);
+            userAgentDetails.setForwardedProto(forwardedProto);
+            userAgentDetails.setOriginalURI(originalURI);
+            userAgentDetails.setMethod(method);
+            userAgentDetails.setUser_uuid(uuid);
+            userAgentDetails.setCity(location);
+            userAgentDetails.setVisitor_name(visitor_name);
+            userAgentDetails.setWechat_nickname(wechat_nickname);
+            userAgentDetails.setWechat_headimgurl(wechat_headimgurl);
+            userAgentDetails.setWechat_unionid(wechat_unionid);
+            userAgentDetails.setUser_id(user_id);
 
-        // endregion
+            // endregion
 
 
-
-        // region插入访客数据库
-        if(insert){
-            if(userAgentDetailsMapper.insert(userAgentDetails)==1){
-                log.info("成功插入访客记录");
+            // region插入访客数据库
+            if (insert) {
+                if (userAgentDetailsMapper.insert(userAgentDetails) == 1) {
+                    log.info("成功插入访客记录");
+                } else {
+                    log.info("插入访客记录失败");
+                }
             }
-            else{
-                log.info("插入访客记录失败");
-            }
+            //endregion
+
+
+            future.complete(userAgentDetails); // 正常完成时设置返回值
+
+        }catch (Exception e){
+            log.info("发生初始化UserAgentDetails异常:"+e.getMessage());
         }
-        //endregion
-
-
-        future.complete(userAgentDetails); // 正常完成时设置返回值
 
         return future;
     }

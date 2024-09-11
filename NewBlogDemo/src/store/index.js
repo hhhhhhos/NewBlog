@@ -21,7 +21,7 @@ export default new Vuex.Store({
         chat_badge:'', // 未读消息数量
         light_svg_show:true,
         option:{
-            show_product_scale_win:true // 是否显示product的缩放调节窗
+            show_product_scale_win:false // 是否显示product的缩放调节窗
         }
 
     }

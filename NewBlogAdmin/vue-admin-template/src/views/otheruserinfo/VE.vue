@@ -134,7 +134,8 @@ export default {
 <style scoped>
 .my-container{
   width: 100%;
-  height:80vh;
+  height:85vh;
+  min-height: 650px;
   padding-top: 30px;
   position: absolute;
   display: flex;

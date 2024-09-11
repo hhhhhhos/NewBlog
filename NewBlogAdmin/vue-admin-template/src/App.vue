@@ -59,4 +59,8 @@ export default {
     background-color:var(--third-color) !important;
     border:1px solid var(--third-color) !important;
 }
+.html{
+    scroll-behavior: smooth; /* 锚点平滑 */
+    scroll-padding-top: 50%; /* 锚点距离顶部 */
+}
 </style>

@@ -22,7 +22,7 @@
                 <div class="dropdown-item" 
                     v-for="(item, index) in dataResult.fenlei_map" :key="index"
                     @click.stop="click_fenlei(index)">
-                    {{item}}
+                    {{item}} {{ type_trans[index]?type_trans[index]:0 }}
                 </div>
             </div>
           </div>
@@ -210,6 +210,7 @@ export default {
                 {title:"关于",path:"/about",active:false},
             ],
             obj:null,
+            type_trans:{}
         }
     },
     methods:{
@@ -229,6 +230,8 @@ export default {
                 root.style.setProperty('--el-loading-mask-bg','#2c3e50f8') // v-loading背景色
                 root.style.setProperty('--shadow1-color','rgba(150, 150, 150, 0.514)')
                 root.style.setProperty('--shadow2-color','rgba(150, 150, 150, 0.377)')
+                root.style.setProperty('--blockquote-color','honeydew')
+                root.style.setProperty('--markdown-body-a','lightblue')
             }
             // 明色
             else{
@@ -244,6 +247,8 @@ export default {
                 root.style.setProperty('--el-loading-mask-bg','transparent') // v-loading背景色
                 root.style.setProperty('--shadow1-color','rgba(0, 0, 0, 0.514)')
                 root.style.setProperty('--shadow2-color','rgba(0, 0, 0, 0.377)')
+                root.style.setProperty('--blockquote-color','#6a737d')
+                root.style.setProperty('--markdown-body-a','#0366d6')
             }
         },
         getdataresult(){
@@ -433,6 +438,19 @@ export default {
                 this.$store.state.IsLogin = false
                 this.target_img_src = require('@/assets/default_headimg5.webp')
             })
+
+
+        axios.get(`/data-result/type_count`).then(response=>{
+            console.log(response.data)
+            const result = response.data.reduce((acc, item) => {
+                acc[item.type] = parseInt(item.count, 10); // 将 count 转换为整数并存入 acc 对象
+                return acc; // 返回累加器给下一个迭代
+            }, {});
+            this.type_trans = result
+            
+        })
+
+
     },
     beforeDestroy() {
     // 在组件销毁前移除滚动事件监听器
@@ -448,13 +466,13 @@ export default {
 </script>
 
 <style scoped>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+    #app {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: #2c3e50;
+    }
 
 .dropdown-menu {
   position: absolute;
@@ -614,6 +632,15 @@ export default {
 </style>
 
 <style>
+.markdown-body blockquote{
+    color:var(--blockquote-color) !important;
+}
+
+.markdown-body a {
+    color: var(--markdown-body-a) !important;
+}
+
+
 .my-wrapper{
     position: relative; 
     z-index: 20; 

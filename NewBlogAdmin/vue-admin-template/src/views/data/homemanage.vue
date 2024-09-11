@@ -8,12 +8,7 @@
             <el-form-item label="后台访客">
                 <el-input style="width: 300px;" v-model="dataResult.back_visitors"></el-input>
             </el-form-item>
-                <el-form-item label="总评论数">
-            <el-input style="width: 300px;" v-model="dataResult.comment_total_num"></el-input>
-                </el-form-item>
-            <el-form-item label="总文章数">
-                <el-input style="width: 300px;" v-model="dataResult.product_total_num"></el-input>
-            </el-form-item>
+
         
             <el-form-item label="">
                 <p style="margin: 0;padding: 0;">填写每个图片的名字（带路径，开发环境都是/img/但生产环境会要实际路径）或网址，换行分割(改版后不用)，//可注释掉不需要的图</p>

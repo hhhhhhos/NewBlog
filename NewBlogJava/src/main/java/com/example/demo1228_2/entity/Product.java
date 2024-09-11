@@ -80,4 +80,6 @@ public class Product {
     Boolean is_show;
 
     Boolean is_on_homepage;
+
+    String biaoqian;
 }

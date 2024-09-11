@@ -1,5 +1,6 @@
 package com.example.demo1228_2.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
@@ -8,21 +9,22 @@ import com.example.demo1228_2.component.GlobalProperties;
 import com.example.demo1228_2.config.R;
 import com.example.demo1228_2.config.Tool;
 import com.example.demo1228_2.entity.*;
-import com.example.demo1228_2.mapper.DataResultMapper;
-import com.example.demo1228_2.mapper.ProductMapper;
-import com.example.demo1228_2.mapper.ProductRateMapper;
-import com.example.demo1228_2.mapper.UserMapper;
+import com.example.demo1228_2.mapper.*;
 import com.example.demo1228_2.service.impl.ProductServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -101,12 +103,20 @@ public class ProductController {
             //
             */
             log.info("分页查询成功");
-            // 访客加一
+            // region 访客去重逻辑
+            Object obj = session.getAttribute("Home_visitors");
+            LocalDate today = LocalDate.now();
             DataResult dataResult = dataResultMapper.selectById(45698);
-            if(!Tool.IsUserAdmin(session)){
-                dataResult.setHome_visitors(dataResult.getHome_visitors()+1);
-                dataResultMapper.updateById(dataResult);
+            if (obj == null || !obj.toString().equals(today.toString())) {
+                session.setAttribute("Home_visitors", today);
+
+                // 访客加1
+                if (!Tool.IsUserAdmin(session)) {
+                    dataResult.setHome_visitors(dataResult.getHome_visitors() + 1);
+                    dataResultMapper.updateById(dataResult);
+                }
             }
+            // endregion
 
             // 加点参数
             List<Product> res = page.getRecords();
@@ -152,7 +162,7 @@ public class ProductController {
         return R.success(product)
                 .add("user_name",user.getName())
                 .add("rate_num",product.getRate_num())
-                .add("user_id",user.getId().toString())
+                .add("user_id",user.getId()!=null?user.getId().toString():null)
                 .add("user_wechat_nickname",user.getWechat_nickname());
     }
 
@@ -215,6 +225,8 @@ public class ProductController {
 
     }
 
+    @Autowired
+    TagMapper tagMapper;
 
     /**
      * 添加商品
@@ -231,10 +243,12 @@ public class ProductController {
             ObjectMapper objectMapper = new ObjectMapper();
             // 序列化
             Product product = objectMapper.readValue(product_json, Product.class);
+            Map<String,Object> obj = objectMapper.readValue(product_json, new TypeReference<Map<String,Object>>() {});
             log.info("{}",product);
             // 反序列化
             //String json_str = objectMapper.writeValueAsString(product);
             //log.info(json_str);
+
 
 
 
@@ -285,6 +299,10 @@ public class ProductController {
                 if(!name.equals("noproduct"))
                     moveresult = Tool.moveFile(name,product.getId().toString()+'/'+name);
                 log.info("图片移动结果："+moveresult);
+
+                // 处理标签
+                handleBiaoian(obj,product);
+
                 return R.success("插入成功");
             }
 
@@ -336,6 +354,7 @@ public class ProductController {
             // 反序列化
             //String json_str = objectMapper.writeValueAsString(product);
             //log.info(json_str);
+            Map<String,Object> obj = objectMapper.readValue(product_json, new TypeReference<Map<String,Object>>() {});
 
             // 验证权限
             if(!session.getAttribute("Role").toString().equals("admin"))
@@ -395,6 +414,9 @@ public class ProductController {
 
             movePhotoFromTempToIdFolder(product.getContent(),product.getId().toString());
 
+            // 处理标签
+            handleBiaoian(obj,product);
+
             return R.success("更新成功");
 
 
@@ -404,8 +426,80 @@ public class ProductController {
         }
     }
 
+    private void handleBiaoian(Map<String,Object> obj,Product product){
+        // 先处理是否有新标签（新标签不是数字，直接就是中文）
+        List<Integer> tagList = new ArrayList<>();
+        List<String> tagList_str = new ArrayList<>();
+        if(!ObjectUtils.isEmpty(obj.get("t_tag_label")))
+            tagList_str = objectMapper.convertValue(obj.get("t_tag_label"),new TypeReference<List<String>>() {} );
+        DataResult dataResult = dataResultMapper.selectById(45698L);
+        Map<String,String> biaoqian_map = dataResult.getBiaoqian_map();
+        // 是否有新建的标签
+        tagList = tagList_str.stream().map(tag->{
+            // 不存在的标签 新建
+            if(biaoqian_map.get(tag)==null){
+                // 先搞出索引
+                int index = biaoqian_map.size();
+                int add = -1;
+                do{
+                    add++;
+                    index+=add;
+                }while(biaoqian_map.get(index+"")!=null);
+                biaoqian_map.put(index+"",tag);
+                // tagList_str替换成index
+                return index;
+            }else{
+                return Integer.parseInt(tag);
+            }
+        }).toList();
+        log.info("toList是否改变tagList_str原值："+tagList_str);
+        log.info("tagList:"+tagList);
+        dataResult.setBiaoqian_map(biaoqian_map);
+        // 更新标签
+        dataResultMapper.updateById(dataResult);
+
+
+
+        // 先查询出所有符合 product_id 的 Tag 记录
+        Long Id = product.getId();
+        // 查询出所有符合 product_id 的 Tag 记录
+        List<Tag> existingTags = Db.lambdaQuery(Tag.class)
+                .eq(Tag::getProduct_id, Id)
+                .list();
+
+        // 将查询结果的 tag_int 转为 Set，方便后续判断
+        Set<Integer> existingTagInts = existingTags.stream()
+                .map(Tag::getTag_int)
+                .collect(Collectors.toSet());
+
+        // 将 tagList 也转为 Set，方便对比
+        Set<Integer> newTagInts = new HashSet<>(tagList);
+
+        // 1. 新增：遍历 tagList，找到数据库中不存在的 tag_int 并进行插入
+        newTagInts.forEach(num -> {
+            if (!existingTagInts.contains(num)) {
+                Tag tag = new Tag();
+                tag.setProduct_id(Id);
+                tag.setTag_int(num);
+                tagMapper.insert(tag);
+            }
+        });
+
+        // 2. 删除：遍历数据库中的记录，找到 tagList 中不存在的 tag_int 并进行删除
+        existingTags.forEach(tag -> {
+            if (!newTagInts.contains(tag.getTag_int())) {
+                // 删除对应的记录
+                tagMapper.delete(
+                        new QueryWrapper<Tag>()
+                                .eq("product_id", Id)
+                                .eq("tag_int", tag.getTag_int())
+                );
+            }
+        });
+    }
+
     /**
-     * 自定义列表转webp图
+     * 自定义列表转webp图(废弃)
      * @return
      */
     @GetMapping("/photosToWebpbyadmin")
@@ -435,7 +529,7 @@ public class ProductController {
      * 删除商品
      * @param productList 要删除的商品列表
      */
-    @PostMapping("/deletelistbyadmin") // 删一堆商品
+    @PostMapping("/deletelistbyadmin") // 删一堆商品（废弃了？被all接口泛型取代）
     public R<String> FindOneProduct(@RequestBody List<Product> productList,HttpSession session) {
         try{
 
@@ -459,6 +553,16 @@ public class ProductController {
 
             if(!productService.removeByIds(IdList))
                 throw new CustomException("数据库删除失败，可能存在非法ID");
+
+            // 删文章时删除其他表文章下的一切（t_tags）
+            Db.lambdaUpdate(Tag.class)
+                    .in(Tag::getProduct_id, IdList)
+                    .remove();
+            // 文章下的评论
+            Db.lambdaUpdate(Comment.class)
+                    .in(Comment::getProduct_id, IdList)
+                    .remove();
+
 
             // 删图
             for(Long Id:IdList){
@@ -525,6 +629,7 @@ public class ProductController {
 
         return response;
     }
+
 
     @GetMapping("/guidang") // 归档
     public List<Map<String,Object>> FindPageProducts2(@RequestParam(defaultValue = "-1") int type,

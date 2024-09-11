@@ -45,7 +45,7 @@
                 
                 <el-form-item label="标签数字">
                     <el-input style="width: 300px;" v-model="new_index"></el-input>
-                    <p style="margin: 0;">最好数字不然可能报错</p>
+                    <p style="margin: 0;">最好数字不然可能报错(最好是按顺序的数字)</p>
                 </el-form-item>
 
                 <el-form-item label="数字类名">

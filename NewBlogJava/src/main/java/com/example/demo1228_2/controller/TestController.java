@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.*;
 
 /**
@@ -354,6 +356,52 @@ public class TestController {
         }
 
         return params;
+    }
+
+    @GetMapping("/tuchuang")
+    public String executePythonScript(@RequestParam String url){
+        String pythonScript = "get.py";  // 改成你的脚本绝对路径
+
+        ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScript, url);
+
+        try {
+            // 启动进程
+            Process process = processBuilder.start();
+
+            // 获取标准输出
+            BufferedReader outputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            // 获取错误输出
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+            StringBuilder output = new StringBuilder();
+            StringBuilder errorOutput = new StringBuilder();
+            String line;
+
+            // 读取标准输出
+            while ((line = outputReader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+
+            // 读取错误输出
+            while ((line = errorReader.readLine()) != null) {
+                errorOutput.append(line).append("\n");
+            }
+
+            // 等待脚本执行完成
+            int exitCode = process.waitFor();
+
+            // 返回输出或错误信息
+            if (exitCode == 0) {
+                log.info("执行完毕:"+output);
+                return output.toString().replace("\n", "<br>");  // 成功时返回输出结果
+            } else {
+                return "脚本执行失败，退出代码: " + exitCode + "\n错误信息: " + errorOutput.toString();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "执行过程中发生异常: " + e.getMessage();
+        }
     }
 
 

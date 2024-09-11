@@ -55,6 +55,8 @@ public class FriendController {
             if(!friend.getFan()){
                 if(!Tool.IsUserAdmin(session))
                     throw new CustomException("不是管理员");
+                else
+                    friend.setInvalid(false);
             }
 
             friend.setUser_id(Tool.getUserSessionId(session));

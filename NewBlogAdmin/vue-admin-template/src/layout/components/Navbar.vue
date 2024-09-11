@@ -80,7 +80,7 @@ export default {
         },
         goToProfile(){
             //this.$message("profile")
-            this.$router.push('/user/info')
+            this.$alert("为什么点我！")
         },
         async logout() {
             await this.$store.dispatch('user/logout')

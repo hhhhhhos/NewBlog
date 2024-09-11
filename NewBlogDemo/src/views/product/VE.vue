@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="product">
     
     <!-- 电脑（已废弃） -->
     <div v-if="false">
@@ -94,7 +94,7 @@
         </div>
 
         <!--正文 -->
-        <mavon-editor class="mdshow" v-model="OneData.content" :xssOptions="xssOptions" />
+        <mavon-editor ref="mavonEditor" class="mdshow" v-model="OneData.content" :xssOptions="xssOptions" />
 
         <!--点赞-->
         <div class="dianzanblog" @click="send_product_zan()">
@@ -117,6 +117,15 @@
         </div>
 
       </div>
+
+        <!--目录 -->
+        <div class="toc" :style="`right: calc(${(100-product_width)/2}% - 310px);`" 
+        v-if="product_width < 70">
+            <div class="toc-title">目录</div>
+            <div v-for="(toc,key) in tocs" :key="key">
+                <a :style="tocs_hlight_index===key?`color: #007bff;background-color: #f0f0f0;`:``" class="no-style" :href="toc.href" v-html="toc.name"></a>
+            </div>
+        </div>
 
 
       <!-- 筛选排序 -->
@@ -240,12 +249,13 @@ export default {
             product_width:50,
             xssOptions: {
                 whiteList: {
-                    a: ["href", "title", "target", "download"],
+                    a: ["href", "title", "target", "download", "id","style"], // 添加 "id" 属性,
                     img: ["src", "alt", "width", "height"],
                     video: ["src", "type", "controls", "width", "height", "poster"],
                     source: ["src", "type"],
                     br: [],
-                    div: ["class","style"],
+                    div: ["class","style","id"],
+                    span:["style"],
                     iframe: ["style","src", "scrolling", "border", "frameborder", "framespacing", "allowfullscreen","width", "height"]
                 },
                 stripIgnoreTagBody: true
@@ -293,7 +303,9 @@ export default {
                 rate_click_value:null,
                 rate_value:null,
                 rate_num:null
-            }
+            },
+            tocs:[],
+            tocs_hlight_index:0
         }
     },
     methods:{
@@ -320,7 +332,7 @@ export default {
 
         },
         send_product_zan(){
-            axios.post('/product/addone/zan',{"product_id":this.$route.query.id,})
+            axios.post('/product/addone/zan',{"product_id":this.$route.query.id?this.$route.query.id:this.pinglun_id,})
                 .then(response=>{
                     if(response.data.code===0)Toast.fail(response.data.msg)
                     else {
@@ -453,6 +465,8 @@ export default {
                 //this.getalltype2()
                 // 去除遮罩
                 this.$store.state.zhezhao_show = false
+
+                this.generate_mulu()
 
             }).catch(error=>{
                 console.log(error)
@@ -597,7 +611,17 @@ export default {
                 this.van_goods_margin_bottom = "0"
                 this.comment_margin_bottom = "-50"
             }
-
+            this.scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            console.log('当前屏幕滚动高度:', this.scrollTop);
+            this.tocs.some((item,index)=>{
+                if(item.rtop>this.scrollTop+300){
+                    if(index===0)return true
+                    this.tocs_hlight_index = index-1
+                    return true
+                }
+                this.tocs_hlight_index = index
+            })
+            console.log('测试return')
         
         },
         // 监听点击
@@ -606,6 +630,36 @@ export default {
             if (!this.$refs.inputBox.contains(e.target)) {
                 this.comment_margin_bottom = "0"
             }
+        },
+        generate_mulu(){
+            this.$nextTick(() => {
+                const aArr = this.$refs.mavonEditor.$refs.vShowContent.querySelectorAll("a");
+
+                for (let i = 0; i < aArr.length; i++) {
+                    if (aArr[i].id && !aArr[i].id.startsWith('myid')) {
+                        let href = aArr[i].id;
+                        let name = aArr[i].parentNode.innerText;
+                        let rtop= aArr[i].getBoundingClientRect().top
+                        let parentTag = aArr[i].parentNode.tagName; // 获取父级元素的标签名
+                        
+                        let indent = '';
+                        const match = parentTag.match(/^H([1-6])$/);
+                        if (match) {
+                            const level = parseInt(match[1], 10); // 提取数字部分
+                            indent = '&nbsp;'.repeat((level - 1) * 4);
+                        }else continue
+                        name = indent + name;
+                        console.log(indent)
+
+                        this.tocs.push({
+                            href: "#" + href,
+                            name,
+                            rtop,
+                            parentTag
+                        });
+                    }
+                }
+            });
         }
     },
   
@@ -627,10 +681,66 @@ export default {
         this.$store.state.PAGE_STATE = "Tabbar"
         window.removeEventListener('scroll', this.handleScroll);
         document.removeEventListener('click', this.handleOutsideClick);
+    },
+    watch:{
+        '$store.state.CURRENT_WIDTH':function(){
+            if(this.pinglun_id)this.product_width = 95
+            else if(this.$store.state.CURRENT_WIDTH>1400)this.product_width = 50
+            else if(this.$store.state.CURRENT_WIDTH>900)this.product_width = 80
+            else this.product_width = 95
+        }
     }
 }
 </script>
 
+<style scoped>
+
+.no-style {
+  text-decoration: none;
+  color: inherit;
+}
+
+.product{
+    position: relative;
+}
+.toc {
+    background-color: var(--product-bg);
+    position: fixed;
+    
+    top:87px;
+    text-align: left;
+    max-height: 60vh;
+
+    overflow:auto;
+
+  border: 1px solid var(--product-bg);
+  border-radius: 4px;
+  padding: 15px;
+  width: 250px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+}
+
+.toc-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #ffd700;
+}
+
+.toc a {
+  display: block;
+  color: #333;
+  text-decoration: none;
+  padding: 5px 0;
+  font-size: 14px;
+}
+
+.toc a:hover {
+  color: #007bff;
+  background-color: #f0f0f0;
+}
+</style>
 
 <style >
 .color0000060 > i{
@@ -737,6 +847,10 @@ input[type="text"]{
 </style>
 
 <style>
+ul {
+    display: block;
+    list-style-type: disc; /* 使用圆点符号 */
+}
 .dianzanblog{
   margin: 10px auto;
   height: 70px;

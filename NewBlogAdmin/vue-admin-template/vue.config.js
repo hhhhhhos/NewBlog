@@ -36,6 +36,7 @@ module.exports = {
             warnings: false,
             errors: true
         },
+        disableHostCheck:true,
         // 自己加的跨域尝试 可以用在开发环境 生产环境 nginx反代
         proxy: 'http://localhost:8004'// 仅限开发环境
     // before: require('./mock/mock-server.js')

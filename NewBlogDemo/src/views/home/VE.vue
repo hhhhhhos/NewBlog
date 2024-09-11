@@ -690,7 +690,6 @@ export default {
         },
         async init(){
             await this.getdataresult()
-            
             this.images = this.dataResult.cn_list
             if(this.dataResult.other_stuff_map.po_add_cn)this.images = this.images.concat(this.dataResult.po_list);
             this.getRandomImage(null,this.images)

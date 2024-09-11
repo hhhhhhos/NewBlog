@@ -3,7 +3,7 @@
 
         <div class="block">
             <div v-for="(choice,key) in option" :key="key">
-                <van-cell v-if="key!=='id'&&key!=='user_id'" center :title="option_trans[key]">
+                <van-cell v-if="key!=='id'&&key!=='user_id'&&key!=='create_time'" center :title="option_trans[key]">
                 <template #right-icon>
                     <van-switch @change="change" v-model="option[key]" size="24" />
                 </template>

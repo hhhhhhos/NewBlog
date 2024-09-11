@@ -59,6 +59,7 @@ export default {
 
 <style>
 :root {
+    --blockquote-color:#6a737d;
   --primary-color: #3498db;
   --secondary-color: #2ecc71;
   --third-color:#2c3e50d0;
@@ -115,6 +116,8 @@ html {
   box-sizing: border-box;
   background-color: var(--html-bg);
   transition: background-color 0.4s ease;
+  scroll-behavior: smooth; /* 锚点平滑 */
+  scroll-padding-top: 65px; /* 锚点距离顶部 */
 }
 
 

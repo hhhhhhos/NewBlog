@@ -4,7 +4,7 @@
     <div class="myborder myfitcontent big">
         <div v-loading="follow.IsTableLoading" class="out-container minheight">
             <div v-for="(item,key) in follow.tableData" :key="key" class="item">
-                <FC :quote="item.info" :username="item.name" :blog_url="item.blog_url" :user_id="item.user_id"
+                <FC :quote="item.info" :username="item.name" :blog_url="item.blog_url" :user_id="item.user_id" :create_time="item.create_time"
                 :avatarUrl="item?.avata_url?
                     item.avata_url:item.qq_mail?
                     `https://q1.qlogo.cn/g?b=qq&nk=${item?.qq_mail?.replace('@qq.com','')}&s=100`:require(`@/assets/default_headimg5.webp`)"/>
@@ -29,7 +29,7 @@
         <div class="out-container">
             <div v-loading="fan.IsTableLoading" class="out-container minheight">
                 <div v-for="(item,key) in fan.tableData" :key="key" class="item">
-                    <FC :quote="item.info" :username="item.name" :blog_url="item.blog_url" :user_id="item.user_id"
+                    <FC :quote="item.info" :username="item.name" :blog_url="item.blog_url" :user_id="item.user_id" :create_time="item.create_time"
                     :avatarUrl="item?.avata_url?
                     item.avata_url:item.qq_mail?
                     `https://q1.qlogo.cn/g?b=qq&nk=${item?.qq_mail?.replace('@qq.com','')}&s=100`:require(`@/assets/default_headimg5.webp`)"/>

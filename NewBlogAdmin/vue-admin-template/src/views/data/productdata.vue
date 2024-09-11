@@ -21,21 +21,23 @@
       </div>
 
       <el-tag
-        style="margin:10px 10px 0 20px;padding-left: 10px;"
+        style="margin:10px 10px 0 10px;padding-left: 10px;"
         :disable-transitions=true
-        v-for="tag in tags"
-        :key="tag.name"
+        v-for="(tag,key) in tags"
+        :key="key"
         closable
-        @close="removeTag(tag.key)"
+        @close="removeTag(key)"
         :type="tag.type">
         {{tag.name}}
       </el-tag>
     </div>
 
     <el-table
+    ref="multipleTable"
       v-loading="IsTableLoading"
       :data="tableData"
       border fit highlight-current-row
+      @select="handleCheckBoxSelect"
       @selection-change="handleSelectionChange"
       style="width:100%;">
 
@@ -54,27 +56,24 @@
           :align="column.align"
           >
             <template slot="header" >
-                <el-dropdown trigger="click" placement="bottom"
-                v-if="['置顶', '显示', '主页显示','分类'].some(str => column.label.includes(str))" 
-                @command="handleCommand">
-                <span class="el-dropdown-link">
-                    {{ column.label }}<i class="el-icon-arrow-down el-icon--right"></i>
-                </span>
-                <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item command="a">黄金糕</el-dropdown-item>
-                    <el-dropdown-item command="b">狮子头</el-dropdown-item>
-                    <el-dropdown-item command="c">螺蛳粉</el-dropdown-item>
-                    <el-dropdown-item command="d" disabled>双皮奶</el-dropdown-item>
-                    <el-dropdown-item command="e" divided>蚵仔煎</el-dropdown-item>
-                </el-dropdown-menu>
-                </el-dropdown>
-                <div v-else>
-                    {{ column.label }}
-                </div>
+                <myfilter 
+                :column="column" 
+                :biao="biao"
+                :fenlei_map="dataResult.fenlei_map"
+                :biaoqian_map="dataResult.biaoqian_map"
+                :fliter_list="fliter_list"
+                :ref="column.prop"
+
+                :yaunsuListMap="yaunsuListMap"
+                :currentPage="currentPage"
+                :PageSize="PageSize"
+                value2="value2"
+                :dialogdata3="dialogdata3"
+                @selectpagebyadminWithSearch_SetList="selectpagebyadminWithSearch_SetList"/>
             </template>
 
           <template slot-scope="scope" >
-            <div v-if="column.label==='创建时间' || column.label==='更新时间'">{{ tableData[scope.$index][column.prop]?tableData[scope.$index][column.prop].replace(/T/g, ' '):null }}</div>
+            <div v-if="column.label==='创建时间' || column.label==='更新时间' || column.label==='最后访问时间'">{{ tableData[scope.$index][column.prop]?tableData[scope.$index][column.prop].replace(/T/g, ' '):null }}</div>
             <div v-else-if="column.label==='图像'||column.label==='略缩图'">
               <a target="_blank" :href="`${staticPath}${tableData[scope.$index][column.prop]}.webp`">
                 <img v-if="tableData[scope.$index][column.prop] && tableData[scope.$index][column.prop]!=='noproduct'" loading="lazy"  :src="`${staticPath}${tableData[scope.$index][column.prop]}.webp`" style="height:80px;width:80px;object-fit: cover;">
@@ -87,11 +86,15 @@
                     :preview-src-list="[tableData[scope.$index][column.prop]]"
                     :title=tableData[scope.$index][column.prop] :src=tableData[scope.$index][column.prop] />
               </div>
+              <div v-else-if="column.label==='微信头像'"><img style="border-radius: 30px;" v-lazy width="80px" :src=tableData[scope.$index][column.prop]></div>
               <div v-else-if="column.label==='点赞数'">
                 {{ tableData[scope.$index][column.prop]?.length}}
               </div>
               <div v-else-if="column.label==='分类'">
                 {{ tableData[scope.$index][column.prop]?dataResult?.fenlei_map?.[tableData[scope.$index][column.prop]]:"none"}}
+              </div>
+              <div v-else-if="column.label==='标签'">
+                {{ tableData[scope.$index][column.prop]?translate_biaoqianList(tableData[scope.$index][column.prop]):"none"}}
               </div>
             <div v-else>
               {{ tableData[scope.$index][column.prop]}}
@@ -99,6 +102,15 @@
           </template>
       </el-table-column>
 
+      <el-table-column
+        fixed="right"
+        label="操作"
+        width="120">
+        <template slot-scope="scope">
+            <el-button type="primary" size="mini" plain @click="del(scope.row)">删</el-button>
+            <el-button type="primary" size="mini" plain @click="upd(scope.row)">改</el-button>
+        </template>
+        </el-table-column>
     </el-table>
 
     <el-pagination
@@ -113,22 +125,24 @@
     </el-pagination>
 
     <!-- 弹出框1 (增改) -->
-    <el-dialog :title="this.dialog_title2" :visible.sync="dialogVisible2" width="90%" height="90%" >
+    <el-dialog :fullscreen="true" :title="this.dialog_title2" :visible.sync="dialogVisible2" width="90%" height="90%" 
+    >
       
       <el-form  style="margin:0 20px 0 0;" :rules="rules" label-position="right" ref="form" :model="dialogdata2" label-width="80px">
         <!-- 使用el-row和el-col创建栅格布局 -->
-        <el-row :gutter="20">
+        <el-row  v-if="biao==='t_product'" :gutter="20">
 
           <el-col :span="['置顶', '显示', '主页显示'].some(str => column.label.includes(str))?3:12" 
             v-for="(column, index) in columns" :key="index">
-            <span v-if="column.label!=='标题' && column.label!=='描述信息'&& column.label!=='分类' && column.label!=='图像url'
+            <!-- 不隐藏的要在这注明 -->
+            <span v-if="column.label!=='标题' && column.label!=='描述信息'&& column.label!=='分类' && column.label!=='图像url'&& column.label!=='标签'
             && ['置顶', '显示', '主页显示'].every(str => !column.label?.includes(str))" />
             
             <el-form-item v-else-if="column.label==='分类'" :label="column.label" :prop="column.prop">
                 
                 <el-radio-group v-if="dataResult" v-model="dataResult.fenlei_map[dialogdata2[column.prop]]">R
                     <el-radio-button 
-                        v-for="(item, index) in dataResult.fenlei_map" :key="index" 
+                        v-for="(item, index) in dataResult?.fenlei_map" :key="index" 
                         @click.native="dialogdata2[column.prop]=index"
                         :label="item">
                     </el-radio-button>   
@@ -136,6 +150,26 @@
                 <span style="margin-left: 20px;">{{  dialogdata2[column.prop] }}</span>
 
             </el-form-item>
+
+            <el-form-item v-else-if="column.label==='标签'" :label="column.label" :prop="column.prop">
+                <el-select
+                    style="width: 100%;height: 40px;max-width: 300px;"
+                    v-model="selectedOptions"
+                    multiple
+                    filterable
+                    allow-create
+                    default-first-option
+                    placeholder="请选择文章标签">
+                    <el-option
+                    v-for="(item,key) in dataResult.biaoqian_map"
+                    :key="key"
+                    :label="item"
+                    :value="item">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+
+
 
             <el-form-item v-else-if="['置顶', '显示', '主页显示'].some(str => column.label.includes(str))" :label="column.label" :prop="column.prop">
                 
@@ -148,10 +182,13 @@
             </el-form-item>
             
             <el-form-item v-else :label="column.label" :prop="column.prop">
-              <el-input v-model="dialogdata2[column.prop]" style="max-width: 300px;"></el-input>
+              <el-input v-model="dialogdata2[column.prop]" style="max-width: 300px;">
+              </el-input>
             </el-form-item>
 
           </el-col>
+
+          
 
           <el-col :span="24">
             <el-form-item label="封面图像" prop="photo" >
@@ -244,6 +281,18 @@
           </el-col>
 
         </el-row>
+
+        <el-row  v-else :gutter="20">
+            <el-col  v-for="(column, index) in columns" :key="index">
+                <!--修改框忽略-->
+                <span v-if="['点赞数'].some(str => column.label?.includes(str))" />
+
+                <el-form-item v-else :label="column.label" :prop="column.prop">
+                    <el-input v-model="dialogdata2[column.prop]" style="max-width: 300px;"></el-input>
+                </el-form-item>
+            </el-col>
+            <el-button style="float:right;margin-right: 10%;" @click="confirm_change()">提交</el-button>
+        </el-row>
         
       </el-form>
 
@@ -262,6 +311,7 @@
           <div style="display: flex;" v-if="column.label==='时间'">
             <el-date-picker
               v-model="dialogdata3.startDate"
+              value-format="yyyy-MM-dd HH:mm:ss"
               type="datetime"
               placeholder="选择开始时间">
             </el-date-picker>
@@ -290,24 +340,52 @@ import axios from '@/utils/axios';
 import El2 from '/src/components/AddressAdd/ElAddress2'
 import EmojiPicker from './emoji/EmojiPicker.vue'
 import Draggable from './draggable/index'
+import myfilter from './filter'
 
+
+//import isEqual from 'lodash/isEqual';
 
 export default {
+    props:{
+        biao: {
+            type: String,
+            default:'t_product'
+        },
+        columns: {
+            type: Array,
+            default() {
+                return [];
+            }
+        },
+        fliter_list:{
+            type:Array,
+            default() {
+                return ['置顶', '显示', '主页显示', '分类','标签'];
+            }
+        }
+    },
     components:{
+        myfilter,
         El2,
         EmojiPicker,
-        Draggable
+        Draggable,
+
     },
     data() {
         return {
-            
+            selectedOptions:[],
+            tagList:[],
+            toggleRowSelection:null,
+            //biao:'t_product',
+
             xssOptions: {
                 whiteList: {
-                    a: ["href", "title", "target", "download"],
+                    a: ["href", "title", "target", "download","id","style"],
                     img: ["src", "alt", "width", "height"],
                     video: ["src", "type", "controls", "width", "height", "poster"],
                     source: ["src", "type"],
                     br: [],
+                    span:["style"],
                     div: ["class","style"],
                     iframe: ["style","src", "scrolling", "border", "frameborder", "framespacing", "allowfullscreen","width", "height"]
                 },
@@ -341,7 +419,7 @@ export default {
                 undo: true, // 上一步
                 redo: true, // 下一步
                 trash: true, // 清空
-                save: true, // 保存（触发events中的save事件）
+                //save: true, // 保存（触发events中的save事件）
                 /* 1.4.2 */
                 navigation: true, // 导航目录
                 /* 2.1.8 */
@@ -358,7 +436,7 @@ export default {
             option2: [
                 { text: '默认排序', value: 'a' },
                 { text: '时间排序', value: 'b' },
-                { text: '访问量排序', value: 'c' },
+                //{ text: '访问量排序', value: 'c' },
                 //{ text: '销量排序', value: 'd' },
                 //{ text: '评分排序', value: 'e' },
             ],
@@ -379,34 +457,7 @@ export default {
             PageSize:10,
             TotalPage:null,
             IsTableLoading:true,
-            columns : [
-                { prop: 'id', label: 'ID', width: '80' },
-                { prop: 'name', label: '标题', width: '180' },
-                { prop: 'type', label: '分类' , width: '80',align:'center' },
-                { prop: 'user_name', label: '作者' , width: '80',align:'center' },
-                //{ prop: 'type2', label: '分类2' , width: '80' ,align:'center'},
-                { prop: 'info', label: '描述信息' },
-                //{ prop: 'content', label: '内容', width: '80' },
-                //{ prop: 'price', label: '价格', width: '80' },
-                //{ prop: 'num', label: '数量', width: '80' },
-                //{ prop: 'sold_num', label: '销量', width: '80' },
-                { prop: 'visited_num', label: '浏览量', width: '80' },
-                { prop: 'love_list', label: '点赞数' , width: '80' ,align:'center'},
-                //{ prop: 'rate', label: '评分', width: '80' },
-                //{ prop: 'rate_num', label: '评分人数', width: '80' },
-                { prop: 'photo', label: '图像', width: '100',align:'center' },
-                { prop: 'photo_url', label: '图像url', width: '100',align:'center' },
-                { prop: 'photo_url', label: 'url预览', width: '100',align:'center' },
-                //{ prop: 'photo_shot', label: '略缩图', width: '100',align:'center' },
-                
-                { prop: 'is_top', label: '置顶', width: '80' },
-                { prop: 'is_show', label: '显示', width: '80' },
-                { prop: 'is_on_homepage', label: '主页显示', width: '100' },
-                //{ prop: 'photo_list', label: '图片列表' , width: '80' ,align:'center'},
-                { prop: 'create_time', label: '创建时间', width: '180' },
-                { prop: 'update_time', label: '更新时间', width: '180' },
-                { prop: 'version', label: '版本', width: '100' },
-            ],
+            
             dialogVisible2:false,
             dialog_title2:"",
             dialogdata2:
@@ -445,27 +496,198 @@ export default {
             "name":null,
             "startDate":null,
             "endDate":null,
-            "type2":null,
+            //"type2":null,
         },
             columns2 : [
                 { prop: 'id', label: 'ID', width: '180' },
                 { prop: 'name', label: '姓名', width: '80' },
-                { prop: 'type2', label: '同类名', width: '80' },
+                //{ prop: 'type2', label: '同类名', width: '80' },
                 { prop: 'create_time', label: '时间', width: '80' },
             ],
             tags: [
-            ]
+            ],
+            yaunsuListMap:{}
         }
     },
     methods:{
-        handleCommand(){
+        translate_biaoqianList(list){
+            var trans = []
+            list.forEach(key=>{
+                trans.push(this.dataResult.biaoqian_map[key])
+            })
+            return trans
+        },
+        handleBiaoqianTagClose(index,list){
+            this.$delete(list,index)
+        },
+        formatDateWithTimezone(dateStr) {
+            if(dateStr===null)return null
+            const date = new Date(dateStr);
+            // 加上8个小时的毫秒数
+            date.setHours(date.getHours() + 8);
+            return date.toISOString()  // 输出新的时间字符串
+        },
+        del(row){
+            this.rows_selection = [row]
+            this.$confirm('确定删除  '+(row?.name?row.name:'这个')+'  吗?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.delete_byadmin() // 删除用户
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });
+                this.rows_selection = []        
+            });
+        },
+        // 更新前 前端序列化true false和其他
+        upd(row){
+            console.log('row')
+            console.log(row)
+            // 前端序列化true false
+            Object.keys(row).forEach(key => {
+                row[key] = row[key] === 0 && key.startsWith('is')?false:
+                    row[key] === 1 && key.startsWith('is')?true : row[key];
+            });
+            console.log('row2')
+            console.log(row)
+            // 初始化数据
+            //this.dialogdata2 =  JSON.parse(JSON.stringify(row))
+            // 更新响应式
+            this.$set(this, 'dialogdata2', JSON.parse(JSON.stringify(row)))
+            console.log('this.dialogdata2')
+            console.log(this.dialogdata2)
 
+            // 初始化验证 // ?.防止this.$refs.form为空报错 为空不运行
+            this.$refs.form?.resetFields();
+            // 初始化标题
+            this.dialog_title2 = '修改'
+            // 初始化图片
+            this.init_dialogdata2_photo()
+            // 初始化分类
+            this.radio1 = this.dataResult.fenlei_map[this.dialogdata2.type]
+            // 初始化标签
+            var biaoqian_trans_list = [] 
+            row.t_tag_label.forEach(num=>biaoqian_trans_list.push(this.dataResult.biaoqian_map[num]))
+            this.selectedOptions = biaoqian_trans_list
+
+            this.dialogVisible2 = true
+
+            //初始化富文本
+            this.$nextTick(() => {
+                this.$refs.editor.content = this.dialogdata2.content
+            })
+
+        },
+        // 点击勾选框时
+        handleCheckBoxSelect(selection, row){
+            console.log(selection)
+            console.log(row)
+        },
+        selectpagebyadminWithSearch_SetList(add,del,biao){
+            console.log('add:')
+            console.log(add)
+            console.log('del:')
+            console.log(del)
+            for (let [key, list] of Object.entries(add)) {
+                if(this.yaunsuListMap[key])this.yaunsuListMap[key]=this.yaunsuListMap[key].concat(list)
+                else this.yaunsuListMap[key] = list
+            }
+            for (let [key, list] of Object.entries(del)) {
+                list.forEach(obj=>{
+                    const index = this.yaunsuListMap[key].findIndex(item => JSON.stringify(item) === JSON.stringify(obj))
+                    console.log(index)
+                    if(index!==-1)this.yaunsuListMap[key].splice(index,1)
+                })
+            }
+            //this.init_Tags()
+
+            console.log('sum:')
+            console.log(this.yaunsuListMap)
+            console.log('biao:')
+            console.log(biao)
+
+            this.getbyyaunsuListMap(biao)
+        },
+        getbyyaunsuListMap(biao){
+            this.IsTableLoading = true
+            this.dialogdata3.endDate = this.formatDateWithTimezone(this.dialogdata3.endDate)
+            this.dialogdata3.startDate = this.formatDateWithTimezone(this.dialogdata3.startDate)
+            this.init_Tags()
+
+            axios.post('/all/selectpagebyadminWithSearch_SetList',{
+                'yaunsuListMap':this.yaunsuListMap,
+                'biao':biao,
+                'currentPage': this.currentPage, 
+                'PageSize': this.PageSize,
+                'value2':this.value2,
+                ...this.dialogdata3,
+                'tagList':this.tagList
+            })
+                .then(response=>{
+                    if(response.data.code===0)this.$message.error(response.data.msg)
+                    else {
+                        console.log(response.data.data)
+                        this.tableData = response.data.data.records
+                        this.TotalPage = response.data.data.total
+                        this.currentPage = response.data.data.current
+                        if(this.columns.length===0)
+                            this.init_columns_by_sql(response.data.data.records)
+                        this.IsTableLoading = false
+                    }
+                })
+        },
+        init_columns_by_sql(records){
+            if(this.biao==='t_product'){
+                this.columns = [
+                    { prop: 'id', label: 'ID', width: '80' },
+                    { prop: 'name', label: '标题', width: '180' },
+                    { prop: 'type', label: '分类' , width: '80',align:'center' },
+                    { prop: 't_tag_label', label: '标签' , width: '100',align:'center' },
+                    { prop: 'user_name', label: '作者' , width: '80',align:'center' },
+                    //{ prop: 'type2', label: '分类2' , width: '80' ,align:'center'},
+                    { prop: 'info', label: '描述信息' },
+                    //{ prop: 'content', label: '内容', width: '80' },
+                    //{ prop: 'price', label: '价格', width: '80' },
+                    //{ prop: 'num', label: '数量', width: '80' },
+                    //{ prop: 'sold_num', label: '销量', width: '80' },
+                    { prop: 'visited_num', label: '浏览量', width: '80' },
+                    //{ prop: 'love_list', label: '点赞数' , width: '80' ,align:'center'},
+                    //{ prop: 'rate', label: '评分', width: '80' },
+                    //{ prop: 'rate_num', label: '评分人数', width: '80' },
+                    { prop: 'photo', label: '图像', width: '100',align:'center' },
+                    { prop: 'photo_url', label: '图像url', width: '100',align:'center' },
+                    { prop: 'photo_url', label: 'url预览', width: '100',align:'center' },
+                    //{ prop: 'photo_shot', label: '略缩图', width: '100',align:'center' },
+                    
+                    { prop: 'is_top', label: '置顶', width: '80' },
+                    { prop: 'is_show', label: '显示', width: '80' },
+                    { prop: 'is_on_homepage', label: '主页显示', width: '100' },
+                    //{ prop: 'photo_list', label: '图片列表' , width: '80' ,align:'center'},
+                    { prop: 'create_time', label: '创建时间', width: '180' },
+                    { prop: 'update_time', label: '更新时间', width: '180' },
+                    //{ prop: 'version', label: '版本', width: '100' },
+                ]
+            }else{
+                this.columns = [{ prop: 'id', label: 'ID', width: '80' }]
+                if(records.length===0)return
+                Object.keys(records[0]).forEach(key=>{
+                    if(key!=='id'&&key!=='create_time')this.columns.push({ prop: key, label: key },)
+                })
+                this.columns.push({ prop: 'create_time', label: '创建时间', width: '180' })
+            }
         },
         getall(){
             axios.get('/data-result/all')
                 .then(response=>{
                     console.log(response.data)
-                    this.dataResult = response.data
+                    //this.dataResult = response.data
+                    //this.dataResult = { ...response.data };
+                    this.dataResult = JSON.parse(JSON.stringify(response.data));
+
                 })
         },
         emoji_selected(emoji){
@@ -636,6 +858,8 @@ export default {
             this.$refs.address.dialogVisible=true
         },
         gettable(){
+            this.getbyyaunsuListMap(this.biao)
+            /*
             this.IsTableLoading = true
             axios.get('/product/page',{
                 params: {
@@ -654,6 +878,7 @@ export default {
                 this.$message.error(error.data.msg)
                 console.log(error)
             })
+                */
         },
         // 页容量变化
         handleSizeChange(val) {
@@ -678,24 +903,27 @@ export default {
                 // 初始化数据
                 this.dialogdata2 = 
                 {
-                    'type':null
+                    //'type':null
                 }
           
-          // 初始化验证 // ?.防止this.$refs.form为空报错 为空不运行
-          this.$refs.form?.resetFields();
+                // 初始化验证 // ?.防止this.$refs.form为空报错 为空不运行
+                this.$refs.form?.resetFields();
 
-          this.dialog_title2 = "新增"
-          this.dialogVisible2 = true
+                this.dialog_title2 = "新增"
+                this.dialogVisible2 = true
 
-          //初始化富文本
-          this.$nextTick(() => {
-              this.$refs.editor.content = this.dialogdata2.content
-          })
+                //初始化富文本
+                this.$nextTick(() => {
+                    this.$refs.editor.content = this.dialogdata2.content
+                })
+
+                // 初始化标签
+                this.selectedOptions = []
             }
 
             else if(val==="删除商品"){
                 if(this.rows_selection.length===0){
-                    this.$message.error("请选择要删除的商品")
+                    this.$message.error("请选择要删除的")
                     return
                 }
 
@@ -709,13 +937,13 @@ export default {
                     this.$message({
                         type: 'info',
                         message: '已取消删除'
-                    });          
+                    });        
                 });
             }
 
             else if(val==="修改商品"){
                 if(this.rows_selection.length===0){
-                    this.$message.error("请选择要修改的商品")
+                    this.$message.error("请选择要修改的")
                     return
                 }
 
@@ -724,23 +952,7 @@ export default {
                     return
                 }
 
-                // 初始化数据
-                this.dialogdata2 =  JSON.parse(JSON.stringify(this.rows_selection?.[0]))
-                // 初始化验证 // ?.防止this.$refs.form为空报错 为空不运行
-                this.$refs.form?.resetFields();
-                // 初始化标题
-                this.dialog_title2 = '修改'
-                // 初始化图片
-                this.init_dialogdata2_photo()
-                // 初始化分类
-                this.radio1 = this.dataResult.fenlei_map[this.dialogdata2.type]
-
-                this.dialogVisible2 = true
-
-                //初始化富文本
-                this.$nextTick(() => {
-                    this.$refs.editor.content = this.dialogdata2.content
-                })
+                this.upd(this.rows_selection?.[0])
 
             }
 
@@ -778,26 +990,37 @@ export default {
             if(!iframeHtml)return ""
 
             // b站视频扩长
-            if(!iframeHtml.includes('width="100%" height="600"')){
-                iframeHtml = iframeHtml.replace(
-                    /<iframe([^>]*)>/,
-                    '<iframe$1 width="100%" height="600">'
-                );
-            }
+            //if(!iframeHtml.includes('width="100%" height="600"')){
+            iframeHtml = iframeHtml.replace(
+                /<iframe([^>]*allowfullscreen="true")>/,
+                '<iframe$1 width="100%" height="600">'
+            );
+            //}
 
             // B站视频 https 高清 danmaku关 autoplay=0
-            if(!iframeHtml.includes('&high_quality=1')){
-                iframeHtml = iframeHtml.replace(
-                    /src="(\/\/player.bilibili.com\/player.html\?.*?)"/g,
-                    'src="https://$1&high_quality=1&danmaku=1&autoplay=0"')
-            }
+            //if(!iframeHtml.includes('&high_quality=1')){
+            iframeHtml = iframeHtml.replace(
+                /src="(\/\/player.bilibili.com\/player.html\?.*?&p=\d+)"/g,
+                'src="https://$1&high_quality=1&danmaku=1&autoplay=0"')
+            //}
 
 
             return iframeHtml
         },
         // 添加一个
         axios_add(){
-        //this.$refs.upload.submit();
+            if(this.biao!=='t_product'){
+                return axios.post(`/all/insertonebyadmin/${this.biao}`,this.dialogdata2).then(response=>{
+                    if(response.data.code===0)this.$message.error(response.data.msg)
+                    else{
+                        this.dialogVisible2 = false
+                        this.$message.success("增加成功")
+                        this.gettablebycondition()
+                    }
+                })
+            }
+
+            //this.$refs.upload.submit();
             console.log(this.$refs.upload);
             console.log(this.dialogdata2)
             console.log(this.$refs.upload.uploadFiles?.[0]?.raw)
@@ -809,6 +1032,7 @@ export default {
             formData.append('photo', this.$refs.upload.uploadFiles?.[0]?.raw)
             formData.append('photo_shot', this.$refs.upload2.uploadFiles?.[0]?.raw)
             formData.append('product_json',JSON.stringify(this.dialogdata2)) // 序列化
+            formData.append('tagList_json',JSON.stringify(this.tagList))
 
             axios.post('/product/addonebyadmin',formData,{
                 headers: {
@@ -821,6 +1045,7 @@ export default {
                         this.dialogVisible2 = false
                         this.$message.success("添加成功")
                         this.gettablebycondition()
+                        this.getall() // 有时添加了新标签 要重新获取
                     }
                 }).catch(error=>{
                     this.$message.error(error.data.msg)
@@ -830,6 +1055,18 @@ export default {
         // 更新一个
         // 新范例 防404报错
         axios_update(is_baocun){
+            // 非t_product的入口
+            if(this.biao!=='t_product'){
+                return axios.put(`/all/updateonebyadmin/${this.biao}`,this.dialogdata2).then(response=>{
+                    if(response.data.code===0)this.$message.error(response.data.msg)
+                    else{
+                        this.dialogVisible2 = false
+                        this.$message.success("更新成功")
+                        this.gettablebycondition()
+                    }
+                })
+            }
+            
             console.log(this.dialogdata2)
             console.log(this.$refs.upload)
             let formData = new FormData()
@@ -841,6 +1078,7 @@ export default {
             formData.append('photo', this.$refs.upload.uploadFiles?.[0]?.raw)
             formData.append('photo_shot', this.$refs.upload2.uploadFiles?.[0]?.raw)
             formData.append('product_json',JSON.stringify(this.dialogdata2)) // 序列化
+            formData.append('tagList',JSON.stringify(this.tagList))
 
             axios.put('/product/updateonebyadmin',formData,{
                 headers: {
@@ -853,10 +1091,12 @@ export default {
                         if(is_baocun){
                             this.$message.success("保存成功")
                             this.gettablebycondition()
+                            this.getall() // 有时添加了新标签 要重新获取
                         }else{
                             this.dialogVisible2 = false
                             this.$message.success("更新成功")
                             this.gettablebycondition()
+                            this.getall() // 有时添加了新标签 要重新获取
                         }
                         
                     }
@@ -868,12 +1108,16 @@ export default {
         },
         // 删一堆
         delete_byadmin(){
-            axios.post('/product/deletelistbyadmin',this.rows_selection)
+            var Ids = []
+            this.rows_selection.forEach(obj=>{
+                if(obj.id)Ids.push(obj.id)
+            })
+            axios.delete(`/all/deleteIdsbyadmin/${this.biao}`, {data:Ids})
                 .then(response=>{
                     if(response.data.code===0)this.$message.error(response.data.msg)
                     else {
                         this.dialogVisible2 = false
-                        this.$message.success("删除成功")
+                        this.$message.success("删除成功:"+response.data.data)
                         this.gettablebycondition()
                     }
                 }).catch(error=>{
@@ -884,6 +1128,8 @@ export default {
         },
         // 发起axios条件查询
         gettablebycondition(){
+            this.getbyyaunsuListMap(this.biao)
+            /*
             this.IsTableLoading = true
             var page = {
                 currentPage: this.currentPage,
@@ -919,26 +1165,54 @@ export default {
                 this.$message.error(error.data.msg)
                 console.log(error)
             })
+            */
         },
         // 初始化Tag
         init_Tags(){
+            var listMap = this.yaunsuListMap
             var tags = []
-            console.log(this.dialogdata3)
-            for (let [key, value] of Object.entries(this.dialogdata3)) {
-                console.log(key + ': ' + value);
-                if(value!==null){
-                    var key_name = key
-                    if(key==='name')key_name = "姓名"
-                    if(key==='startDate')key_name = "开始日期"
-                    if(key==='endDate')key_name = "结束日期"
-
-                    tags.push({ name: `${key_name} : ${value}`, type: 'success' , key:key})
+            // fliter的tag
+            for (let [key, list] of Object.entries(listMap)) {
+                if(list.length){
+                    list.forEach(item=>{
+                        if(key==='type'){
+                            tags.push({ name: `${key} : ${this.dataResult.fenlei_map[item.value]}`, 
+                                prop:key, item:item, 
+                                type: 'success'})
+                        }else{
+                            tags.push({ name: `${key} : ${item.value}`, 
+                                prop:key, item:item, 
+                                type: 'success'})
+                        }
+                    })
                 }
             }
+            // dialogdata3的tag
+            const obj = this.dialogdata3
+            Object.keys(obj).forEach(key => {
+                if(key==='startDate'||key==='endDate'){
+                    const date = new Date(obj[key]);  // 假设 obj[key] 是一个可以被解析为日期的值
+                    const formattedDate = date.toISOString().substring(0, 19);
+                    if(formattedDate.includes('1970-01-01T00:00:00')){
+                        obj[key]=null
+                    }else{
+                        obj[key]=formattedDate
+                    }
+                    
+                }
+                
+                obj[key] !== null && obj[key] !== ""?
+                    tags.push({ name: `${key} : ${obj[key]}`, prop:key, item:obj, type: 'success',isdialogdata3:true,dialogdata3_key:key}) 
+                    : "";
+            });
+
+
+
+
             this.tags = tags
         },
         // 点击查询框确定
-        gotosearch(){
+        gotosearch(){ 
             var is_allnull = true
             for (let value of Object.values(this.dialogdata3)) {
                 if(value!==null){
@@ -951,8 +1225,7 @@ export default {
                 return
             }
         
-            // 初始化Tag
-            this.init_Tags()
+            //this.init_Tags()
 
             // 关闭窗口
             this.dialogVisible3 = false
@@ -961,29 +1234,31 @@ export default {
             this.gettablebycondition()
         },
         // 点击Tag的删除
-        removeTag(key){
-        // 移除Tag
-            console.log(key)
-            this.tags = this.tags.filter(tag => tag.key !== key);
-
-            // #region 同时删除查询对象dialogdata3的对应值
-            var dialogdata3 =
-        {
-            "id": null,
-            "name":null,
-            "startDate":null,
-            "endDate":null,
-        }
-            for (let [key2, value] of Object.entries(this.dialogdata3)) {
-                if(key===key2)continue
-                dialogdata3[key2] = value
+        removeTag(index){
+            // 移除Tag
+            console.log(index)
+            // 单独处理dialogdata3的tag(如果是dialogdata3的tag)
+            if(this.tags[index]?.isdialogdata3){
+                this.dialogdata3[this.tags[index].dialogdata3_key]=null
+                this.$delete(this.tags, index)
+                this.gettablebycondition()  
             }
-            this.dialogdata3 = dialogdata3
+            
+            const obj = this.tags[index]
+            const index2 = this.yaunsuListMap[obj.prop].findIndex(item => JSON.stringify(item) === JSON.stringify(obj.item))
+            this.$delete(this.yaunsuListMap[obj.prop], index2)// 本地仓移除
 
-            console.log(this.dialogdata3)
-            // #endregion
-      
+            console.log(this.$refs[obj.prop])
+            var typelist = this.$refs[obj.prop][1].search_add_last_time[obj.prop]
+            if(!typelist)typelist = this.$refs[obj.prop][0].search_add_last_time[obj.prop]
+            //console.log(this.$refs[obj.prop][0].search_add_last_time[obj.prop])
+            //console.log(this.$refs[obj.prop][1].search_add_last_time[obj.prop])
+            //console.log(obj.prop)
+            const index3 = typelist.findIndex(item => JSON.stringify(item) === JSON.stringify(obj.item))
+            this.$delete(typelist, index3)// 子组件仓移除 // 移除是移除了 但没更新
+            this.$root.$emit('update_'+obj.prop) // 强制更新子组件
 
+            this.$delete(this.tags, index)
             // 同时发起新条件查询
             this.gettablebycondition()      
         },
@@ -1008,13 +1283,45 @@ export default {
             }
         },
         value2:function(){
-            this.gettablebycondition()
+            //this.gettablebycondition()
+            this.selectpagebyadminWithSearch_SetList({},{},this.biao)
+        },
+        selectedOptions:function(){
+            var biaoqian_list = []
+            // 是不是新的标签
+            this.selectedOptions.forEach(str=>{
+                var exist = false
+                for (let [key, value] of Object.entries(this.dataResult.biaoqian_map)) {
+                    // 旧标签
+                    if(value===str){
+                        biaoqian_list.push(key)
+                        exist = true
+                        break
+                    }
+                }
+                // 新标签
+                if(!exist)biaoqian_list.push(str)
+            })
+            console.log(biaoqian_list)
+            this.dialogdata2.t_tag_label = biaoqian_list
         }
     }
 }
 </script>
 
 <style scoped>
+
+.addtag{
+    background-color: white;
+}
+.addtag:hover{
+    background-color: rgb(245, 242, 242);
+}
+.input-new-tag {
+    width: 90px;
+    margin-left: 10px;
+    vertical-align: bottom;
+  }
 .radio-group-content {
   white-space: normal; /* 允许内容换行 */
   word-break: break-word; /* 在长单词或URL地址内部进行换行 */
@@ -1048,9 +1355,5 @@ export default {
     height: 200px;
     background-color: aquamarine;
 }
-.el-dropdown-link{
-    color:#909399;
-    font-size: 14px;
-    cursor: pointer;
-}
+
 </style>

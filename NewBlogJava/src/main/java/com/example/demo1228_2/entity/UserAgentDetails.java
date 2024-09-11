@@ -106,19 +106,30 @@ public class UserAgentDetails {
         System.out.println("UserAgent 字符串: " + userAgent.toString());
         */
 
-        Pattern pattern = Pattern.compile("(?:\\b(?:OS|NT|Version|Android)\\s*)(\\d+(?:[._]\\d+)+)");
+        Pattern pattern = Pattern.compile("(?:\\b(?:OS|NT|Version|Android|Samsung)\\s*)(\\d+(?:[._]\\d+)+)");
         Matcher matcher = pattern.matcher(user_agent);
         if(matcher.find()){
             //System.out.println("版本号: " + matcher.group(1));
+            this.operatingSystemVersion = matcher.group(1);
+            this.deviceFirmwareVersion = matcher.group(1);
+        }else{
+            Pattern pattern2 = Pattern.compile("\\d+(_\\d+)+");
+            Matcher matcher2 = pattern2.matcher(user_agent);
+            if (matcher2.find()) {
+                String version = matcher2.group(); // 获取匹配的版本号
+                this.deviceFirmwareVersion = version;
+                this.operatingSystemVersion = version;
+            } else {
+                this.deviceFirmwareVersion = "Unknown";
+                this.operatingSystemVersion = "Unknown";
+            }
         }
 
-        this.deviceClass = userAgent.getOperatingSystem().getDeviceType().toString();
-        this.deviceBrand = userAgent.getOperatingSystem().getManufacturer().toString();
-        this.deviceFirmwareVersion = matcher.group(1);
+        this.deviceClass = userAgent.getOperatingSystem().getDeviceType()+"";
+        this.deviceBrand = userAgent.getOperatingSystem().getManufacturer()+"";
         this.operatingSystemName = userAgent.getOperatingSystem().getName();
-        this.operatingSystemVersion = matcher.group(1);
         this.agentName = userAgent.getBrowser().getName();
-        this.agentVersion = userAgent.getBrowserVersion().toString();
+        this.agentVersion = userAgent.getBrowserVersion()+"";
 
 
         /*

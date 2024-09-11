@@ -156,7 +156,8 @@ import El2 from '/src/components/AddressAdd/ElAddress2'
 
 export default {
     components:{
-        El2
+        El2,
+
     },
     data() {
         return {

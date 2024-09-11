@@ -117,12 +117,70 @@ export const constantRoutes = [
         ]
     },
 
-    
+
+    {
+        path: '/all',
+        component: Layout,
+        name: 'all',
+        meta: { title: '杂项管理', icon: 'table' },
+        children: [
+            {
+                path: 'friend',
+                name: 'friend',
+                component: () => import('@/views/data/Tmanage'),
+                meta: { title: '友链管理', icon: 'peoples' }
+            },
+            {
+                path: 'comment',
+                name: 'comment',
+                component: () => import('@/views/data/Tmanage'),
+                meta: { title: '评论管理', icon: 'message' }
+            },
+            {
+                path: 'chat',
+                name: 'chat',
+                component: () => import('@/views/data/Tmanage'),
+                meta: { title: '聊天管理', icon: 'message' }
+            },
+            {
+                path: 'fan',
+                name: 'fan',
+                component: () => import('@/views/data/Tmanage'),
+                meta: { title: '关注管理', icon: 'link' }
+            },
+            {
+                path: 'kefu_chat_history',
+                name: 'kefu_chat_history',
+                component: () => import('@/views/data/Tmanage'),
+                meta: { title: '客服管理', icon: 'message' }
+            },
+            {
+                path: 'user',
+                name: 'user',
+                component: () => import('@/views/data/Tmanage'),
+                meta: { title: '用户管理', icon: 'user' }
+            },
+            {
+                path: 'user_agent_details',
+                name: 'user_agent_details',
+                component: () => import('@/views/data/Tmanage'),
+                meta: { title: '访客管理', icon: 'eye-open' }
+            },
+            {
+                path: 'user_option',
+                name: 'user_option',
+                component: () => import('@/views/data/Tmanage'),
+                meta: { title: '设置管理', icon: 'password' }
+            },
+   
+        ]
+    },
+
     {
         path: '/user',
         component: Layout,
         name: 'Data',
-        meta: { title: '用户管理', icon: 'peoples' },
+        meta: { title: '旧版管理', icon: 'peoples' },
         children: [
             {
                 path: 'allinfo',
@@ -146,6 +204,17 @@ export const constantRoutes = [
         ]
     },
 
+    {
+        path: '/user_agent_details',
+        name: 'user_agent_details',
+        component: Layout,
+        children: [{
+            path: '/user_agent_details',
+            name: 'user_agent_details',
+            component: () => import('@/views/data/Tmanage'),
+            meta: { title: '历史访客', icon: 'eye-open' }
+        },]
+    },
     /*
     {
         path: '/user',

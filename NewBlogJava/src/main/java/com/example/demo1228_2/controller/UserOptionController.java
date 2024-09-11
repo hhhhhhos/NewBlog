@@ -1,10 +1,12 @@
 package com.example.demo1228_2.controller;
 
 
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.example.demo1228_2.config.CustomException;
 import com.example.demo1228_2.config.R;
 import com.example.demo1228_2.config.Tool;
+import com.example.demo1228_2.entity.User;
 import com.example.demo1228_2.entity.UserOption;
 import com.example.demo1228_2.mapper.UserOptionMapper;
 import org.apache.ibatis.annotations.Update;
@@ -53,6 +55,16 @@ public class UserOptionController {
         try {
             if (!userOption.getUser_id().equals(Tool.getUserSessionId(session)))
                 throw new CustomException("不能改其他人设置");
+
+            // 邮箱检查是否为存在(如果不订阅改为订阅)
+            UserOption userOption_db = Db.lambdaQuery(UserOption.class).eq(UserOption::getUser_id,Tool.getUserSessionId(session)).one();
+            if(userOption.getSubscribe_comment_reply_by_mail() && !userOption_db.getSubscribe_comment_reply_by_mail()){
+                User user = Db.lambdaQuery(User.class).eq(User::getId,Tool.getUserSessionId(session)).one();
+                if(ObjectUtils.isEmpty(user.getEmail()))
+                    throw new CustomException("Email为空，请先填写");
+            }
+
+
 
             if(userOptionMapper.updateById(userOption)!=1)
                 throw new CustomException("修改失败，数据库返回0");

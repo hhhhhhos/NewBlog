@@ -6,7 +6,7 @@
       <div class="card-panel">
         <div class="card-panel-description">
           <div class="card-panel-text">
-            {{dashboard_name[key]}}
+            {{dashboard_name[key]}} <div v-show="typeof item === 'number' && item>dashboard_params_yesterday[key]" class="triangle"></div>
           </div>
           <div class="card-panel-num">
             {{item}}
@@ -30,8 +30,9 @@ export default {
         return{
             dashboard:{
                 role: null,            // 对应后端的 "role"
-                //name: null,            // 对应后端的 "name"
+                name: null,            // 对应后端的 "name"
                 home_visit_num: null,  // 对应后端的 "home_visit_num"
+                dashboard_visit_num:null,
                 request_num: null,     // 对应后端的 "request_num"
 
                 product_num: null,     // 对应后端的 "product_num"
@@ -44,6 +45,7 @@ export default {
                 name: '姓名',            // 对应后端的 "name"
                 role: '角色',            // 对应后端的 "role"
                 home_visit_num: '首页访客',  // 对应后端的 "home_visit_num"
+                dashboard_visit_num:'后台访客',
                 request_num: '总请求数',     // 对应后端的 "request_num"
 
                 product_num: '文章数',     // 对应后端的 "product_num"
@@ -52,6 +54,9 @@ export default {
                 chat_num: '聊天条数',        // 对应后端的 "chat_num"
                 kefu_num: 'GPT对话'         // 对应后端的 "kefu_num"
             },
+            dashboard_params_yesterday:{
+
+            }
         }
     },
     methods: {
@@ -61,14 +66,16 @@ export default {
         return_color(){
             const l = ['shopping','money','message','people']
             return l[Math.floor(Math.random() * l.length)]
-        }
+        },
+
     },
     mounted(){
         axios.get('/user-agent-details/init_dashboard')
             .then(response=>{
                 console.log(response.data)
                 for (let [key, value] of Object.entries(response.data)) {
-                    this.dashboard[key]=value;
+                    if(key!=='dashboard_params_yesterday')this.dashboard[key]=value;
+                    else this.dashboard_params_yesterday = value;
                 }
             }).catch(error=>{
                 console.log(error)
@@ -78,6 +85,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.triangle {
+    margin: 4px 0 0 8px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid green;
+}
+
+
 .panel-group {
   margin-top: 18px;
 
@@ -161,6 +178,7 @@ export default {
         font-size: 16px;
         margin-bottom: 12px;
         text-align: left;
+        display: flex;
       }
 
       .card-panel-num {

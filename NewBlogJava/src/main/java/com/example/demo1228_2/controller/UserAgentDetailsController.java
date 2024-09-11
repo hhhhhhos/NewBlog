@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.example.demo1228_2.config.CustomException;
 import com.example.demo1228_2.config.R;
+import com.example.demo1228_2.config.Tool;
 import com.example.demo1228_2.dto.DailyUniqueVisitorsDto;
 import com.example.demo1228_2.entity.*;
 import com.example.demo1228_2.mapper.DataResultMapper;
@@ -18,6 +19,7 @@ import com.example.demo1228_2.service.impl.UserAgentDetailsServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -289,11 +291,30 @@ public class UserAgentDetailsController {
 
     @GetMapping("/init_dashboard")
     public Map Dashboard3(HttpSession session){
+        // region 后台访客去重逻辑
+        Object obj = session.getAttribute("Back_visitors");
+        LocalDate today = LocalDate.now();
+
+        if (obj == null || !obj.toString().equals(today.toString())) {
+            session.setAttribute("Back_visitors", today);
+
+            // 访客加一
+            DataResult dataResult = dataResultMapper.selectById(45698);
+            if (!Tool.IsUserAdmin(session)) {
+                dataResult.setBack_visitors(dataResult.getBack_visitors() + 1);
+                dataResultMapper.updateById(dataResult);
+            }
+        }
+        // endregion
+
         Map<String,Object> params = new HashMap<>();
         //params.put("p1",userAgentDetailsMapper.countDistinctUserUuid());
+        DataResult dataResult = dataResultMapper.selectById(45698);
+
         params.put("name", session.getAttribute("LoginName"));    // 姓名
         params.put("role", session.getAttribute("Role"));
-        params.put("home_visit_num", dataResultMapper.selectById(45698).getHome_visitors());
+        params.put("home_visit_num", dataResult.getHome_visitors());
+        params.put("dashboard_visit_num", dataResult.getBack_visitors());
         params.put("request_num",Db.lambdaQuery(UserAgentDetails.class).count());
 
         params.put("product_num",Db.lambdaQuery(Product.class).count());
@@ -301,6 +322,14 @@ public class UserAgentDetailsController {
         params.put("comment_num",Db.lambdaQuery(Comment.class).count());
         params.put("chat_num",Db.lambdaQuery(Chat.class).count());
         params.put("kefu_num",Db.lambdaQuery(KefuChatHistory.class).count());
+
+        int count = 0;
+        Object obj2 = null;
+        do{
+            count++;
+            obj2 = dataResult.getOther_stuff_map().get("dashboard_params_"+ LocalDate.now().minusDays(count));
+        }while(ObjectUtils.isEmpty(obj2));
+        params.put("dashboard_params_yesterday",obj2);
 
         return params;
     }
