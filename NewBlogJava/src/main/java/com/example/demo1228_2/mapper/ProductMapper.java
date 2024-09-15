@@ -23,4 +23,6 @@ public interface ProductMapper extends BaseMapper<Product> {
 
     List<Map<String, Object>> selectIdNameTime3(int type,String is);
 
+    List<Map<String,Object>> getTagsGroupedByProductIds(List<Long> productIds);
+
 }

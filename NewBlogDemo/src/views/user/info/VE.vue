@@ -114,6 +114,11 @@ export default {
                     if(this.obj?.wechat_headimgurl === null){
                         this.target_img_src = require('@/assets/default_headimg2.png')
                     }
+                    const name = this.$store.state.UserName
+                    if(this.obj?.name !== name && this.obj?.wechat_nickname !== name){
+                        if(this.obj?.wechat_nickname)this.$store.state.UserName = this.obj?.wechat_nickname
+                        else this.$store.state.UserName = this.obj?.name
+                    }
                 }).catch(error=>{
                     console.log(error)
                     this.$message.error("获取失败："+error.data.msg)

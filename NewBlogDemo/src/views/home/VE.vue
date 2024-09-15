@@ -16,6 +16,9 @@
           {{FType?`分类 の ${dataResult?.fenlei_map[FType]?dataResult.fenlei_map[FType]:FType==='0'?'无':'未知分类'}`:FType===0?'分类 の 无':`西巴の博客`}}
           <div class="xiba-sub">
             {{FName?FName:''}}
+            <div class="xiba-sub-sub">
+                {{tag_int_local?`# ${dataResult?.biaoqian_map[tag_int_local]}`:""}}
+            </div>
           </div>
         </div>
 
@@ -48,7 +51,7 @@
         finished-text="没有更多了"
         @load="onLoad"
         offset=-40
-        style="margin: 40px auto ;width: 70%;"
+        style="margin: 40px auto ;"
         class="myvan"
         >
 
@@ -62,7 +65,7 @@
                 <svg v-if="product.is_top" style="position: absolute;right: 0;margin: -5px -5px 0 0;" t="1722121138299" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4266" width="24" height="24"><path d="M951.296 424.96L1024 352.256 671.744 0 599.04 72.704l70.144 70.656-168.96 168.96a296.96 296.96 0 0 0-286.72 75.264L143.36 458.24 72.704 387.584 0 460.8l245.248 245.248-139.776 139.776 72.704 72.704 140.288-140.288L563.2 1024l72.704-72.704-70.144-70.656 70.144-70.144a296.96 296.96 0 0 0 75.776-287.232l168.96-168.96z" fill="#333333" p-id="4267"></path></svg>
         
                 <div class="card-type" 
-                v-if="true"
+                @click.stop="FType = product.type , getproduct()"
                 :style="`background-color:${dataResult.fenlei_color_map[product.type]?dataResult.fenlei_color_map[product.type]:'#555555'} ;`">
                     <div>
                         {{dataResult.fenlei_map[product.type]}}
@@ -95,12 +98,20 @@
                         <p style="margin: 5px 0 0 5px;">{{product.info}}</p>
                         </div>
 
+
                     </div>
 
                 </div>
 
 
-                <div style="width: 35%;">
+                <div class="card-right">
+
+                    <div class="card-tag">
+                            <p class="card-tag-item" v-for="(tag_int,key) in tag_map?.[product.id]" :key="key"
+                            @click.stop="tag_int_local = tag_int">
+                                # {{ dataResult?.biaoqian_map[tag_int] }}
+                            </p>
+                    </div>
 
                     <div class="card-right-out">
                         <div class="card-right-out-in" v-html="extractText(product.content)"></div>
@@ -263,6 +274,8 @@ export default {
     },
     data() {
         return{
+            tag_int_local:null,
+            tag_map:[],
             donghua:'transition: background-image 1s ease;',
             isenter2:false,
             Xmove:-2.5, // 偏移量 多出长度的一半
@@ -380,6 +393,8 @@ export default {
             // 移除内嵌视频
             result = result.replace(/<iframe.*?<\/iframe>/gi, '')
 
+            result = result.replace(/^(<br>)+/i, '');
+
             return result;
         },
         onMouseEnter(event) {
@@ -432,6 +447,7 @@ export default {
         // 从事件总线接收 分类博客事件
         product_page_FType_Event(index){
             this.FType = index
+            this.tag_int_local = null
             this.getproduct()
         },
         getRandomImage(failedIndices,image_list) {
@@ -565,11 +581,13 @@ export default {
                     PageSize: this.PageSize,
                     FName:this.FName,
                     FType:this.FType,
-                    value2:this.value2
+                    value2:this.value2,
+                    tag_int:this.tag_int_local
                 }
             }).then(response=>{
                 //oldScrollPosition = window.pageYOffset
                 this.tableData = response.data.data.records
+                this.tag_map = response.data.map.tag_map
                 // 防止element-table移动视角
                 //setTimeout(() => {window.scrollTo(0, oldScrollPosition),this.loading1 = false}, 0);
                 this.loading1 = false
@@ -622,11 +640,13 @@ export default {
                     PageSize: this.PageSize,
                     FName:this.FName,
                     FType:this.FType,
-                    value2:this.value2
+                    value2:this.value2,
+                    tag_int:this.tag_int_local
                 }
             }).then(response=>{
                 if(response.data.code){
                     this.tableData = response.data.data.records
+                    this.tag_map = response.data.map.tag_map
                     this.init_tableData_photo_url()
                     this.TotalPage = response.data.data.total
                     this.mobile.home_visitors = response.data.map.home_visitors
@@ -710,6 +730,9 @@ export default {
         // 不是手机不运行
             if(!this.$store.state.IsMobile)return        
             this.handleCurrentChange(this.currentPage)    
+        },
+        tag_int_local:function(){
+            this.getproduct()
         }
     },
     mounted() {
@@ -751,6 +774,9 @@ export default {
   margin: 10vh auto;
   height:30vh;
   max-height: 30vh;
+  min-height:200px;
+  width: 70vw;
+  min-width:800px;
   position: relative;
 }
 .mybordert:hover {
@@ -814,27 +840,53 @@ export default {
   box-shadow: 0 2px 4px var(--shadow1-color), 0 0 6px var(--shadow2-color);
   z-index: 1;
 }
+
+.card-right{
+    width: 35%;
+    position: relative;
+    display: flex;
+  flex-direction: column;
+}
+.card-tag{
+    height: 10%;
+    width:100%;
+    display: flex;
+    margin: 8px 10% 5px;
+    padding: 0;
+    align-items: center;
+    overflow: hidden;
+}
+.card-tag-item{
+    margin-right: 10px;
+    font-weight: bolder;
+    color: rgb(121, 121, 121);
+
+}
+
 .card-right-out{
     width: 80%;
-    height: 70%;
-    margin: 5% 10% 5% 10%;
+    max-height: 60%;
+    margin: 0 10%;
     position: relative;
 }
 .card-right-out-in{
-    max-height: 21vh;
+    max-height: 18vh;
     text-align: left;
     overflow:hidden;
 }
 
 .card-right-down{
     display: flex;
-    flex-wrap: wrap;
-    height: 30px;
+    flex-wrap: nowrap;
+
+    height: 20%;
     line-height: 30px;
-    margin: auto 10% 10px;
+    margin: 0 10%;
+    margin-top: auto;
     justify-content: space-between;
     align-items: center;
     overflow: hidden;
+    justify-self: end;
 }
 
 .card-detail2{
@@ -862,6 +914,7 @@ export default {
 .card-info{
   font-size: 1.5rem;
 }
+
 .card-detail{
   position: absolute;
   bottom: 0;
@@ -904,6 +957,13 @@ export default {
     position: absolute;
     margin-top: 10px;
     font-size: 1.5rem;
+    width: 100%;
+    text-align: center;
+}
+.xiba-sub-sub{
+    position: absolute;
+    margin-top: 10px;
+    font-size: 1.2rem;
     width: 100%;
     text-align: center;
 }

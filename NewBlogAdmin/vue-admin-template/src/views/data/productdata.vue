@@ -380,13 +380,15 @@ export default {
 
             xssOptions: {
                 whiteList: {
+                    svg: ["class", "viewBox", "version", "xmlns", "width", "height", "t", "p-id"],
+                    path: ["d", "fill", "p-id"],
                     a: ["href", "title", "target", "download","id","style"],
                     img: ["src", "alt", "width", "height"],
                     video: ["src", "type", "controls", "width", "height", "poster"],
                     source: ["src", "type"],
                     br: [],
                     span:["style"],
-                    div: ["class","style"],
+                    div: ["class","style","id","onclick"],
                     iframe: ["style","src", "scrolling", "border", "frameborder", "framespacing", "allowfullscreen","width", "height"]
                 },
                 stripIgnoreTagBody: true
@@ -570,9 +572,11 @@ export default {
             // 初始化分类
             this.radio1 = this.dataResult.fenlei_map[this.dialogdata2.type]
             // 初始化标签
-            var biaoqian_trans_list = [] 
-            row.t_tag_label.forEach(num=>biaoqian_trans_list.push(this.dataResult.biaoqian_map[num]))
-            this.selectedOptions = biaoqian_trans_list
+            if(this.biao==="t_product"){
+                var biaoqian_trans_list = [] 
+                row.t_tag_label?.forEach(num=>biaoqian_trans_list.push(this.dataResult.biaoqian_map[num]))
+                this.selectedOptions = biaoqian_trans_list
+            }
 
             this.dialogVisible2 = true
 

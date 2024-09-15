@@ -63,6 +63,8 @@ public class ProductController {
             String FName = params.get("FName");
             String FType = params.get("FType");
             String value2 = params.get("value2");
+            String tag_int = params.get("tag_int");
+
 
             LambdaQueryChainWrapper<Product> query = new LambdaQueryChainWrapper<>(productmapper);
 
@@ -78,6 +80,16 @@ public class ProductController {
             if(FType != null)query.eq(Product::getType,FType);
             // 不分类时（在主页）只展示主页允许展示的
             else query.eq(Product::getIs_on_homepage,true);
+            // tag_int 筛选标签 外表
+            if(!ObjectUtils.isEmpty(tag_int)){
+                int tag_int_int = Integer.parseInt(tag_int);
+                List<Tag> tagList = Db.lambdaQuery(Tag.class).eq(Tag::getTag_int,tag_int_int).list();
+                List<Long> PidList = tagList.stream()
+                        .map(Tag::getProduct_id) // 提取 product 的 id
+                        .collect(Collectors.toList()); // 收集到 List<Long> 中
+                // 在该标签的Pid列表里
+                query.in(Product::getId,PidList);
+            }
 
             // 只展示允许展示的
             query.eq(Product::getIs_show,true).notBetween(Product::getId,45698L,46000L);
@@ -85,6 +97,7 @@ public class ProductController {
             // 添加置顶产品优先排序条件
             query.orderByDesc(Product::getIs_top);
 
+            // 次排序条件
             if(value2 != null){
                 PageQueryValue2(query, value2);
             }
@@ -120,16 +133,25 @@ public class ProductController {
 
             // 加点参数
             List<Product> res = page.getRecords();
+            List<Long> PIds = new ArrayList<>();
             List<Map<String,Object>> nres = res.stream().map(product -> {
                 Map<String,Object> entry = new HashMap<>(objectMapper.convertValue(product, Map.class));
                 entry.put("comment_num",Db.lambdaQuery(Comment.class)
                         .eq(Comment::getProduct_id,product.getId())
                         .count());
+                PIds.add(Long.parseLong(entry.get("id").toString()));
                 return entry;
             }).collect(Collectors.toList());
             page.setRecords(nres);
+            // 查询每个product的标签 以map返回
+            List<Map<String,Object>> list = productmapper.getTagsGroupedByProductIds(PIds);
+            Map<String,List<String>> res2 = new HashMap<>();
+            list.stream().map(obj2->{
+                return res2.put(obj2.get("product_id").toString(),new ArrayList<>(Arrays.asList(obj2.get("tag_ints").toString().split(","))));
+            }).collect(Collectors.toList());
 
-            return R.success(page).add("home_visitors",dataResult.getHome_visitors());
+            return R.success(page).add("home_visitors",dataResult.getHome_visitors())
+                    .add("tag_map",res2);
         }catch(Exception e){
             log.info("分页查询失败：{}",e.getMessage());
             return R.error(e.getMessage());
@@ -159,11 +181,20 @@ public class ProductController {
         User user = userMapper.selectById(product.getUser_id());
         if(user==null)user = new User();
         //log.info("{},{}",averageRate,productRateList.size());
+        List<Long> PIds = new ArrayList<>();
+        PIds.add(id);
+        List<Map<String,Object>> list = productmapper.getTagsGroupedByProductIds(PIds);
+        Map<String,List<String>> res2 = new HashMap<>();
+        list.stream().map(obj2->{
+            return res2.put(obj2.get("product_id").toString(),new ArrayList<>(Arrays.asList(obj2.get("tag_ints").toString().split(","))));
+        }).collect(Collectors.toList());
+
         return R.success(product)
                 .add("user_name",user.getName())
                 .add("rate_num",product.getRate_num())
                 .add("user_id",user.getId()!=null?user.getId().toString():null)
-                .add("user_wechat_nickname",user.getWechat_nickname());
+                .add("user_wechat_nickname",user.getWechat_nickname())
+                .add("tag_map",res2);
     }
 
     @GetMapping("/getalltye2") // 查所有相同type2商品

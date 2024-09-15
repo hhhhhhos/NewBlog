@@ -20,7 +20,7 @@
                 <span v-if="column?.prop==='type'" style="display: flex; justify-content: space-between;">
                     <span><input class="checkbox" v-model="item.ischecked" @change="handleCheckboxChange($event,item.yuansu)" @click.stop="" type="checkbox"> {{item.yuansu}}({{ fenlei_map?fenlei_map[item.yuansu]:'' }})</span><span>{{ item.count }}</span>
                 </span>
-                <span v-if="column?.prop==='t_tag_label'" style="display: flex; justify-content: space-between;">
+                <span v-else-if="column?.prop==='t_tag_label'" style="display: flex; justify-content: space-between;">
                     <span><input class="checkbox" v-model="item.ischecked" @change="handleCheckboxChange($event,item.yuansu)" @click.stop="" type="checkbox"> {{item.yuansu}}({{ biaoqian_map?biaoqian_map[item.yuansu]:'' }})</span><span>{{ item.count }}</span>
                 </span>
                 <span v-else style="display: flex; justify-content: space-between;gap: 20px;">

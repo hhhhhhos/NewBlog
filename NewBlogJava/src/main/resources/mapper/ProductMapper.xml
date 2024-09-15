@@ -25,6 +25,21 @@
         </where>
         ORDER BY create_time DESC
     </select>
+
+    <select id="getTagsGroupedByProductIds" resultType="java.util.Map">
+        SELECT GROUP_CONCAT(tag_int) as tag_ints, product_id
+        FROM t_tag
+        WHERE 1=1
+        <if test="productIds != null and productIds.size() > 0">
+            AND product_id IN
+            <foreach collection="productIds" item="productId" open="(" separator="," close=")">
+                #{productId}
+            </foreach>
+        </if>
+        GROUP BY product_id
+    </select>
+
+
 </mapper>
 
 

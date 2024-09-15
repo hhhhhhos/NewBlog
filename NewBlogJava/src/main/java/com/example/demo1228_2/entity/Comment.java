@@ -85,13 +85,14 @@ public class Comment implements Serializable {
      */
     private Integer saw_num;
 
-    // 是否通过审核
-    Boolean pass_examination;
 
     // 回复给谁
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long replay_to_user_id;
 
     Boolean is_show;
+
+    // 评论可以带一张图
+    String photo_url;
 
 }

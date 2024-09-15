@@ -86,6 +86,10 @@ Vue.prototype.$fail = function (msg) {
     Toast.fail(msg)
 }
 
+Vue.prototype.$alert = function (msg) {
+    Toast(msg)
+}
+
 const vue = new Vue({
     router,
     store,

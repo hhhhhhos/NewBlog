@@ -53,6 +53,7 @@
     <pinglun pinglun_id="45698"/>
 
     <el-dialog
+      :close-on-click-modal="false"
         class="fan"
         :visible.sync="dialog"
         width="350px"

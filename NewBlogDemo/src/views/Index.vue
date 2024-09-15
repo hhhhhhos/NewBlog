@@ -41,6 +41,7 @@
                 shape="round"
                 placeholder="search"
                 @search="clicksearch(input)"
+                :clearable="false"
             />
         </div>
 
@@ -51,7 +52,7 @@
         @click="$router.push('/user/info')"
         title="登录或查看"
         >
-        {{obj?obj.wechat_nickname?obj.wechat_nickname:obj.name?obj.name:"未知":"登录"}}
+        {{$store.state.UserName?$store.state.UserName:"登录"}}
         </div>
 
       </div>
@@ -221,6 +222,7 @@ export default {
                 localStorage.setItem('light_svg_show', false);
                 root.style.setProperty('--html-bg', '#2c3e50f8'),this.$store.state.light_svg_show = false;
                 root.style.setProperty('--shaixuan-color','#ffffff') // 筛选文字
+                root.style.setProperty('--mulu','#ffffff') 
                 root.style.setProperty('--mybordert-bg','rgb(243, 243, 244)') // 商品卡描述背景色
                 root.style.setProperty('--el-input--bg','#3a4a60') // 评论输入框bg
                 root.style.setProperty('--product-bg','#3a4a60') // product背景
@@ -235,6 +237,7 @@ export default {
             }
             // 明色
             else{
+                root.style.setProperty('--mulu','none') 
                 localStorage.setItem('light_svg_show', true);
                 root.style.setProperty('--html-bg', 'rgb(243, 243, 244)'),this.$store.state.light_svg_show = true;
                 root.style.setProperty('--shaixuan-color','#00000060')

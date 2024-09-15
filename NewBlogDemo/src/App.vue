@@ -59,6 +59,7 @@ export default {
 
 <style>
 :root {
+    --mulu:none;
     --blockquote-color:#6a737d;
   --primary-color: #3498db;
   --secondary-color: #2ecc71;

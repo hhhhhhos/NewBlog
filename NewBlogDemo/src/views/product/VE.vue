@@ -89,9 +89,22 @@
           <van-icon style="margin-left: 10px;" size="17" name="good-job-o" />
           <span style="margin-left: 3px;">{{OneData.love_list?OneData.love_list.length:0}}</span>
       
-          <span style="margin-left: 15px;">{{OneData.create_time?.slice(0,10)}}</span>
+          <span style="margin-left: 15px;">{{OneData.create_time?.slice(0,16).replace("T"," ")}}</span>
+
+          <span style="margin-left: 15px;">{{ dataResult?.fenlei_map[OneData.type] }}</span>
         
+          <span v-if="!$store.state.IsMobile" style="margin-left: 15px;">{{OneData.is_show?OneData.is_on_homepage?"首页可见":"分类可见":"本人可见"}}</span>
+
         </div>
+
+        <!--描述信息2 -->
+        <div class="color0000060 info2">
+            <p class="card-tag-item" v-for="(tag_int,key) in obj?.tag_map?.[OneData.id]" :key="key"
+            @click.stop="$alert(dataResult?.biaoqian_map[tag_int])">
+                # {{ dataResult?.biaoqian_map[tag_int] }} <span v-if="$store.state.IsMobile" style="margin-left: 15px;">{{OneData.is_show?OneData.is_on_homepage?"首页可见":"分类可见":"本人可见"}}</span>
+            </p>
+        </div>
+        
 
         <!--正文 -->
         <mavon-editor ref="mavonEditor" class="mdshow" v-model="OneData.content" :xssOptions="xssOptions" />
@@ -166,27 +179,43 @@
     <!--评论 -->
     <div class="demo-nav3" :style="`transition: margin-bottom 0.5s ease;margin-bottom: ${comment_margin_bottom}px;`">
         
+        <!-- 图片url输入框 -->
+        <div class="el-input" :style="`transition: top 0.5s ease;position: absolute;top:-${purl_top}px;right:0;display: flex;justify-content: start;`">
+            <input
+                style="width: 95%;margin: 5px auto;"
+                class="el-input__inner"
+                v-model="comment_photo_url_info"
+                @keyup.enter="PhotoPreshow"
+                enterkeyhint="send"
+                placeholder="输入图片链接"
+                type="text"
+                />
+        </div>
+
         <!-- 评论框 -->
         <div ref="inputBox" style="height: 200px;background-color: rgb(243, 243, 244);overflow-x: hidden;" >
-          <div class="el-input" style="position: relative;display: flex;justify-content: start;">
-          <input
-              style="width: 85%;margin: 5px auto;"
-              class="el-input__inner"
-              v-model="comment_info"
-              @keyup.enter="sendComment"
-              enterkeyhint="send"
-              placeholder="发布一条评论吧"
-              type="text"
-              
-            />
-            <div style="display: flex;justify-content: center;align-items: center;">
-              <van-icon @click="comment_margin_bottom==='0'?comment_margin_bottom='150':comment_margin_bottom='0'" name="smile-o" size="30" style="margin-right: 8px;cursor: pointer;"/>
+
+            <div class="el-input" style="display: flex;justify-content: start;">
+                <input
+                    style="width: 85%;margin: 5px auto;"
+                    class="el-input__inner"
+                    v-model="comment_info"
+                    @keyup.enter="sendComment"
+                    enterkeyhint="send"
+                    placeholder="发布一条评论吧"
+                    type="text"
+                    
+                    />
+                <div style="display: flex;justify-content: center;align-items: center;">
+                    <van-icon @click="purl_top==='0'?purl_top='45':purl_top='0'" name="photo-o" size="30" style="margin-right: 8px;cursor: pointer;"/>
+                    <van-icon @click="comment_margin_bottom==='0'?comment_margin_bottom='150':comment_margin_bottom='0'" name="smile-o" size="30" style="margin-right: 8px;cursor: pointer;"/>
+                </div>
             </div>
-          </div>
           <div style="height: 150px;overflow-y: scroll;">
             <EmojiPicker @emoji-selected="selectEmoji" />
           </div>
         </div>
+        
 
         <!-- 评论框遮罩（未登录不能评论） -->
         <div @click="$router.push(`/login`)" v-if="!this.$store.state.UserId" :style="`transition: margin-bottom 0.5s ease;margin-bottom: ${comment_margin_bottom}px;background-color: rgba(240,243,244,0.7);position: fixed;bottom:0;width: 100%;height: 50px;z-index: 99;`">
@@ -244,17 +273,21 @@ export default {
     },
     data() {
         return{
+            purl_top:'0',
+            dataResult:null,
             obj:{},// product返回体的map
             is404:false,
             product_width:50,
             xssOptions: {
                 whiteList: {
+                    svg: ["class", "viewBox", "version", "xmlns", "width", "height", "t", "p-id"],
+                    path: ["d", "fill", "p-id"],
                     a: ["href", "title", "target", "download", "id","style"], // 添加 "id" 属性,
                     img: ["src", "alt", "width", "height"],
                     video: ["src", "type", "controls", "width", "height", "poster"],
                     source: ["src", "type"],
                     br: [],
-                    div: ["class","style","id"],
+                    div: ["class","style","id","onclick"],
                     span:["style"],
                     iframe: ["style","src", "scrolling", "border", "frameborder", "framespacing", "allowfullscreen","width", "height"]
                 },
@@ -309,6 +342,15 @@ export default {
         }
     },
     methods:{
+        PhotoPreshow(){
+
+        },
+        getall(){
+            axios.get('/data-result/all')
+                .then(response=>
+                    this.dataResult = JSON.parse(JSON.stringify(response.data))
+                )
+        },
         left(){
             console.log(this.$store.state.CURRENT_WIDTH*(1-this.product_width*0.01)*0.5-50 )
             return this.$store.state.CURRENT_WIDTH*(1-this.product_width*0.01)*0.5-25
@@ -436,6 +478,7 @@ export default {
         },
         // 初始化加载
         async test(){
+            this.getall()
             console.log(this.$route.query.id)
             console.log("mobile_show:"+this.$route.query.mobile_show)
             if(!this.mobile.query_id){
@@ -694,7 +737,14 @@ export default {
 </script>
 
 <style scoped>
-
+.card-tag-item{
+    margin: 4px 10px 0 0;
+    cursor: pointer;
+}
+.info2{
+    margin: 0;
+    padding: 0;
+}
 .no-style {
   text-decoration: none;
   color: inherit;
@@ -721,6 +771,7 @@ export default {
 }
 
 .toc-title {
+    color:var(--mulu);
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 10px;
