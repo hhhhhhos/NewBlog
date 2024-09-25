@@ -20,9 +20,9 @@
                 <a v-show="false" class="dropdown-item" href="#" @click.stop="click_fenlei(0)">无</a>
                 <!-- Here you can render the dropdown items -->
                 <div class="dropdown-item" 
-                    v-for="(item, index) in dataResult.fenlei_map" :key="index"
-                    @click.stop="click_fenlei(index)">
-                    {{item}} {{ type_trans[index]?type_trans[index]:0 }}
+                    v-for="(item, index) in option1m" :key="index"
+                    @click.stop="click_fenlei(item.value)">
+                    {{item.text}}
                 </div>
             </div>
           </div>
@@ -83,8 +83,8 @@
 
       <Tabbar v-if="this.$store.state.PAGE_STATE==='Tabbar'" style="position:fixed;" route>
         <TabbarItem icon="home-o"  to="/home">主页</TabbarItem>
-        <TabbarItem icon="chat-o" to="/user/chat/history" :badge="$store.state.chat_badge">聊天</TabbarItem>
-        <TabbarItem icon="envelop-o" @click="comming()">互动</TabbarItem>
+        <TabbarItem icon="chat-o" to="/user/chat/history" :badge="$store.state.chat_badge">消息</TabbarItem>
+        <TabbarItem v-if="false" icon="envelop-o" @click="comming()">互动</TabbarItem>
         <TabbarItem icon="contact-o" to="/user/info" >个人信息</TabbarItem>
       </Tabbar>
 
@@ -97,7 +97,7 @@
             <van-cell  title="历史聊天" is-link to="/user/chat/history" @click="popup_show=false">
               <template #title>
                 <span class="custom-title" style="position: relative;">
-                  历史聊天
+                  消息
                   <div v-if="$store.state.chat_badge!==''"  style="margin: 10px 0px 0 0;margin-left: auto;text-align: center;
                   border-radius: 20px;background-color: red;color: white;width: 20px;font-size: 12px;line-height: 18px;
                   position: absolute;bottom: -1px;right:-25px;">
@@ -131,6 +131,9 @@
     <!--接收logout的总线事件-->
     <rootEvent event_name="logout" @rootEvent="logout" />
 
+    <!--接收photo_prev的总线事件-->
+    <rootEvent event_name="photo_prev" @rootEvent="url=>{photo_prev=url,$refs.cFImg.clickHandler()}" />
+
     <!--websocket推送上栏  推送不在 user/chat 和 user/chat/history时 推两秒-->
     <div class="card_out_top" :style="card_out_margin_top" 
     @touchstart="handleTouchStart"
@@ -154,8 +157,14 @@
 
       </div>
     </div>
-
     
+
+    <el-image 
+        v-show="false"
+        ref="cFImg"
+        :src="photo_prev" 
+        :preview-src-list="[photo_prev]">
+    </el-image>
 
 
   </div>
@@ -196,6 +205,8 @@ export default {
     },
     data() {
         return{
+            option1m:[],
+            photo_prev:null,
             dataResult:null,
             show_fenlei:false,
             input:null,
@@ -215,6 +226,7 @@ export default {
         }
     },
     methods:{
+
         // 明暗切换
         switch_change(todark){
             // 暗色
@@ -259,9 +271,32 @@ export default {
                 .then(response=>{
                     console.log(response.data)
                     this.dataResult = response.data
+                    this.init_option1m_option2m()
                 })
         },
-        
+        init_option1m_option2m(){
+            axios.get(`/data-result/type_count`).then(response=>{
+                console.log(response.data)
+                const result = response.data.reduce((acc, item) => {
+                    acc[item.type] = parseInt(item.count, 10); // 将 count 转换为整数并存入 acc 对象
+                    return acc; // 返回累加器给下一个迭代
+                }, {});
+                this.type_trans = result
+                this.init_option1m_option2m2(result)
+            })
+            
+        },
+        init_option1m_option2m2(type_trans){
+            this.option1m=[]
+            const fenlei_map = this.dataResult.fenlei_map
+
+            Object.keys(fenlei_map).forEach(key => {
+                this.option1m.push({ text: fenlei_map[key]+" ( "+(type_trans[key]?type_trans[key]:0)+" ) ", value: key ,transValue: type_trans[key] || 0})
+            })
+
+            // 根据 transValue 进行排序
+            this.option1m.sort((a, b) => b.transValue - a.transValue)
+        },
         logout(){
             this.obj = null
         },
@@ -443,15 +478,7 @@ export default {
             })
 
 
-        axios.get(`/data-result/type_count`).then(response=>{
-            console.log(response.data)
-            const result = response.data.reduce((acc, item) => {
-                acc[item.type] = parseInt(item.count, 10); // 将 count 转换为整数并存入 acc 对象
-                return acc; // 返回累加器给下一个迭代
-            }, {});
-            this.type_trans = result
-            
-        })
+        
 
 
     },

@@ -12,11 +12,15 @@ import com.example.demo1228_2.dto.CommentOrderUserRateDto;
 import com.example.demo1228_2.entity.*;
 import com.example.demo1228_2.mapper.CommentMapper;
 import com.example.demo1228_2.mapper.UserMapper;
+import com.example.demo1228_2.service.impl.ActionServiceImpl;
 import com.example.demo1228_2.service.impl.CommentServiceImpl;
 import com.example.demo1228_2.service.impl.UserAgentDetailsServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -169,6 +173,8 @@ public class CommentController {
         return R.success(page.setRecords(re));
     }
 
+    @Autowired
+    ObjectMapper objectMapper;
 
     /**
      * 返回当前产品评论分页 内含评论列表
@@ -209,17 +215,21 @@ public class CommentController {
         List<Map<String,Object>> re = commentList.stream()
                 .map(entry -> {
                     Map<String,Object> new_entry = new HashMap<>();
-                    // 回复某人的话 加前缀
+                    // 回复某人的话 加前缀(我想废弃了，给前端回复人的实体，其他前端自己搞定)
                     if(entry.getReplay_to_user_id()==0)
                         new_entry.put("info",entry.getInfo());
                     else {
                         User user = userMapper.selectById(entry.getReplay_to_user_id());
+                        /**
                         String before_s = "回复 @";
                         if(user==null)before_s+="用户不存在";
                         else if(user.getWechat_nickname()!=null)before_s+=user.getWechat_nickname();
                         else before_s+=user.getName();
                         before_s+="：";
                         new_entry.put("info", before_s+entry.getInfo());
+                         **/
+                        new_entry.put("replyer",objectMapper.convertValue(user,new TypeReference<Map<String, Object>>() {}));
+                        new_entry.put("info",entry.getInfo());
                     }
 
                     new_entry.put("id",entry.getId().toString());
@@ -236,6 +246,7 @@ public class CommentController {
                     new_entry.put("saw_num",entry.getSaw_num());
                     new_entry.put("sub_num",Db.lambdaQuery(Comment.class) // 数据库不用存了
                             .eq(Comment::getFather_comm_id,entry.getId())
+                            .eq(Comment::getIs_show,true)
                             .count());
                     // 一些我想加的参数
                     new_entry.put("wechat_nickname",entry.getWechat_nickname());
@@ -244,6 +255,7 @@ public class CommentController {
                     new_entry.put("totalPurchaseNum",entry.getTotal_quantity());
                     new_entry.put("totalPurchasePrice",entry.getTotal_spent());
                     new_entry.put("rate",entry.getRate());
+                    new_entry.put("photo_url",entry.getPhoto_url());
                     return new_entry;
                 }).collect(Collectors.toList());
 
@@ -258,6 +270,8 @@ public class CommentController {
 
     @Autowired
     UserMapper userMapper;
+    @Autowired
+    ActionServiceImpl actionService;
 
     /**
      * 新增一条评论
@@ -273,11 +287,15 @@ public class CommentController {
         Long product_id;
         Long father_comment_id;
         Long replay_to_user_id;
+        Long replay_to_comm_id;
+        String photo_url;
         try{
             comment_info = params.get("comment_info").toString();
             product_id = Long.parseLong(params.get("product_id").toString());
             father_comment_id = Long.parseLong(params.get("father_comment_id").toString()); // 父默认0
             replay_to_user_id = Long.parseLong(params.get("replay_to_user_id").toString()); // 父默认0
+            replay_to_comm_id = Long.parseLong(params.get("replay_to_comm_id").toString()); // 父默认0
+            photo_url = ObjectUtils.isEmpty(params.get("photo_url"))?null:params.get("photo_url").toString();
         }catch (Exception e){
             return R.error("参数异常："+e.getMessage());
         }
@@ -297,16 +315,39 @@ public class CommentController {
             log.info("接收到的 UserAgentDetails: " + userAgentDetails);
             Comment comment = new Comment();
             comment.setProduct_id(product_id);
+            comment.setIs_show(true);
             comment.setFather_comm_id(father_comment_id);
             comment.setUser_id(Tool.getUserSessionId(session));
-            comment.setReplay_to_user_id(replay_to_user_id);
+            comment.setReplay_to_user_id(replay_to_user_id); // 只在子子有值
+            comment.setReplay_to_comm_id(replay_to_comm_id); // 只在子子有值
             comment.setInfo(comment_info);
             comment.setIp_location(userAgentDetails.getCity());
             comment.setIp(userAgentDetails.getRealIp());
             comment.setLove_list(new ArrayList<>());
+            comment.setPhoto_url(photo_url);
+            if(!ObjectUtils.isEmpty(photo_url))comment.setIs_show(false);// 有图片的话还是审核一下评论
 
-            if(commentMapper.insert(comment)==1)
+            if(commentMapper.insert(comment)==1) {
+                if(!father_comment_id.equals(0L)){
+                    // 回复某人
+                    // region 加点参数去action.comment
+                    Map<String,Object> params2 = new HashMap<>();
+                    Comment comment_replay_to = commentMapper.selectById(replay_to_comm_id);
+                    // 子子为空 则是 子
+                    if(ObjectUtils.isEmpty(comment_replay_to))
+                        comment_replay_to = commentMapper.selectById(father_comment_id);
+                    params2.put("comment_replay_to",comment_replay_to);
+                    params2.put("comment",comment);
+                    // endregion
+                    actionService.comment(params2);
+                }else{
+                    // 直接评论
+                    Map<String,Object> params2 = new HashMap<>();
+                    params2.put("comment",comment);
+                    actionService.comment2(params2);
+                }
                 log.info("评论插入成功");
+            }
             else
                 log.info("评论插入失败");
         }).exceptionally(ex -> {
@@ -338,6 +379,8 @@ public class CommentController {
             return R.success("删除成功");
     }
 
+
+
     /**
      * 新增一个赞
      * @param params comment_id
@@ -353,9 +396,7 @@ public class CommentController {
                 throw new CustomException("未登录");
             user_id = Long.parseLong(session.getAttribute("IsLogin").toString());
             comment_id = Long.parseLong(params.get("comment_id").toString());
-        }catch (Exception e){
-            return R.error(e.getMessage());
-        }
+
         Comment comment = commentMapper.selectById(comment_id);
         List<Long> loveList = comment.getLove_list();
         if (loveList == null) {
@@ -376,7 +417,13 @@ public class CommentController {
             //comment.setLove_list_num(comment.getLove_list_num()+1);
             if(commentMapper.updateById(comment)!=1)
                 return R.error("点赞失败，建议重试");
+            params.put("comment",comment);
+            params.put("user_id",user_id);
+            actionService.zan_comment(params);
             return R.success("点赞成功");
+        }
+        }catch (Exception e){
+            return R.error(e.getMessage());
         }
 
     }

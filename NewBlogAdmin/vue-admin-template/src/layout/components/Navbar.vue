@@ -16,7 +16,7 @@
               控制面板
             </el-dropdown-item>
           </router-link>
-          <a target="_blank" :href=url>
+          <a :href=url>
             <el-dropdown-item>前台首页</el-dropdown-item>
           </a>
           <div @click="searchsession">

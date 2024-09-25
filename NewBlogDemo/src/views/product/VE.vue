@@ -84,30 +84,43 @@
           <span style="margin-left: 3px;">{{OneData.visited_num}}</span>
 
           <i style="margin-left: 10px;" class="el-icon-chat-round" ></i>
-          <span style="margin-left: 3px;">{{$route.query.comment_num}}</span>
+          <span style="margin-left: 3px;">{{obj?.comment_num}}</span>
 
           <van-icon style="margin-left: 10px;" size="17" name="good-job-o" />
           <span style="margin-left: 3px;">{{OneData.love_list?OneData.love_list.length:0}}</span>
       
           <span style="margin-left: 15px;">{{OneData.create_time?.slice(0,16).replace("T"," ")}}</span>
 
-          <span style="margin-left: 15px;">{{ dataResult?.fenlei_map[OneData.type] }}</span>
+          <span v-if="!$store.state.IsMobile" style="margin-left: 15px;">{{ dataResult?.fenlei_map[OneData.type] }}</span>
         
           <span v-if="!$store.state.IsMobile" style="margin-left: 15px;">{{OneData.is_show?OneData.is_on_homepage?"首页可见":"分类可见":"本人可见"}}</span>
 
+        </div>
+
+        <!--描述信息1.5 分类 手机显示 -->
+        <div v-if="$store.state.IsMobile" class="color0000060 info2"  style="margin-top: 5px;">
+            {{ dataResult?.fenlei_map[OneData.type] }}
         </div>
 
         <!--描述信息2 -->
         <div class="color0000060 info2">
             <p class="card-tag-item" v-for="(tag_int,key) in obj?.tag_map?.[OneData.id]" :key="key"
             @click.stop="$alert(dataResult?.biaoqian_map[tag_int])">
-                # {{ dataResult?.biaoqian_map[tag_int] }} <span v-if="$store.state.IsMobile" style="margin-left: 15px;">{{OneData.is_show?OneData.is_on_homepage?"首页可见":"分类可见":"本人可见"}}</span>
+                # {{ dataResult?.biaoqian_map[tag_int] }}
             </p>
+        </div>
+
+
+        <!--描述信息3 可见范围 手机显示 -->
+        <div v-if="$store.state.IsMobile" class="color0000060 info2"  style="margin-top: 5px;">
+            {{OneData.is_show?OneData.is_on_homepage?"首页可见":"分类可见":"本人可见"}}
         </div>
         
 
         <!--正文 -->
-        <mavon-editor ref="mavonEditor" class="mdshow" v-model="OneData.content" :xssOptions="xssOptions" />
+        <mavon-editor ref="mavonEditor" class="mdshow" v-model="OneData.content" 
+        :xssOptions="xssOptions"
+        :imageClick="dosth" />
 
         <!--点赞-->
         <div class="dianzanblog" @click="send_product_zan()">
@@ -148,7 +161,7 @@
 
       <!--评价 -->
       <div ref="commentdiv" :style="`width:${product_width}%;text-align: left;margin: 10px auto;padding-left: 10px;`" class="myborder">
-        <h3 style="color:var(--ptext-color);">评论<span style="font-size: small;font-weight:inherit;color: rgba(0,0,0,0.6);color:var(--ptext-color)">（{{ `共${$refs.comment?$refs.comment.total:'..'}条` }}）</span></h3>
+        <h3 style="color:var(--ptext-color);">评论<span style="font-size: small;font-weight:inherit;color: rgba(0,0,0,0.6);color:var(--ptext-color)">（{{ `共${obj?obj.comment_num:'..'}条` }}）</span></h3>
         <div style="margin: 10px 10px 10px 10px;color: #00000060;display: none;">暂无评论</div>
         
         <!--评价骨架 -->
@@ -177,54 +190,9 @@
     </div>
 
     <!--评论 -->
-    <div class="demo-nav3" :style="`transition: margin-bottom 0.5s ease;margin-bottom: ${comment_margin_bottom}px;`">
-        
-        <!-- 图片url输入框 -->
-        <div class="el-input" :style="`transition: top 0.5s ease;position: absolute;top:-${purl_top}px;right:0;display: flex;justify-content: start;`">
-            <input
-                style="width: 95%;margin: 5px auto;"
-                class="el-input__inner"
-                v-model="comment_photo_url_info"
-                @keyup.enter="PhotoPreshow"
-                enterkeyhint="send"
-                placeholder="输入图片链接"
-                type="text"
-                />
-        </div>
+    <sendwind ref="sendw" @sendComment="sendComment" :is_kefuchat="true" :is_product_sendw="true"/>
 
-        <!-- 评论框 -->
-        <div ref="inputBox" style="height: 200px;background-color: rgb(243, 243, 244);overflow-x: hidden;" >
-
-            <div class="el-input" style="display: flex;justify-content: start;">
-                <input
-                    style="width: 85%;margin: 5px auto;"
-                    class="el-input__inner"
-                    v-model="comment_info"
-                    @keyup.enter="sendComment"
-                    enterkeyhint="send"
-                    placeholder="发布一条评论吧"
-                    type="text"
-                    
-                    />
-                <div style="display: flex;justify-content: center;align-items: center;">
-                    <van-icon @click="purl_top==='0'?purl_top='45':purl_top='0'" name="photo-o" size="30" style="margin-right: 8px;cursor: pointer;"/>
-                    <van-icon @click="comment_margin_bottom==='0'?comment_margin_bottom='150':comment_margin_bottom='0'" name="smile-o" size="30" style="margin-right: 8px;cursor: pointer;"/>
-                </div>
-            </div>
-          <div style="height: 150px;overflow-y: scroll;">
-            <EmojiPicker @emoji-selected="selectEmoji" />
-          </div>
-        </div>
-        
-
-        <!-- 评论框遮罩（未登录不能评论） -->
-        <div @click="$router.push(`/login`)" v-if="!this.$store.state.UserId" :style="`transition: margin-bottom 0.5s ease;margin-bottom: ${comment_margin_bottom}px;background-color: rgba(240,243,244,0.7);position: fixed;bottom:0;width: 100%;height: 50px;z-index: 99;`">
-          <p style="display: flex;justify-content: center;align-items: center;color: gray;">点击登录后评论</p> 
-        </div>
-
-    </div>
-
-    <draggable v-if="pinglun_id!=='45698' && !$store.state.IsMobile && $store.state.option.show_product_scale_win" class="drag-tool" :X=$store.state.CURRENT_WIDTH-$store.state.CURRENT_WIDTH*0.15 :Y=200>
+    <draggable v-if=" !$store.state.IsMobile && $store.state.option.show_product_scale_win" class="drag-tool" :X=$store.state.CURRENT_WIDTH-$store.state.CURRENT_WIDTH*0.15 :Y=200>
         <div style="width: 100px;margin: 20px auto;" @mousedown.stop >
             <!-- 滑动选择宽度 -->
             <el-slider style="margin: 0;padding: 0;"
@@ -241,7 +209,7 @@
 
 <script>
 import axios from '@/utils'
-
+import sendwind from '@/components/sendwind/VE.vue'
 import { Dialog } from 'vant';
 import { Toast } from 'vant';
 import { Rate } from 'vant';
@@ -250,7 +218,7 @@ import { DropdownMenu, DropdownItem } from 'vant';
 import C from '@/components/comment/My_Test.vue';
 
 import { throttle } from 'lodash';
-import EmojiPicker from '@/components/emoji/EmojiPicker.vue';
+
 import { Icon } from 'vant';
 import draggable from '@/components/draggable/VE.vue'
 
@@ -261,6 +229,7 @@ export default {
         },
     },
     components: {
+        sendwind,
         draggable,
         'van-rate': Rate,
         'van-skeleton':Skeleton,
@@ -268,11 +237,13 @@ export default {
         'van-dropdown-item':DropdownItem,
 
         'van-icon':Icon,
-        EmojiPicker,
+
         C
     },
     data() {
         return{
+            ppre_top:'0',
+            purl:null,
             purl_top:'0',
             dataResult:null,
             obj:{},// product返回体的map
@@ -342,8 +313,63 @@ export default {
         }
     },
     methods:{
-        PhotoPreshow(){
+        setImageSize() {
+            const divHeight = 70;
+            const img = new Image();
+            img.src = this.purl;
 
+            img.onload = () => {
+                const originalWidth = img.width;
+                const originalHeight = img.height;
+
+                // 计算保持原始比例的新宽度
+                const newWidth = (originalWidth / originalHeight) * divHeight;
+
+                // 通过 ref 直接修改 div 的样式
+                this.$refs.imageDiv.style.height = `${divHeight}px`;
+                this.$refs.imageDiv.style.width = `${newWidth}px`;
+            };
+        },
+        // mavonEditor拦截图片事件
+        dosth(obj){
+            console.log(obj.src)
+            // 图片预览，参数为图片url
+            this.$root.$emit('photo_prev',obj.src)
+        },
+        PhotoPreshow(){
+            return new Promise((resolve, reject) => {
+                // 创建一个新的 Image 对象来检查图片的加载状态
+                const img = new Image();
+                let timeoutId;
+
+                img.onload = () => {
+                    clearTimeout(timeoutId); // 清除定时器
+                    console.log('onload');
+                    this.$nextTick(() => { // 这里只是为了获取到selectedImage后更新模版
+                        // 确保 DOM 更新完成后执行的代码
+                        console.log('DOM 已更新');
+                    });
+                    this.ppre_top = '80'
+                    this.setImageSize()
+                    this.$alert("图片加载1")
+                    resolve(this.purl);
+                };
+
+                img.onerror = () => {
+                    clearTimeout(timeoutId); // 清除定时器
+                    this.$alert("图片加载失败")
+                    this.ppre_top = '0'
+                    reject()
+                };
+
+                // 设置加载超时时间为5秒
+                timeoutId = setTimeout(() => {
+                    console.log('timeout');
+                    img.onerror();
+                }, 8000); // 5000 毫秒 = 5 秒
+
+                img.src = this.purl; // 设置 src 属性，触发加载
+            })
         },
         getall(){
             axios.get('/data-result/all')
@@ -388,22 +414,24 @@ export default {
             console.log(emoji)
             this.comment_info += emoji
         },
-        sendComment(){
+        sendComment(info,url){
             console.log("sendComment!!")
             // val是KeyEvent
             //this.$message(this.comment_info)
             axios.post('/comment/addone',{
-                "comment_info":this.comment_info,
+                "comment_info":info,
                 "product_id":this.mobile.query_id,
                 "father_comment_id":0,
-                "replay_to_user_id":0 
+                "replay_to_user_id":0 ,
+                "replay_to_comm_id":0,
+                "photo_url":url
             }).then(response=>{
                 if(response.data.code===0)Toast.fail(response.data.msg)
                 else {
                     Toast.success(response.data.data);       
                 }
             })
-            this.comment_info = ""
+            
         },
         // 筛选框关闭触发
         dropdown_closed(value2){
@@ -508,7 +536,12 @@ export default {
                 //this.getalltype2()
                 // 去除遮罩
                 this.$store.state.zhezhao_show = false
-
+                // 评论提醒页跳转时转到底部
+                if(this.$route.query.bottom){
+                    console.log("我去底部")
+                    setTimeout(() => {window.scrollTo(0, document.body.scrollHeight)},500)
+                }
+                    
                 this.generate_mulu()
 
             }).catch(error=>{
@@ -647,12 +680,15 @@ export default {
             //console.log("元素距离视口顶部的距离:", rect.top);
             if(this.$store.state.CURRENT_HEIGHT>(rect.top+200)){
                 console.log("进入评论框")
-                this.comment_margin_bottom = "0"
+                this.$refs.sendw.comment_margin_bottom = "0"
                 this.van_goods_margin_bottom = "-50"
             }else{
                 console.log("评论框之外")
                 this.van_goods_margin_bottom = "0"
-                this.comment_margin_bottom = "-50"
+                this.$refs.sendw.comment_margin_bottom = "-50"
+                this.$refs.sendw.purl_top = '0'
+                this.$refs.sendw.ppre_top = '0'
+                this.$refs.sendw.purl = null
             }
             this.scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             console.log('当前屏幕滚动高度:', this.scrollTop);
@@ -666,13 +702,6 @@ export default {
             })
             console.log('测试return')
         
-        },
-        // 监听点击
-        handleOutsideClick(e) {
-            // 检查点击事件是否在输入框（及其子元素）之外
-            if (!this.$refs.inputBox.contains(e.target)) {
-                this.comment_margin_bottom = "0"
-            }
         },
         generate_mulu(){
             this.$nextTick(() => {
@@ -719,6 +748,7 @@ export default {
         else if(this.$store.state.CURRENT_WIDTH>900)this.product_width = 80
         else this.product_width = 95
         this.test()
+        if(this.$route.query.id==="404"||this.$route.query.id===404)this.is404 = true
     },
     beforeDestroy(){
         this.$store.state.PAGE_STATE = "Tabbar"
@@ -731,12 +761,19 @@ export default {
             else if(this.$store.state.CURRENT_WIDTH>1400)this.product_width = 50
             else if(this.$store.state.CURRENT_WIDTH>900)this.product_width = 80
             else this.product_width = 95
+        },
+        purl:function(){
+            this.ppre_top = '0'
         }
     }
 }
 </script>
 
 <style scoped>
+.purl{
+    border-radius: 15px;
+    border: 5px solid white;
+}
 .card-tag-item{
     margin: 4px 10px 0 0;
     cursor: pointer;

@@ -46,7 +46,7 @@ Vue.prototype.$FormDate = function (date) {
     const diffInDays = now.diff(inputDate, 'days')
 
     if (diffInSeconds < 60) {
-        return `在线`
+        return `刚刚`
     } else if (diffInMinutes < 60) {
         return `${diffInMinutes}分钟前`
     } else if (diffInHours < 24) {
@@ -88,6 +88,10 @@ Vue.prototype.$fail = function (msg) {
 
 Vue.prototype.$alert = function (msg) {
     Toast(msg)
+}
+// 用户名字显示 全局方法
+Vue.prototype.$getUserName = function (obj) {
+    return obj?.wechat_nickname?obj.wechat_nickname:obj?.name?obj.name:"未知用户"
 }
 
 const vue = new Vue({

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo1228_2.mapper.AllMapper">
+    <!-- 这里改了记得复制到下面子查询 -->
+    <select id="selectpagebyadminWithSearch_SetList" resultType="map">
+        SELECT * FROM ${biao}
+        <where>
+            <if test="yaunsuListMap != null and !yaunsuListMap.isEmpty()">
+                <foreach collection="yaunsuListMap" item="list" index="key" separator=" AND ">
+                    <if test="list != null and !list.isEmpty() and key != 't_tag_label'">
+                        (
+                        <foreach collection="list" item="map" separator=" OR ">
+                            <!-- 判断 map.value 是否存在或非空 -->
+                            <if test="map.value != null and map.value != ''">
+                                ${key} = #{map.value}
+                            </if>
+                            <if test="map.value == null or map.value == ''">
+                                ${key} IS NULL
+                            </if>
+                        </foreach>
+                        )
+                    </if>
+                    <!-- 标签筛选 -->
+                    <if test="key == 't_tag_label'">
+                        <if test="list != null and !list.isEmpty()">
+                            <if test="yaunsuListMap == null or yaunsuListMap.isEmpty()">
+                                AND
+                            </if>
+                            id IN (
+                            SELECT product_id
+                            FROM t_tag
+                            WHERE tag_int IN
+                            <foreach collection="list" item="map" open="(" separator="," close=")">
+                                #{map.value}
+                            </foreach>
+                            GROUP BY product_id
+                            )
+                        </if>
+                    </if>
+                </foreach>
+            </if>
+            <if test='biao == "t_product"'>
+                <if test='name != null'>
+                    AND name LIKE CONCAT('%', #{name}, '%')
+                </if>
+            </if>
+            <if test='id != null'>
+                AND id = #{id}
+            </if>
+            <if test='startDate != null and endDate != null'>
+                AND create_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test='startDate != null and endDate == null'>
+                AND create_time &gt;= #{startDate}
+            </if>
+            <if test='startDate == null and endDate != null'>
+                AND create_time &lt;= #{endDate}
+            </if>
+        </where>
+        <choose>
+            <when test='value2 == "a"'>
+                ORDER BY id ASC
+            </when>
+            <when test='value2 == "b"'>
+                ORDER BY create_time DESC
+            </when>
+            <otherwise>
+                ORDER BY create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 分类统计的查询，上面改了记得复制到下面子查询 -->
+    <select id="selectGroupedData" resultType="map" >
+        SELECT ${yaunsu} AS yuansu, COUNT(*) AS count
+        FROM (
+        SELECT * FROM ${biao}
+        <where>
+            <if test="yaunsuListMap != null and !yaunsuListMap.isEmpty()">
+                <foreach collection="yaunsuListMap" item="list" index="key" separator=" AND ">
+                    <if test="list != null and !list.isEmpty()">
+                        (
+                        <foreach collection="list" item="map" separator=" OR ">
+                            <!-- 判断 map.value 是否存在或非空 -->
+                            <if test="map.value != null and map.value != ''">
+                                ${key} = #{map.value}
+                            </if>
+                            <if test="map.value == null or map.value == ''">
+                                ${key} IS NULL
+                            </if>
+                        </foreach>
+                        )
+                    </if>
+                </foreach>
+            </if>
+            <if test='biao == "t_product"'>
+                <if test='name != null'>
+                    AND name LIKE CONCAT('%', #{name}, '%')
+                </if>
+            </if>
+            <if test='id != null'>
+                AND id = #{id}
+            </if>
+            <if test='startDate != null and endDate != null'>
+                AND create_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test='startDate != null and endDate == null'>
+                AND create_time &gt;= #{startDate}
+            </if>
+            <if test='startDate == null and endDate != null'>
+                AND create_time &lt;= #{endDate}
+            </if>
+        </where>
+        <choose>
+            <when test='value2 == "a"'>
+                ORDER BY id ASC
+            </when>
+            <when test='value2 == "b"'>
+                ORDER BY create_time DESC
+            </when>
+            <otherwise>
+                ORDER BY create_time DESC
+            </otherwise>
+        </choose>
+            ) AS subquery
+        <if test="search_text != null">
+            WHERE ${yaunsu} LIKE CONCAT('%', #{search_text}, '%')
+        </if>
+        GROUP BY ${yaunsu}
+        ORDER BY COUNT(*) DESC
+        LIMIT 30;
+    </select>
+
+    <update id="updateonebyadmin" parameterType="java.util.Map">
+        UPDATE ${biao}
+        <set>
+            <foreach collection="obj" item="value" index="key">
+                <if test="key != 'id'">
+                    <choose>
+                        <when test="key == 'love_list' || key == 'addresses'">
+                            ${key} = #{value, typeHandler=com.example.demo1228_2.config.ListToJsonTypeHandler}, <!-- 使用自定义类型处理器 -->
+                        </when>
+                        <otherwise>
+                            ${key} = #{value},
+                        </otherwise>
+                    </choose>
+                </if>
+            </foreach>
+        </set>
+        WHERE id = #{obj.id}
+    </update>
+
+    <delete id="deleteTByIds" >
+        DELETE FROM ${biao} WHERE id IN
+        <foreach collection="Ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="insertonebyadmin" parameterType="map">
+        INSERT INTO ${biao}
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <foreach collection="obj" index="key" separator=",">
+                #{key}
+            </foreach>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <foreach collection="obj" item="item" separator=",">
+                #{item}
+            </foreach>
+        </trim>
+    </insert>
+
+
+
+</mapper>
+
+

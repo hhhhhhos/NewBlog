@@ -164,9 +164,20 @@
     
       <Tabs v-model="activeIndex2" style="margin-top: 0;" @click="handleSelect" animated swipeable>
         <Tab title="首页"></Tab>
-        <Tab title="技术"></Tab>
-        <Tab title="日常"></Tab>
-        <Tab title="游戏"></Tab>
+        <Tab>
+            <template #title>
+                <van-dropdown-menu>
+                    <van-dropdown-item @change="dropdown_item_change" v-model="value1m" :options="option1m" />
+                </van-dropdown-menu>
+            </template>
+        </Tab>
+        <Tab>
+            <template #title>
+                <van-dropdown-menu>
+                    <van-dropdown-item @change="dropdown_item_change2" v-model="value2m" :options="option2m" />
+                </van-dropdown-menu>
+            </template>
+        </Tab>
       </Tabs>
 
       <!-- 筛选排序 -->
@@ -198,6 +209,18 @@
               :thumb="product.photo_url?product.photo_url
                 :'/img/'+`${product.id+'/'+product.photo}.webp`"
             >
+            <template #tag>
+                <div class="card-type-mini"   :style="`background-color:${dataResult.fenlei_color_map[product.type]?dataResult.fenlei_color_map[product.type]:'#555555'} ;`">
+                    <div>{{dataResult.fenlei_map[product.type]}}</div>
+                </div>
+            </template>
+            <template #tags>
+                <div style="margin: 10px 5px;">
+                    <van-tag style="margin-right: 4px;" v-for="(tag_int,key) in tag_map?.[product.id]" :key="key" mark color="#1E90FF" >
+                        {{ dataResult?.biaoqian_map[tag_int] }}
+                    </van-tag>
+                </div>
+            </template>
             <template #title >
               <h3 style="margin: 5px 0 0 5px;">{{product.name}}</h3>
             </template>
@@ -256,11 +279,12 @@ import rootEvent from '@/components/receivedrootevent/VE.vue'
 import { throttle } from 'lodash';
 import { Icon } from 'vant';
 import jiantou from '@/components/jiantou/VE.vue'
-
+import { Tag } from 'vant';
 //const failedIndices = new Set();
 
 export default {
     components:{
+        'van-tag':Tag,
         jiantou,
         'van-icon':Icon,
         rootEvent,
@@ -274,6 +298,22 @@ export default {
     },
     data() {
         return{
+            // 手机选分类标签
+            value1m:0,
+            value2m: 0,
+            option1m: [
+                { text: '分类', value: 0 },
+                { text: '全部商品', value: 1 },
+                { text: '新款商品', value: 2 },
+                { text: '活动商品', value: 3 },
+            ],
+            option2m: [
+                { text: '标签', value: 0 },
+                { text: '默认排序', value: 1 },
+                { text: '好评排序', value: 2 },
+                { text: '销量排序', value: 3 },
+            ],
+            //
             tag_int_local:null,
             tag_map:[],
             donghua:'transition: background-image 1s ease;',
@@ -350,6 +390,12 @@ export default {
         }
     },
     methods:{
+        dropdown_item_change(v){
+            console.log(v)
+        },
+        dropdown_item_change2(v){
+            console.log(v)
+        },
         darkenColor(hex, percent) {
             // 移除 # 符号（如果存在）
             hex = hex.replace(/^#/, '')
@@ -623,11 +669,13 @@ export default {
         },
         // 点商品分类
         handleSelect(key) {
-            console.log(key)
+            // 0 首页 1 分类 2 标签
             this.FType = key
-            if(key==="0"||key===0)this.FType=null
-            this.currentPage = 1
-            this.getproduct()
+            if(key==="0"||key===0){
+                this.FType=null
+                this.currentPage = 1
+                this.getproduct()
+            }
 
         },
         // 拿页
@@ -697,7 +745,35 @@ export default {
                 .then(response=>{
                     console.log(response.data)
                     this.dataResult = response.data
+                    this.init_option1m_option2m()
                 })
+        },
+        // 手机分类标签
+        init_option1m_option2m(){
+            axios.get(`/data-result/type_count`).then(response=>{
+                console.log(response.data)
+                const type_trans = response.data.reduce((acc, item) => {
+                    acc[item.type] = parseInt(item.count, 10); // 将 count 转换为整数并存入 acc 对象
+                    return acc; // 返回累加器给下一个迭代
+                }, {});
+
+                this.init_option1m_option2m2(type_trans)
+            })         
+        },
+        init_option1m_option2m2(type_trans){
+            this.option1m=[{ text: '分类', value: 0 }]
+            this.option2m=[{ text: '标签', value: 0 }]
+            const fenlei_map = this.dataResult.fenlei_map
+            const biaoqian_map = this.dataResult.biaoqian_map
+            
+            Object.keys(fenlei_map).forEach(key => {
+                this.option1m.push({ text: fenlei_map[key]+" ( "+(type_trans[key]?type_trans[key]:0)+" ) ", value: key ,transValue: type_trans[key] || 0})
+            })
+            Object.keys(biaoqian_map).forEach(key => {
+                this.option2m.push({ text: biaoqian_map[key], value: key })
+            })
+            // 根据 transValue 进行排序
+            this.option1m.sort((a, b) => b.transValue - a.transValue)
         },
         async init_tableData_photo_url() {
             console.log('20240731!!!!')
@@ -798,6 +874,22 @@ export default {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.514), 0 0 6px rgba(0, 0, 0, 0.377);
     z-index: 2;
     display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.card-type-mini{
+    position: absolute;
+    top:0px;
+    padding: 2px;
+    left:-5px;
+    /*background-color: #555;*/
+    color:white;
+    font-weight: bold;
+    font-size: 0.7rem; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.514), 0 0 6px rgba(0, 0, 0, 0.377);
+    z-index: 2;
+    display: flex;
+    text-align: center;
     justify-content: center;
     align-items: center;
 }

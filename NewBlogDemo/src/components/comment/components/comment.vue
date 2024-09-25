@@ -48,9 +48,22 @@
         </div>
 
         <!-- 评论内容 -->
-        <div style="font-size:15px;color: #18191C;margin: 22px 0 10px;">
-          <i v-if="scope.is_top" class="top-icon">置顶</i><spam style="color:var(--ptext-color);">{{ scope.info }}</spam>
+        <div style="font-size:15px;color: #18191C;margin: 22px 55px 10px 0;">
+          <i v-if="scope.is_top" class="top-icon">置顶</i>
+          <span v-if="scope.replyer" style="color:var(--ptext-color);">回复<span @click="$router.push('/user/otheruserinfo?user_id='+scope.replyer.id)" style="margin: 0 3px;color:cornflowerblue;cursor: pointer;">@{{ $getUserName(scope.replyer) }}</span>：</span>
+          <span style="color:var(--ptext-color);">{{ scope.info }}</span>
         </div>
+
+        <!-- 评论可带一张图 -->
+        <div v-if="scope.photo_url" style="margin-bottom:10px;">
+            <el-image 
+            ref="imageDiv"
+            :src="scope.photo_url" 
+            :preview-src-list="[scope.photo_url]">
+            </el-image>
+        </div>
+
+
 
         <!-- 日期 点赞 回复 下拉查看子评论 .电脑显示-->
         <div v-if="!true" class="destop" style="font-size:13px;color: #9499A0;">
@@ -215,22 +228,11 @@
     </div>
 
     <!-- 点评论图标 弹出输入 -->
-    <van-popup v-model="van_popup_show" position="bottom" style="height: 200px;background-color: rgb(243, 243, 244);overflow-x:hidden;" >
-      <div style="padding: 5px;" class="el-input">
-        <input
-          style="width: 95%;margin: 5px auto;"
-          class="el-input__inner"
-          v-model="comment_info"
-          @keyup.enter="sendComment"
-          enterkeyhint="send"
-          :placeholder=van_popup_placeholder
-          type="text"
-        />
-      </div>
-      <div style="height: 150px;overflow-y: scroll;">
-        <EmojiPicker @emoji-selected="selectEmoji" />
-      </div>
+    <van-popup v-model="van_popup_show" position="bottom" 
+    style="height: 50px;" >
+        <sendwind ref="sendw" @sendComment="sendComment" :word="van_popup_placeholder" :is_kefuchat="true" :is_product_sendw="true"/>
     </van-popup>
+
   </div>
 </template>
 
@@ -239,7 +241,6 @@
 import moment from 'moment'
 //import sendwinc from './SendwinC'
 import { Popup } from 'vant';
-import EmojiPicker from '@/components/emoji/EmojiPicker.vue';
 import axios from '@/utils';
 import { Toast } from 'vant';
 import { Rate } from 'vant';
@@ -247,6 +248,7 @@ import { Tag } from 'vant';
 //import { Image as VanImage } from 'vant';
 import { Dialog } from 'vant';
 import headimg from '@/components/headimg/VE.vue'
+import sendwind from '@/components/sendwind/VE.vue'
 
 export default {
     name: 'CoM',
@@ -254,7 +256,7 @@ export default {
     //sendwinc
         headimg,
         'van-popup':Popup,
-        EmojiPicker,
+        sendwind,
         'van-rate': Rate,
         'van-tag':Tag,
         //'van-image':VanImage
@@ -271,6 +273,11 @@ export default {
     },
     data () {
         return {
+            url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+            srcList: [
+                'https://fuss10.elemecdn.com/8/27/f01c15bb73e1ef3793e64e6b7bbccjpeg.jpeg',
+                'https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg'
+            ],
             user_id:null,
             scope_local:{
                 rate:0,
@@ -332,6 +339,25 @@ export default {
         }
     },
     methods: {
+        setImageSize() {
+            const divWidth = 200
+            const img = new Image();
+            img.src = this.scope.photo_url;
+            console.log("this.scope.url:"+this.scope)
+            console.log("this.scope.url:"+this.scope.photo_url)
+            
+            img.onload = () => {
+                const originalWidth = img.width;
+                const originalHeight = img.height;
+                
+                // 计算保持原始比例的新高度
+                const newHeight = (originalHeight / originalWidth) * divWidth;
+
+                // 通过 ref 直接修改 div 的样式
+                this.$refs.imageDiv.$el.style.height = `${newHeight}px`;
+                this.$refs.imageDiv.$el.style.width = `${divWidth}px`;
+            };
+        },
         delete_comment(){
             console.log("sendCommentDelete!!")
             Dialog.confirm({
@@ -358,8 +384,8 @@ export default {
         handleCommentClick(){
             if(!this.$store.state.UserId)this.$router.push(`/login`)
             if(this.amisub){
-                this.replay_to_user_id = this.scope_local.user_id
-                this.van_popup_placeholder = `回复：@${this.scope_local.wechat_nickname?this.scope_local.wechat_nickname:this.scope_local.name?this.scope_local.name:'未知'}`
+                this.replay_to_user_id = this.scope.user_id
+                this.van_popup_placeholder = `回复：@${this.$getUserName(this.scope_local)}`
             }
             this.van_popup_show=true
         },
@@ -389,22 +415,24 @@ export default {
             max = Math.floor(max); // 向下取整，确保最大值是整数
             return Math.floor(Math.random() * (max - min + 1)) + min; // 随机整数
         },
-        sendComment(){
+        sendComment(info,url){
             console.log("sendComment!!")
             // val是KeyEvent
             //this.$message(this.comment_info)
             axios.post('/comment/addone',{
-                "comment_info":this.comment_info,
+                "comment_info":info,
                 "product_id":this.product_id,
                 "father_comment_id":this.amisub?this.fatherid:this.scope.id,//子添子 是this.fatherid 父 //主添子 father是scope.id 本身
-                "replay_to_user_id":this.amisub?this.replay_to_user_id:0 // 子评论的话 是否回复给谁
+                "replay_to_user_id":this.amisub?this.replay_to_user_id:0, // 子评论的话 是否回复给谁
+                "replay_to_comm_id":this.amisub?this.scope_local.id:0, // 子评论的话 回复给谁的评论的主键 这个amisub是子的子啊
+                "photo_url":url
             }).then(response=>{
                 if(response.data.code===0)this.$message.error(response.data.msg)
                 else {
                     Toast.success(response.data.data); 
                 }
             })
-            this.comment_info = ""
+            
         },
         selectEmoji(emoji){
             console.log(emoji)
@@ -528,6 +556,7 @@ export default {
     //this.$store.state.count++
     //console.log('count:' + this.$store.state.count + '  id:' + this.scope.id)
         this.scope_local = this.scope // 引用 但是打破不能改父组件值的限制了
+        this.setImageSize()
     }
 }
 </script>

@@ -67,7 +67,7 @@
 
     </div>
 
-    <sendwind ref="sendw" @sendComment="sendComment" :is_kefuchat="true"/>
+    <sendwind ref="sendw" @sendComment="sendComment" :is_kefuchat="true" :show_photo_icon="false"/>
     <div v-if="$refs?.sendw?.input_disable" style="background-color: rgba(240,243,244,0.7);position: fixed;bottom:0;width: 100%;height: 50px;z-index: 99;">    
     </div>
 

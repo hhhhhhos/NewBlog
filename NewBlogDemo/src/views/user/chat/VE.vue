@@ -6,7 +6,7 @@
       v-model="loading_vanlist"
       :finished="finished"
       @load="debouncedOnLoad"
-      offset=200
+      offset=0
       direction="up"
       >
       
@@ -18,7 +18,13 @@
         <!-- 本人 -->
         <div v-if="column.user_id===user_id" class="chatuser_out">
           <div  class="chatuser">
-            {{ column?.info }}
+            <div>{{ column?.info }}</div>
+            <el-image 
+                v-if="column?.photo_url"
+                style="height: 200px;margin-top: 10px;"
+                :src="column?.photo_url" 
+                :preview-src-list="[column?.photo_url]">
+            </el-image>
           </div>
           <van-image
             round
@@ -43,8 +49,16 @@
             @click="$router.push(`/user/otheruserinfo?user_id=${column.user_id}`)"
           />
           <div  class="chatkefu">
-            {{ column?.info }}
+            <div>{{ column?.info }}</div>
+            <el-image 
+                v-if="column?.photo_url"
+                style="height: 200px;margin-top: 10px;"
+                :src="column?.photo_url" 
+                :preview-src-list="[column?.photo_url]">
+            </el-image>
           </div>
+
+
         </div>
 
       </div>
@@ -134,12 +148,13 @@ export default {
             }
         },
         // 发送消息给receiver_id
-        sendMessag(info){
+        sendMessag(info,photo_url){
             // 滚动到底部
             window.scrollTo(0, document.body.scrollHeight);
             this.$refs.sendw.input_disable = true
             axios.post(`/chat/add`,{
                 info,
+                photo_url,
                 receiver_id:this.receiver_id
             })
                 .then(response=>{
@@ -152,6 +167,7 @@ export default {
                             "user_id": this.user_id,
                             "receiver_id": null,
                             "info": info,
+                            "photo_url":photo_url,
                             "create_time": new Date().toISOString(),
                             "show_time": false ,
                             "is_read": null,
@@ -175,9 +191,10 @@ export default {
         },
         // vant手机划到顶部时触发
         async onLoad() {
+            this.loading_vanlist = true;
             console.log("滚到顶部，触发加载")
             this.currentPage +=1
-            await axios.get('chat/pagewithone',{
+            setTimeout(() => axios.get('chat/pagewithone',{
                 params: {
                     currentPage: this.currentPage,
                     PageSize: this.PageSize,
@@ -195,8 +212,6 @@ export default {
                     // 记录旧位置
                     const old_window_scrollY = window.scrollY
                     const old_scrollHeight = document.body.scrollHeight
-                    console.log("old_window_scrollY"+old_window_scrollY)
-                    console.log("old_scrollHeight"+document.body.scrollHeight)
 
                     // 处理并插入新数据(show_time)
                     var mark_create_time = response.data.data.records[0].create_time
@@ -221,15 +236,23 @@ export default {
                     // 顶插入
                     this.tableData.unshift(...newRecords);
 
+
+                    // 滚到底部（只在首次）
+                    if(this.currentPage===1)this.$nextTick(() => {window.scrollTo(0, document.body.scrollHeight);})
                     // 滚回原位（只在非首次）
                     if(this.currentPage>1)this.$nextTick(() => {
                         window.scrollTo(0, document.body.scrollHeight-old_scrollHeight+old_window_scrollY)
                     })
-                    // 滚到底部（只在首次）
-                    if(this.currentPage===1)this.$nextTick(() => {window.scrollTo(0, document.body.scrollHeight);})
                     this.total = response.data.data.total
                     this.current = response.data.data.current
                     this.pages = response.data.data.pages
+                    // 当前页数大于等于总页数
+                    //if (this.PageSize >= this.TotalPage) {
+                    if (this.current >= this.pages) {
+                        this.finished = true;
+                    }
+                    // 加载状态结束
+                    setTimeout(() => {this.loading_vanlist = false}, 5000);
                 }else{
                     this.$message.error(response.data.msg)
                 }
@@ -237,17 +260,8 @@ export default {
                 console.log(response)
             }).catch(error=>{
                 console.log(error)
-            })
-
-            // 加载状态结束
-            this.loading_vanlist = false;
-
-            // 当前页数大于等于总页数
-            //if (this.PageSize >= this.TotalPage) {
-            if (this.current >= this.pages) {
-                this.finished = true;
-            }
-        
+            }), 2000);
+            
 
         },
         async getUnreadNum(){
@@ -281,10 +295,13 @@ export default {
         this.receiver_id = this.$route.query.receiver_id
         this.$store.state.userchat_id = this.receiver_id
         this.test()
-
+        // 禁用平滑滚动
+        document.documentElement.style.scrollBehavior = 'auto';
     },
     beforeDestroy(){
         this.$store.state.PAGE_STATE = "Tabbar"
+        // 恢复平滑滚动
+        document.documentElement.style.scrollBehavior = 'smooth';
     }
 }
 </script>

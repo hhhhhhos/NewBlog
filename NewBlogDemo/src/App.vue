@@ -118,7 +118,7 @@ html {
   background-color: var(--html-bg);
   transition: background-color 0.4s ease;
   scroll-behavior: smooth; /* 锚点平滑 */
-  scroll-padding-top: 65px; /* 锚点距离顶部 */
+    scroll-padding-top: 65px; /* 锚点距离顶部 */
 }
 
 
@@ -134,7 +134,7 @@ html {
 }
 .van-dropdown-menu__item{
   justify-content: left!important;
-  margin: 3px 0 0 10px!important;
+
 }
 input[type="text"]{
       font-size: 16px; /* 调整为至少 16px 不会触发移动端缩放 */

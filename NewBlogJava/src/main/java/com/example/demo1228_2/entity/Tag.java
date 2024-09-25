@@ -2,10 +2,11 @@ package com.example.demo1228_2.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 
-import java.time.LocalDateTime;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -20,33 +21,24 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author yjz
- * @since 2024-05-20
+ * @since 2024-09-06
  */
-@Data
-@TableName("t_chat")
-public class Chat implements Serializable {
+@Data //自动生成get set方法
+@JsonIgnoreProperties(ignoreUnknown = true) // json遇到实体没有的属性 不映射
+@TableName(value = "t_tag", autoResultMap = true) //实体绑定mysql的t_user表（用于mapper的mybatisplus）
+public class Tag implements Serializable {
 
-    /**
-     * 聊天表
-     */
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Long user_id;
+    private Long product_id;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Long receiver_id;
+    private Integer tag_int;
 
-    private String info;
-
-    private String photo_url;
-
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime create_time;
-
-    Boolean is_read;
-
-    private String group_uuid;
 
 }

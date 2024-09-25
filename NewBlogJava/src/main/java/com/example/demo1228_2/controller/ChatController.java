@@ -8,6 +8,7 @@ import com.example.demo1228_2.component.WebSocket;
 import com.example.demo1228_2.config.CustomException;
 import com.example.demo1228_2.config.R;
 import com.example.demo1228_2.config.Tool;
+import com.example.demo1228_2.entity.Action;
 import com.example.demo1228_2.entity.Chat;
 import com.example.demo1228_2.entity.KefuChatHistory;
 import com.example.demo1228_2.entity.User;
@@ -17,6 +18,7 @@ import com.example.demo1228_2.service.impl.ChatServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -61,12 +63,14 @@ public class ChatController {
     public R add(@RequestBody Map<String,Object> params, HttpSession session){
         try{
             String info = params.get("info").toString();
+            String photo_url = ObjectUtils.isEmpty(params.get("photo_url"))?null:params.get("photo_url").toString();
             Long receiver_id = Long.parseLong(params.get("receiver_id").toString());
             Long user_id = Tool.getUserSessionId(session);
             if(user_id.equals(receiver_id))throw new CustomException("不能给自己发消息");
             if(info.length()>200)throw new CustomException("长度过长");
             Chat chat = new Chat();
             chat.setInfo(info);
+            chat.setPhoto_url(photo_url);
             chat.setUser_id(user_id);
             chat.setReceiver_id(receiver_id);
             // 查有无相符合组别ID
@@ -121,11 +125,20 @@ public class ChatController {
      */
     @GetMapping("/getUnreadNum")
     public R testt234(HttpSession session){
-        return R.success(Db.lambdaQuery(Chat.class)
+        int res = Integer.parseInt(Db.lambdaQuery(Chat.class)
                 .eq(Chat::getReceiver_id,Tool.getUserSessionId(session))
                 .eq(Chat::getIs_read,false)
                 .count()
-                .toString());
+                .toString())
+                +
+                Integer.parseInt(Db.lambdaQuery(Action.class)
+                        .eq(Action::getReceiver_id,Tool.getUserSessionId(session))
+                        .eq(Action::getIs_read,false)
+                        .count()
+                        .toString());
+
+
+        return R.success(Integer.toString(res));
     }
 
     /**

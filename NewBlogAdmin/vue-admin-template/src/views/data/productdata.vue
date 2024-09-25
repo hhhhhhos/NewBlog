@@ -32,6 +32,20 @@
       </el-tag>
     </div>
 
+    <!-- 标题检索 -->
+    <div v-if="biao==='t_product'" style="margin: -15px 5px 10px;">
+        <span style="color:#808080;margin-right: 10px;"> 标题检索</span>
+        <input
+            style="width: 85%;margin: 5px auto;height: 30px;width:200px;"
+            class="el-input__inner"
+            v-model="biaotijiansuo"
+            @keyup.enter="dialogdata3.name=biaotijiansuo,gotosearch()"
+            enterkeyhint="send"
+            placeholder=""
+            type="text"
+        />
+    </div>
+
     <el-table
     ref="multipleTable"
       v-loading="IsTableLoading"
@@ -79,7 +93,7 @@
                 <img v-if="tableData[scope.$index][column.prop] && tableData[scope.$index][column.prop]!=='noproduct'" loading="lazy"  :src="`${staticPath}${tableData[scope.$index][column.prop]}.webp`" style="height:80px;width:80px;object-fit: cover;">
               </a>
               </div>
-              <div v-else-if="column.label==='url预览'">
+              <div v-else-if="column.label==='url预览' || column.label==='图片url'">
                 <el-image v-if="tableData[scope.$index][column.prop]" style="cursor: pointer;"
                     class="img" 
                     lazy
@@ -180,6 +194,7 @@
                 </el-switch>
 
             </el-form-item>
+
             
             <el-form-item v-else :label="column.label" :prop="column.prop">
               <el-input v-model="dialogdata2[column.prop]" style="max-width: 300px;">
@@ -373,6 +388,7 @@ export default {
     },
     data() {
         return {
+            biaotijiansuo:null,
             selectedOptions:[],
             tagList:[],
             toggleRowSelection:null,
@@ -1014,6 +1030,10 @@ export default {
         // 添加一个
         axios_add(){
             if(this.biao!=='t_product'){
+                Object.keys(this.dialogdata2).forEach(key => {
+                    if(this.dialogdata2[key]==="true")this.dialogdata2[key] = true
+                    if(this.dialogdata2[key]==="false")this.dialogdata2[key] = false
+                });
                 return axios.post(`/all/insertonebyadmin/${this.biao}`,this.dialogdata2).then(response=>{
                     if(response.data.code===0)this.$message.error(response.data.msg)
                     else{
@@ -1061,6 +1081,10 @@ export default {
         axios_update(is_baocun){
             // 非t_product的入口
             if(this.biao!=='t_product'){
+                Object.keys(this.dialogdata2).forEach(key => {
+                    if(this.dialogdata2[key]==="true")this.dialogdata2[key] = true
+                    if(this.dialogdata2[key]==="false")this.dialogdata2[key] = false
+                });
                 return axios.put(`/all/updateonebyadmin/${this.biao}`,this.dialogdata2).then(response=>{
                     if(response.data.code===0)this.$message.error(response.data.msg)
                     else{

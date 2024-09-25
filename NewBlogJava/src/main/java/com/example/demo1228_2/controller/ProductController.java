@@ -10,6 +10,7 @@ import com.example.demo1228_2.config.R;
 import com.example.demo1228_2.config.Tool;
 import com.example.demo1228_2.entity.*;
 import com.example.demo1228_2.mapper.*;
+import com.example.demo1228_2.service.impl.ActionServiceImpl;
 import com.example.demo1228_2.service.impl.ProductServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,6 +53,9 @@ public class ProductController {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    ActionServiceImpl actionService;
 
     @GetMapping("/page") // 分页查询 接收params //防空设默认
     public R<Page> FindPageProduct(@RequestParam Map<String,String> params,HttpSession session){
@@ -138,6 +142,7 @@ public class ProductController {
                 Map<String,Object> entry = new HashMap<>(objectMapper.convertValue(product, Map.class));
                 entry.put("comment_num",Db.lambdaQuery(Comment.class)
                         .eq(Comment::getProduct_id,product.getId())
+                        .eq(Comment::getIs_show,true)
                         .count());
                 PIds.add(Long.parseLong(entry.get("id").toString()));
                 return entry;
@@ -194,7 +199,8 @@ public class ProductController {
                 .add("rate_num",product.getRate_num())
                 .add("user_id",user.getId()!=null?user.getId().toString():null)
                 .add("user_wechat_nickname",user.getWechat_nickname())
-                .add("tag_map",res2);
+                .add("tag_map",res2)
+                .add("comment_num",Db.lambdaQuery(Comment.class).eq(Comment::getProduct_id,id).count());
     }
 
     @GetMapping("/getalltye2") // 查所有相同type2商品
@@ -211,6 +217,7 @@ public class ProductController {
 
         return R.success("success").add("type2_list",rl);
     }
+
 
     /**
      * 新增一个赞
@@ -251,6 +258,11 @@ public class ProductController {
             //comment.setLove_list_num(comment.getLove_list_num()+1);
             if(productmapper.updateById(product)!=1)
                 return R.error("点赞失败，建议重试");
+
+            // 添加动态 action
+            Map<String,Object> params2 = new HashMap<>();
+            params2.put("product",product);
+            actionService.zan_product(params2,session);
             return R.success("点赞成功");
         }
 

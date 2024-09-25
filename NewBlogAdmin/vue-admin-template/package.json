@@ -5,7 +5,7 @@
   "author": "Pan <panfree23@gmail.com>",
   "scripts": {
     "dev": "vue-cli-service serve",
-    "build:prod": "vue-cli-service build",
+    "build:prod": "vue-cli-service build --report",
     "build:stage": "vue-cli-service build --mode staging",
     "preview": "node build/index.js --preview",
     "svgo": "svgo -f src/icons/svg --config=src/icons/svgo.yml",
@@ -56,9 +56,11 @@
     "sass-loader": "8.0.2",
     "script-ext-html-webpack-plugin": "2.1.3",
     "serve-static": "1.13.2",
+    "speed-measure-webpack-plugin": "^1.5.0",
     "svg-sprite-loader": "4.1.3",
     "svgo": "1.2.2",
-    "vue-template-compiler": "2.6.10"
+    "vue-template-compiler": "2.6.10",
+    "webpack-bundle-analyzer": "^4.10.2"
   },
   "browserslist": [
     "> 1%",

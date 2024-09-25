@@ -6,15 +6,18 @@ import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.example.demo1228_2.config.CustomException;
 import com.example.demo1228_2.config.R;
 import com.example.demo1228_2.config.Tool;
+import com.example.demo1228_2.entity.Action;
 import com.example.demo1228_2.entity.Fan;
 import com.example.demo1228_2.entity.User;
 import com.example.demo1228_2.mapper.FanMapper;
 import com.example.demo1228_2.mapper.UserMapper;
+import com.example.demo1228_2.service.impl.ActionServiceImpl;
 import com.example.demo1228_2.service.impl.FanServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -53,10 +56,13 @@ public class FanController {
         // 被关注人数
         String fs = Db.lambdaQuery(Fan.class)
                 .eq(Fan::getUser_id2,user_id).count().toString();
+        // 本人动态数
+        String dt = Db.lambdaQuery(Action.class)
+                .eq(Action::getUser_id,user_id).count().toString();
         // 是否已关注
         Boolean is_Fan = Db.lambdaQuery(Fan.class).eq(Fan::getUser_id,Tool.getUserSessionId(session))
                 .eq(Fan::getUser_id2,user_id).exists();
-        return R.success(is_Fan).add("gz",gz).add("fs",fs);
+        return R.success(is_Fan).add("gz",gz).add("fs",fs).add("dt",dt);
     }
 
     /**
@@ -113,6 +119,8 @@ public class FanController {
     }
 
 
+    @Autowired
+    ActionServiceImpl actionService;
     /**
      * 关注或取关
      * @param user_id 1
@@ -136,8 +144,13 @@ public class FanController {
                 fan.setUser_id2(Long.parseLong(user_id));
                 if(fanMapper.insert(fan)!=1)
                     throw new CustomException("关注失败");
-                else
+                else{
+                    Map<String,Object> params = new HashMap<>();
+                    params.put("fan",fan);
+                    actionService.guanzhu(params);
                     return R.success("关注成功");
+                }
+
             // 已粉取关
             }else{
                 if(fanMapper.deleteById(fan)!=1)

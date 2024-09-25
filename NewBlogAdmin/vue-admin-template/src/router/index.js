@@ -125,16 +125,16 @@ export const constantRoutes = [
         meta: { title: '杂项管理', icon: 'table' },
         children: [
             {
-                path: 'friend',
-                name: 'friend',
-                component: () => import('@/views/data/Tmanage'),
-                meta: { title: '友链管理', icon: 'peoples' }
-            },
-            {
                 path: 'comment',
                 name: 'comment',
                 component: () => import('@/views/data/Tmanage'),
                 meta: { title: '评论管理', icon: 'message' }
+            },
+            {
+                path: 'friend',
+                name: 'friend',
+                component: () => import('@/views/data/Tmanage'),
+                meta: { title: '友链管理', icon: 'peoples' }
             },
             {
                 path: 'chat',
@@ -171,6 +171,12 @@ export const constantRoutes = [
                 name: 'user_option',
                 component: () => import('@/views/data/Tmanage'),
                 meta: { title: '设置管理', icon: 'password' }
+            },
+            {
+                path: 'action',
+                name: 'action',
+                component: () => import('@/views/data/Tmanage'),
+                meta: { title: '通知管理', icon: 'password' }
             },
    
         ]

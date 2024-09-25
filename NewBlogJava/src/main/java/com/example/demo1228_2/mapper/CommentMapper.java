@@ -61,6 +61,7 @@ public interface CommentMapper extends BaseMapper<Comment> {
             "FROM t_comment AS c " +
             "LEFT JOIN t_user AS u ON c.user_id = u.id " +
             "WHERE c.product_id = #{product_id} AND (c.father_comm_id = 0 OR c.father_comm_id IS NULL) " +
+            "AND (c.is_show IS NULL OR c.is_show = 1) " +
             "ORDER BY c.is_top DESC, c.create_time DESC " // 次排序create_time
     )
     IPage<CommentOrderUserRateDto> selectByProductIdLeftJoinOrderByTime(Page<CommentOrderUserRateDto> page, Long product_id);
@@ -94,7 +95,8 @@ public interface CommentMapper extends BaseMapper<Comment> {
             "FROM t_comment AS c " +
             "LEFT JOIN t_user AS u ON c.user_id = u.id " +
             "WHERE c.product_id = #{product_id} AND c.father_comm_id = #{father_comm_id} " +
-            "ORDER BY c.love_list DESC, create_time DESC "
+            "AND (c.is_show IS NULL OR c.is_show = 1) " +
+            "ORDER BY JSON_LENGTH(c.love_list) DESC, c.create_time DESC "
     )
     IPage<CommentOrderUserRateDto> selectByProductIdLeftJoinOrderByRateSub(Page<CommentOrderUserRateDto> page, Long product_id,Long father_comm_id);
 
@@ -107,6 +109,7 @@ public interface CommentMapper extends BaseMapper<Comment> {
             "FROM t_comment AS c " +
             "LEFT JOIN t_user AS u ON c.user_id = u.id " +
             "WHERE c.product_id = #{product_id} AND (c.father_comm_id = 0 OR c.father_comm_id IS NULL) " +
+            "AND (c.is_show IS NULL OR c.is_show = 1) " +
             "ORDER BY c.is_top DESC, c.love_list DESC, create_time DESC " // 次排序create_time
             )
     IPage<CommentOrderUserRateDto> selectByProductIdLeftJoinOrderByLike(Page<CommentOrderUserRateDto> page, Long product_id);

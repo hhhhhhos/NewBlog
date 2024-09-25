@@ -86,9 +86,13 @@ public class Comment implements Serializable {
     private Integer saw_num;
 
 
-    // 回复给谁
+    // 回复给谁(子评论里的回复)
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long replay_to_user_id;
+
+    // 回复给谁(子评论里的回复的子评论的主键)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    Long replay_to_comm_id;
 
     Boolean is_show;
 

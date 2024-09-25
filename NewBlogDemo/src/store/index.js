@@ -22,7 +22,8 @@ export default new Vuex.Store({
         light_svg_show:true,
         option:{
             show_product_scale_win:false // 是否显示product的缩放调节窗
-        }
+        },
+        type_trans:null, // 分类表的统计
 
     }
 })

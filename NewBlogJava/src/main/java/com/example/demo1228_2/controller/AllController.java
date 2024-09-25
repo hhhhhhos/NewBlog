@@ -11,6 +11,7 @@ import com.example.demo1228_2.mapper.AllMapper;
 import com.example.demo1228_2.mapper.CommentMapper;
 import com.example.demo1228_2.mapper.FriendMapper;
 import com.example.demo1228_2.mapper.TagMapper;
+import com.example.demo1228_2.service.impl.ActionServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -120,6 +121,9 @@ public class AllController {
         }
     }
 
+    @Autowired
+    ActionServiceImpl actionService;
+
     @PutMapping("/updateonebyadmin/{biao}") // 泛更新
     public R put(@RequestBody Map object, @PathVariable String biao,HttpSession session) {
         try{
@@ -127,8 +131,23 @@ public class AllController {
             objectForm(object);
             log.info(object+"");
             int res = allMapper.updateonebyadmin(object,biao);
-            if(res==1)
+            if(res==1) {
+                // 评论审核通过的话就action提醒
+                if(biao.equals("t_comment") && (object.get("is_show").toString().equals("1") || object.get("is_show").toString().equals("true"))  ) {
+                    Map<String,Object> params = new HashMap<>();
+                    params.put("comment",object);
+                    Comment comment = objectMapper.convertValue(object,Comment.class);
+                    if(comment.getFather_comm_id().equals(0L)){
+                        // 直接评论 无父
+                        actionService.comment2(params);
+                    }else{
+                        // 回复某人
+                        actionService.comment(params);
+                    }
+
+                }
                 return R.success("");
+            }
             else
                 return R.error("数据库影响行为"+res);
         }catch (Exception e){

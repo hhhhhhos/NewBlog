@@ -1,5 +1,35 @@
 <template>
   <div>
+    <!-- 点赞 关注 评论 -->
+    <div class="out-item">
+        <div class="item" @click="$router.push(`/user/chat/history/zan?unread=${map['zan']!=='0'?true:false}`)">
+            <div class="item-icon" style="background-color:rgb(250,230,229)">
+                <van-icon name="good-job" size="30px" color="rgb(234,106,97)"/>
+                <div v-show="map?.['zan']!=='0'" class="item-icon-unread">
+                    {{ map['zan'] }}
+                </div>
+            </div>
+            <p class="des">点赞</p>
+        </div>
+        <div class="item" @click="$router.push(`/user/chat/history/guanzhu?unread=${map['guanzhu']!=='0'?true:false}`)">
+            <div class="item-icon" style="background-color:rgb(233,241,254)">
+                <van-icon name="contact" size="30px" color="rgb(77,130,245)"/>
+                <div v-show="map?.['guanzhu']!=='0'" class="item-icon-unread">
+                    {{ map['guanzhu'] }}
+                </div>
+            </div>
+            <p class="des">关注</p>
+        </div>
+        <div class="item" @click="$router.push(`/user/chat/history/comment?unread=${map['comment']!=='0'?true:false}`)">
+            <div class="item-icon" style="background-color:rgb(229,249,240)">
+                <van-icon name="comment" size="30px" color="rgb(111,213,158)"/>
+                <div v-show="map?.['comment']!=='0'" class="item-icon-unread">
+                    {{ map['comment'] }}
+                </div>
+            </div>
+            <p class="des">评论</p>
+        </div>
+    </div>
 
     <!-- 无限滚动 -->
     <van-list
@@ -52,15 +82,18 @@ import { List} from 'vant';
 import { throttle } from 'lodash';
 //import { Cell } from 'vant';
 import rootEvent from '@/components/receivedrootevent/VE.vue'
+import { Icon } from 'vant';
 
 export default {
     components:{
+        'van-icon':Icon,
         'van-list':List,
         //'van-cell':Cell,
         rootEvent
     },
     data() {
         return{
+            map:{},
             tableData: [],
             total: 0, //总个数
             current:0, // 当前页数
@@ -124,8 +157,21 @@ export default {
       
 
         },
+        getUnreadZanGuanzhuComment(){
+            axios.get('action/count',{
+            }).then(response=>{
+                if(response.data.code){
+                    this.map = response.data.data
+                }else{
+                    this.$message.error(response.data.msg)
+                }
+            }).catch(error=>{
+                console.log(error)
+            })
+        }
     },
     mounted(){
+        this.getUnreadZanGuanzhuComment()
         this.$store.state.zhezhao_show = false
     },
     created(){
@@ -142,5 +188,43 @@ export default {
   padding: 10px 10px;
   display:flex;
   cursor: pointer;
+}
+
+.out-item{
+    display: flex;
+    margin:10px;
+    margin-top: 20px;
+}
+.item{
+    width:33%;
+    cursor: pointer;
+}
+.item-icon{
+    position: relative;
+    margin: 0 auto;
+    border-radius: 20px;
+    height: 60px;
+    width: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.item-icon-unread{
+    position: absolute;
+    top:-8px;
+    right:-6px;
+    margin: 10px 0px 0 0;
+    margin-left: auto;
+    text-align: center;
+    border-radius: 20px;
+    background-color: red;
+    color: white;
+    width: 20px;
+    font-size: 12px;
+    line-height: 18px;
+}
+.des{
+    margin: 8px auto;
+    font-size: 0.9rem;
 }
 </style>

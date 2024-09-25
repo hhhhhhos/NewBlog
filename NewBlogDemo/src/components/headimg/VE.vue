@@ -15,7 +15,10 @@
 export default {
     props:{
         obj:Object,
-        target_img_src:String,
+        target_img_src:{
+            type:String,
+            default:require(`@/assets/default_headimg5.webp`)
+        },
         the_style:String
     },
     data() {

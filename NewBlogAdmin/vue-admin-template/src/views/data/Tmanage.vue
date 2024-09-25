@@ -26,7 +26,9 @@ export default {
                     { prop: 'ip', label: 'ip' , width: '80' ,align:'center'},
                     { prop: 'ip_location', label: 'ip地点' , width: '100' ,align:'center'},
                     { prop: 'info', label: '评论内容' },
-                    { prop: 'replay_to_user_id', label: '回复ID', width: '90' },
+                    { prop: 'photo_url', label: '图片url',width: '100'},
+                    { prop: 'replay_to_user_id', label: '回复UID', width: '100' },
+                    { prop: 'replay_to_comm_id', label: '回复CID', width: '100' },
                     { prop: 'is_show', label: '显示', width: '80' },
                     { prop: 'is_top', label: '置顶', width: '80' },
                     { prop: 'create_time', label: '创建时间', width: '180' },
@@ -111,19 +113,30 @@ export default {
                     { prop: 'show_product_scale_win', label: '是否显示缩放调节窗' , width: '120'},
                     { prop: 'subscribe_comment_reply_by_mail', label: '邮件订阅评论回复' , width: '120'},
                     { prop: 'create_time', label: '访问时间', width: '160' },
+                ],
+                action:[
+                    { prop: 'id', label: 'ID', width: '80' },
+                    { prop: 'user_id', label: 'UID', width: '80' },
+                    { prop: 'receiver_id', label: 'RID', width: '80' },
+                    { prop: 'is_read', label: '已读', width: '80' },
+                    { prop: 'type', label: '通知类型' },
+                    { prop: 'biao', label: '表名', width: '100' },
+                    { prop: 'biao_id', label: '表ID', width: '100' },
+                    { prop: 'create_time', label: '创建时间', width: '160' },
                 ]
                 
 
             },
             // 使用fliter组件的header
             fliter_list:{
-                comment:['置顶', '显示', '主页显示','分类','ip地点','用户ID','文章ID','父评论ID','回复ID'],
+                comment:['置顶', '显示', '主页显示','分类','ip地点','用户ID','文章ID','父评论ID','回复UID','回复CID'],
                 friend:['被关注','无效','用户ID'],
                 chat:['用户ID','接收人ID','聊天组','已读'],
                 kefu_chat_history:['用户ID','客服名称','已完结'],
                 user:['ip地点','角色'],
                 user_agent_details:['用户名','微信名','ip地点','访问ip','访问URL','访问方法','协议','设备','设备品牌','版本','操作系统','访客标识','浏览器','user_agent'],
-                user_option:['用户ID']
+                user_option:['用户ID'],
+                action:['UID','RID','已读','通知类型','表名','表ID']
             }
         }
     },
