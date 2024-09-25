@@ -59,6 +59,7 @@ export default {
 
 <style>
 :root {
+    --seleted:red;
     --mulu:none;
     --blockquote-color:#6a737d;
   --primary-color: #3498db;
@@ -81,7 +82,6 @@ export default {
   --shadow1-color:rgba(0, 0, 0, 0.514);
   --shadow2-color:rgba(0, 0, 0, 0.377);
 }
-
 .myvan .van-list__finished-text{
   margin-top: 30px !important;
 }

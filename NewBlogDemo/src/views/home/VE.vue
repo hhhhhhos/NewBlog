@@ -14,16 +14,19 @@
        class="bgphoto mybordertt">
         <div class="xiba">
           {{FType?`分类 の ${dataResult?.fenlei_map[FType]?dataResult.fenlei_map[FType]:FType==='0'?'无':'未知分类'}`:FType===0?'分类 の 无':`西巴の博客`}}
-          <div class="xiba-sub">
-            {{FName?FName:''}}
+        <div class="xiba-sub">
+            共{{ TotalPage }}篇
             <div class="xiba-sub-sub">
-                {{tag_int_local?`# ${dataResult?.biaoqian_map[tag_int_local]}`:""}}
+                {{FName?FName:''}}
+                <div class="xiba-sub-sub">
+                    {{tag_int_local?`# ${dataResult?.biaoqian_map[tag_int_local]}`:""}}
+                </div>
             </div>
-          </div>
+        </div>
         </div>
 
         <div class="xiba-version">
-            {{`version  `}}<span class="xiba-version-num">240722</span>
+            {{`version  `}}<span class="xiba-version-num">240925</span>
         </div>
 
         <jiantou title="切换壁纸" class="jiantou"   
@@ -44,6 +47,9 @@
 
       <div v-loading=this.IsTableLoading style="min-height: 100px;">
         
+        <!-- 是否展示全部文章 -->
+        <el-button title="展示除了主页推荐外的所有文章" v-if="!IsTableLoading && !FType && !tag_int_local && !showAll" size="mini" round style="margin: 0;" @click="showAll=1,getproduct()">显示全部文章</el-button>
+
         <!-- 无限滚动 -->
         <van-list
         v-model="loading"
@@ -51,10 +57,10 @@
         finished-text="没有更多了"
         @load="onLoad"
         offset=-40
-        style="margin: 40px auto ;"
+        style="margin: 0px auto 20px ;"
         class="myvan"
         >
-
+            
             <div 
             v-for="(product, index) in tableData" @click="cardclick(product.id,product.comment_num)"
             :key="index"
@@ -142,6 +148,9 @@
     
         </van-list>
 
+        <!-- 是否展示全部文章 -->
+        <el-button title="展示除了主页推荐外的所有文章" v-if="!IsTableLoading && !FType && !tag_int_local && !showAll" size="mini" round style="margin: 0 0 5px 0;" @click="showAll=1,getproduct()">显示全部文章</el-button>
+
       </div>
 
     </div>
@@ -162,20 +171,21 @@
       </div>
 
     
-      <Tabs v-model="activeIndex2" style="margin-top: 0;" @click="handleSelect" animated swipeable>
-        <Tab title="首页"></Tab>
+      <Tabs v-model="activeIndex2" style="margin-top: 0;" animated swipeable>
         <Tab>
             <template #title>
-                <van-dropdown-menu>
-                    <van-dropdown-item @change="dropdown_item_change" v-model="value1m" :options="option1m" />
-                </van-dropdown-menu>
+                    <van-dropdown-menu>
+                        <van-dropdown-item @change="dropdown_item_change" v-model="value1m" :options="option1m" get-container="body" />
+                    </van-dropdown-menu>
+                    <div v-if="value1m!==0" style="position: absolute;bottom:0;left: 50%;transform: translateX(-50%);background-color:deeppink;width: 50%;height: 2px;" />
             </template>
         </Tab>
         <Tab>
             <template #title>
                 <van-dropdown-menu>
-                    <van-dropdown-item @change="dropdown_item_change2" v-model="value2m" :options="option2m" />
+                    <van-dropdown-item @change="dropdown_item_change2" v-model="value2m" :options="option2m" get-container="body" />
                 </van-dropdown-menu>
+                <div v-if="value2m!==0" style="position: absolute;bottom:0;left: 50%;transform: translateX(-50%);background-color:green;width: 50%;height: 2px;" />
             </template>
         </Tab>
       </Tabs>
@@ -187,6 +197,10 @@
         <div style="margin: 0 10px 4px 0;position:absolute;color: #00000060;font-size: small;right:0;bottom:0;">
           <i class="el-icon-view"></i>{{mobile.home_visitors}}
         </div>
+        
+        <!-- 是否展示全部文章 -->
+        <el-button title="展示除了主页推荐外的所有文章" v-if="!IsTableLoading && !FType && !tag_int_local && !showAll" size="mini" round style="margin: 0;position: absolute;top:0;left:50%;transform: translateX(-50%)" @click="showAll=1,getproduct()">显示全部文章</el-button>
+
       </van-dropdown-menu>
 
       
@@ -199,11 +213,12 @@
         :finished="finished"
         finished-text="没有更多了"
         @load="onLoad"
-        offset=-40
+        offset=0
         >
 
-          <div style="margin: 5px 5px 10px 5px;" v-for="(product, index) in tableData" @click="cardclick(product.id,product.comment_num)"
+          <div style="margin: 5px 5px 10px 5px;position: relative;" v-for="(product, index) in tableData" @click="cardclick(product.id,product.comment_num)"
                 :key="index">
+                <svg v-if="product.is_top" style="z-index:2;position: absolute;right: 0;margin: -5px -5px 0 0;" t="1722121138299" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4266" width="16" height="16"><path d="M951.296 424.96L1024 352.256 671.744 0 599.04 72.704l70.144 70.656-168.96 168.96a296.96 296.96 0 0 0-286.72 75.264L143.36 458.24 72.704 387.584 0 460.8l245.248 245.248-139.776 139.776 72.704 72.704 140.288-140.288L563.2 1024l72.704-72.704-70.144-70.656 70.144-70.144a296.96 296.96 0 0 0 75.776-287.232l168.96-168.96z" fill="#333333" p-id="4267"></path></svg>
             <Card
               style="border-radius: 10px; overflow: hidden;background-color: white;text-align: left;"
               :thumb="product.photo_url?product.photo_url
@@ -216,7 +231,8 @@
             </template>
             <template #tags>
                 <div style="margin: 10px 5px;">
-                    <van-tag style="margin-right: 4px;" v-for="(tag_int,key) in tag_map?.[product.id]" :key="key" mark color="#1E90FF" >
+                    <van-tag v-for="(tag_int,key) in tag_map?.[product.id]" :key="key"
+                    style="margin-right: 4px;cursor: pointer;"  mark color="#1E90FF" @click="tag_int_local=tag_int,value2m=tag_int">
                         {{ dataResult?.biaoqian_map[tag_int] }}
                     </van-tag>
                 </div>
@@ -251,6 +267,10 @@
           </div>
     
         </van-list>
+
+        <!-- 是否展示全部文章 -->
+        <el-button title="展示除了主页推荐外的所有文章" v-if="!IsTableLoading && !FType && !tag_int_local && !showAll" size="mini" round style="margin: 0;" @click="showAll=1,getproduct()">显示全部文章</el-button>
+
 
       </div>
     
@@ -298,6 +318,8 @@ export default {
     },
     data() {
         return{
+            pages:2,
+            showAll:0,
             // 手机选分类标签
             value1m:0,
             value2m: 0,
@@ -376,7 +398,7 @@ export default {
                 photo:'p1.webp',
                 create_tiem:"2022-12-2"
             },
-            currentPage:1,
+            currentPage:0,
             PageSize:8,
             tableData:[],
             TotalPage:0,
@@ -392,9 +414,12 @@ export default {
     methods:{
         dropdown_item_change(v){
             console.log(v)
+            this.FType=(v==0?null:v)
+            this.currentPage = 1
+            this.getproduct()
         },
         dropdown_item_change2(v){
-            console.log(v)
+            this.tag_int_local = (v==0?null:v)
         },
         darkenColor(hex, percent) {
             // 移除 # 符号（如果存在）
@@ -616,11 +641,9 @@ export default {
         },
         // vant手机划到底部时触发
         async onLoad() {
-            //var oldScrollPosition
             console.log("滚到底部，触发加载")
-            // 异步更新数据
-            // setTimeout 仅做示例，真实场景中一般为 ajax 请求
-            this.PageSize +=3
+            this.currentPage ++
+            if(this.currentPage>this.pages)return
             await axios.get('product/page',{
                 params: {
                     currentPage: this.currentPage,
@@ -628,32 +651,37 @@ export default {
                     FName:this.FName,
                     FType:this.FType,
                     value2:this.value2,
-                    tag_int:this.tag_int_local
+                    tag_int:this.tag_int_local,
+                    showAll:this.showAll
                 }
             }).then(response=>{
-                //oldScrollPosition = window.pageYOffset
-                this.tableData = response.data.data.records
-                this.tag_map = response.data.map.tag_map
-                // 防止element-table移动视角
-                //setTimeout(() => {window.scrollTo(0, oldScrollPosition),this.loading1 = false}, 0);
-                this.loading1 = false
-                this.TotalPage = response.data.data.total
-                this.mobile.home_visitors = response.data.map.home_visitors
-                this.IsTableLoading = false
-
-                console.log(response)
+                this.init_tableData_photo_url(response)
             }).catch(error=>{
                 console.log(error)
-            })
-
-            // 加载状态结束
-            this.loading = false;
+            }) 
+        },
+        async init_tableData_photo_url(response) {
+            // format新列表图
+            for (const obj of response.data.data.records) {
+                console.log('obg:'+obj.photo_url)
+                if(obj.photo==='noproduct' && !obj.photo_url){
+                    obj.photo_url = await this.getRandomImage2(null, this.dataResult.po_list);
+                }
+            }
+            // 拼接
+            this.tableData.push(...response.data.data.records)
+            this.tag_map    = response.data.map.tag_map
+            this.pages      = response.data.data.pages
+            this.TotalPage  = response.data.data.total
+            this.mobile.home_visitors = response.data.map.home_visitors
+            this.IsTableLoading = false
 
             // 数据全部加载完成
-            if (this.PageSize >= this.TotalPage) {
+            if (response.data.data.current >= response.data.data.pages) {
                 this.finished = true;
             }
-    
+            // 加载状态结束
+            this.loading = false;
 
         },
         adjustArrowPosition() {
@@ -670,8 +698,7 @@ export default {
         // 点商品分类
         handleSelect(key) {
             // 0 首页 1 分类 2 标签
-            this.FType = key
-            if(key==="0"||key===0){
+            if((key==="0"||key===0 ) && this.FType){
                 this.FType=null
                 this.currentPage = 1
                 this.getproduct()
@@ -682,30 +709,12 @@ export default {
         getproduct(){
             this.tableData = []
             this.IsTableLoading = true
-            axios.get('product/page',{
-                params: {
-                    currentPage: this.currentPage,
-                    PageSize: this.PageSize,
-                    FName:this.FName,
-                    FType:this.FType,
-                    value2:this.value2,
-                    tag_int:this.tag_int_local
-                }
-            }).then(response=>{
-                if(response.data.code){
-                    this.tableData = response.data.data.records
-                    this.tag_map = response.data.map.tag_map
-                    this.init_tableData_photo_url()
-                    this.TotalPage = response.data.data.total
-                    this.mobile.home_visitors = response.data.map.home_visitors
-                    this.IsTableLoading = false
-                    console.log(response)
-                }else
-                    this.$message.error(response.data.msg)
-
-            }).catch(error=>{
-                console.log(error)
-            })
+            this.finished = false
+            this.currentPage=0
+            this.pages=2
+            this.onLoad()
+            console.log(" getproduct()!")
+            
         },
         // 点商品
         cardclick(id,comment_num){
@@ -721,11 +730,6 @@ export default {
         // 页容量变化
         handleSizeChange(val) {
             this.PageSize = val
-            this.getproduct()
-        },
-        // 切页
-        handleCurrentChange(val) {
-            this.currentPage = val
             this.getproduct()
         },
         // 点搜索
@@ -775,38 +779,26 @@ export default {
             // 根据 transValue 进行排序
             this.option1m.sort((a, b) => b.transValue - a.transValue)
         },
-        async init_tableData_photo_url() {
-            console.log('20240731!!!!')
-            for (const obj of this.tableData) {
-                console.log('obg:'+obj)
-                if(obj.photo==='noproduct' && !obj.photo_url){
-                    obj.photo_url = await this.getRandomImage2(null, this.dataResult.po_list);
-                }
-            }
-        },
         async init(){
             await this.getdataresult()
             this.images = this.dataResult.cn_list
             if(this.dataResult.other_stuff_map.po_add_cn)this.images = this.images.concat(this.dataResult.po_list);
             this.getRandomImage(null,this.images)
             //this.getUserLocation();
-            this.getproduct()
+            //this.getproduct()
         }
 
     },
     created(){
-        if(this.$route.query.FType)this.FType = this.$route.query.FType
+        if(this.$route.query.FType){
+            this.FType = this.$route.query.FType
+            this.value1m = this.$route.query.FType
+        }
         
-    //sessionStorage.setItem('Time',new Date().getTime())
-    //console.log(sessionStorage.getItem('Time'))
     },
     watch:{
         // 移动端触发翻页
-        currentPage:function(){
-        // 不是手机不运行
-            if(!this.$store.state.IsMobile)return        
-            this.handleCurrentChange(this.currentPage)    
-        },
+        // eslint-disable-next-line no-unused-vars
         tag_int_local:function(){
             this.getproduct()
         }
@@ -1120,4 +1112,10 @@ export default {
     font-size: 0.85rem;
 }
 
+</style>
+
+<style>
+.van-tabs__line{
+    background-color: transparent;
+}
 </style>

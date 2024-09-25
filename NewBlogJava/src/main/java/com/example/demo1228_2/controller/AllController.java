@@ -2,11 +2,13 @@ package com.example.demo1228_2.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
+import com.example.demo1228_2.Vo.Address;
 import com.example.demo1228_2.config.R;
 import com.example.demo1228_2.config.Tool;
 import com.example.demo1228_2.entity.Comment;
 import com.example.demo1228_2.entity.Tag;
 import com.example.demo1228_2.entity.Friend;
+import com.example.demo1228_2.entity.User;
 import com.example.demo1228_2.mapper.AllMapper;
 import com.example.demo1228_2.mapper.CommentMapper;
 import com.example.demo1228_2.mapper.FriendMapper;
@@ -130,6 +132,12 @@ public class AllController {
             if(!Tool.IsUserAdmin(session))return R.error("权限不足");
             objectForm(object);
             log.info(object+"");
+            if(biao.equals("t_user")){
+                // 密码哈希
+                User user = objectMapper.convertValue(object, User.class);
+                user.setPassword(Tool.encode(user.getPassword()));
+                object = objectMapper.convertValue(user,Map.class);
+            }
             int res = allMapper.updateonebyadmin(object,biao);
             if(res==1) {
                 // 评论审核通过的话就action提醒
@@ -236,6 +244,8 @@ public class AllController {
                     map.put("user_id", map.get("user_id").toString());
                 if (!ObjectUtils.isEmpty(map.get("love_list")))
                     map.put("love_list", objectMapper.readValue(map.get("love_list").toString(), new TypeReference<List<String>>() {}));
+                if (!ObjectUtils.isEmpty(map.get("addresses")))
+                    map.put("addresses", objectMapper.readValue(map.get("addresses").toString(), new TypeReference<List<Address>>() {}));
                 // comment
                 List<String> tostringList = new ArrayList<>(Arrays.asList(
                         "user_id","product_id","father_comm_id","replay_to_user_id"

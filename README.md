@@ -15,27 +15,22 @@
 <br><br>
 ## 简介
 
-For fun DEVELOPING ?
+- For fun DEVELOPING ?
+- application.properties记得放到指定位置，单独提出来了
 
+<br>
 
-<br><br><br>
 ## 后端
 
-SpringBoot 2.7.2 
-<br><br>
-NewBlogJava文件夹 - 统一后台
+- SpringBoot 2.7.2 
+- NewBlogJava文件夹 - 统一后台
 <br>
-<br><br><br>
+
 
 ## 前端
 
-Vue 2.7.16
-<br><br>
-NewBlogDemo文件夹 - 用户端
-<br><br>
-Vue 2.7.12
-<br><br>
-NewBlogAdmin文件夹 - 管理端
+- Vue 2.7.16
+- NewBlogDemo文件夹 - 用户端
+- NewBlogAdmin文件夹 - 管理端
 <br>
-<br><br><br>
 

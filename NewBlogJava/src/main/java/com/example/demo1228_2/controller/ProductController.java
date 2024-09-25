@@ -68,6 +68,7 @@ public class ProductController {
             String FType = params.get("FType");
             String value2 = params.get("value2");
             String tag_int = params.get("tag_int");
+            int showAll = Integer.parseInt(ObjectUtils.isEmpty(params.get("showAll"))?"0":params.get("showAll"));
 
 
             LambdaQueryChainWrapper<Product> query = new LambdaQueryChainWrapper<>(productmapper);
@@ -82,8 +83,7 @@ public class ProductController {
             if(FName != null)query.like(Product::getName,FName);
             // FType不为空 筛选种类
             if(FType != null)query.eq(Product::getType,FType);
-            // 不分类时（在主页）只展示主页允许展示的
-            else query.eq(Product::getIs_on_homepage,true);
+
             // tag_int 筛选标签 外表
             if(!ObjectUtils.isEmpty(tag_int)){
                 int tag_int_int = Integer.parseInt(tag_int);
@@ -92,11 +92,21 @@ public class ProductController {
                         .map(Tag::getProduct_id) // 提取 product 的 id
                         .collect(Collectors.toList()); // 收集到 List<Long> 中
                 // 在该标签的Pid列表里
-                query.in(Product::getId,PidList);
+                if(!ObjectUtils.isEmpty(PidList))query.in(Product::getId,PidList);
+                // 为空直接搞个必否
+                else query.eq(Product::getId,0L);
+            }
+
+            // 不分类和标签和展示全部时（在主页）只展示主页允许展示的
+            if(ObjectUtils.isEmpty(tag_int) && ObjectUtils.isEmpty(FType) && showAll!=1){
+                query.eq(Product::getIs_on_homepage,true);
             }
 
             // 只展示允许展示的
-            query.eq(Product::getIs_show,true).notBetween(Product::getId,45698L,46000L);
+            //query.eq(Product::getIs_show,true);
+
+            // 系统文件不展示
+            query.notBetween(Product::getId,45698L,46000L);
 
             // 添加置顶产品优先排序条件
             query.orderByDesc(Product::getIs_top);
@@ -139,6 +149,7 @@ public class ProductController {
             List<Product> res = page.getRecords();
             List<Long> PIds = new ArrayList<>();
             List<Map<String,Object>> nres = res.stream().map(product -> {
+                if(!product.getIs_show())product.setContent("此内容为隐藏内容");
                 Map<String,Object> entry = new HashMap<>(objectMapper.convertValue(product, Map.class));
                 entry.put("comment_num",Db.lambdaQuery(Comment.class)
                         .eq(Comment::getProduct_id,product.getId())
