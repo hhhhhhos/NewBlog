@@ -50,7 +50,7 @@
         </div>
 
         <!-- 手机 -->
-        <div else>
+        <div v-else>
             <h1 style="color:var(--ptext-color)">归档</h1>
             <p style="color:var(--ptext-color);margin-top: -10px;margin-bottom: 10px;">共&nbsp;{{ content?.length?content.length:'..' }}&nbsp;篇</p>
             <div class="juzhong">   

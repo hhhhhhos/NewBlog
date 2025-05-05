@@ -1,7 +1,8 @@
 <template>
     <div class="fenlei">
-
         <el-button type="primary" @click="add_re(),dialogtitle='新增',dialogVisible = true">新增分类</el-button>
+
+        <span style="color: #555;">（数字1必须保留）</span>
 
         <el-table
             :data="tableData"
@@ -57,7 +58,7 @@
                 
                 <el-form-item label="分类数字">
                     <el-input style="width: 300px;" v-model="new_index"></el-input>
-                    <p style="margin: 0;">最好数字不然可能报错</p>
+                    <p style="margin: 0;">最好数字不然可能报错（数字1必须保留）</p>
                 </el-form-item>
 
                 <el-form-item label="数字类名">

@@ -89,8 +89,8 @@
           <template slot-scope="scope" >
             <div v-if="column.label==='创建时间' || column.label==='更新时间' || column.label==='最后访问时间'">{{ tableData[scope.$index][column.prop]?tableData[scope.$index][column.prop].replace(/T/g, ' '):null }}</div>
             <div v-else-if="column.label==='图像'||column.label==='略缩图'">
-              <a target="_blank" :href="`${staticPath}${tableData[scope.$index][column.prop]}.webp`">
-                <img v-if="tableData[scope.$index][column.prop] && tableData[scope.$index][column.prop]!=='noproduct'" loading="lazy"  :src="`${staticPath}${tableData[scope.$index][column.prop]}.webp`" style="height:80px;width:80px;object-fit: cover;">
+              <a v-if="tableData[scope.$index][column.prop] && tableData[scope.$index][column.prop]!=='noproduct'" target="_blank" :href="`${staticPath}${tableData[scope.$index]['id']+'/'}${tableData[scope.$index][column.prop]}.webp`">
+                <img v-if="tableData[scope.$index][column.prop] && tableData[scope.$index][column.prop]!=='noproduct'" loading="lazy"  :src="`${staticPath}${tableData[scope.$index]['id']+'/'}${tableData[scope.$index][column.prop]}.webp`" style="height:80px;width:80px;object-fit: cover;">
               </a>
               </div>
               <div v-else-if="column.label==='url预览' || column.label==='图片url'">
@@ -154,7 +154,7 @@
             
             <el-form-item v-else-if="column.label==='分类'" :label="column.label" :prop="column.prop">
                 
-                <el-radio-group v-if="dataResult" v-model="dataResult.fenlei_map[dialogdata2[column.prop]]">R
+                <el-radio-group v-if="dataResult" v-model="dataResult.fenlei_map[dialogdata2[column.prop]]">
                     <el-radio-button 
                         v-for="(item, index) in dataResult?.fenlei_map" :key="index" 
                         @click.native="dialogdata2[column.prop]=index"
@@ -486,7 +486,7 @@ export default {
             "num": null,
             "photo": null,
             "info":null,
-            "type":null,
+            "type":"1",
             "create_time":null,
             "version":null,
             "content":null,
@@ -500,9 +500,9 @@ export default {
                 name: [
                     { required: true, message: '请输入标题', trigger: 'blur' }
                 ],
-                type: [
-                    { required: true, message: '请选择分类', trigger: 'blur' }
-                ],
+                //type: [
+                //    { required: true, message: '请选择分类', trigger: 'blur' }
+                //],
             },
             rows_selection:[],
             // 弹窗2（查询弹窗）
@@ -524,7 +524,8 @@ export default {
             ],
             tags: [
             ],
-            yaunsuListMap:{}
+            yaunsuListMap:{},
+            temp_fold:null
         }
     },
     methods:{
@@ -729,14 +730,24 @@ export default {
                 editor.selectionEnd = cursorPos + emoji.length;
                 editor.focus();
             });
+
+            // 关闭emoji窗
+            this.show_emojiP = false
             
         },
-        $imgDel(){
-            this.$message("不想开发这个功能，去他的（我打算用正则在提交后，把正文有的图片从temp移到文章的文件夹，然后清空temp文件夹完事）")
-
+        // 此事件删除时无法被触发
+        $imgDel(pos, $file){
+            console.log("$imgDel")
+            console.log(pos)
+            console.log($file)
         },
         // 绑定@imgAdd event
         $imgAdd(pos, $file){
+            // 删除图片的数组，防止bug
+            this.$refs.editor.$refs.toolbar_left.img_file.splice(1);
+            console.log("imgAdd")
+            console.log(pos)
+            console.log($file)
             // 第一步.将图片上传到服务器.
             var formdata = new FormData();
             formdata.append('photo', $file);
@@ -752,8 +763,10 @@ export default {
                  * 1. 通过引入对象获取: `import {mavonEditor} from ...` 等方式引入后，`$vm`为`mavonEditor`
                  * 2. 通过$refs获取: html声明ref : `<mavon-editor ref=md ></mavon-editor>，`$vm`为 `this.$refs.md`
                  */
-                if(res.data.code)
+                if(res.data.code){
+                    this.temp_fold = res.data.temp_fold
                     this.$refs.editor.$img2Url(pos, this.staticPath + res.data.data);
+                }
                 else
                     this.$message.error(res.data.data)
             })
@@ -766,7 +779,7 @@ export default {
             console.log("this.$refs.upload.uploadFiles?.[0]?.raw")
             console.log(this.$refs.upload?.uploadFiles?.[0]?.raw)
             console.log(this.dialogdata2)
-            if(this.dialogdata2.photo!=="noproduct")this.fileList = [{ name: `${this.dialogdata2?.photo}.webp`, url: `${this.staticPath}${this.dialogdata2.photo}.webp` }];
+            if(this.dialogdata2.photo!=="noproduct")this.fileList = [{ name: `${this.dialogdata2?.photo}.webp`, url: `${this.staticPath}${this.dialogdata2.id}/${this.dialogdata2.photo}.webp` }];
             if(this.dialogdata2.photo_shot!==null && this.dialogdata2.photo_shot!=="noproduct")this.fileList2 = [{ name: `${this.dialogdata2?.photo_shot}.webp`, url: `${this.staticPath}${this.dialogdata2.photo_shot}.webp` }];
         },
         // 这里上传完图片和beforeUpload一起触发 // 这里上传完才会初始化this.$refs.upload.uploadFiles?.[0]?.raw
@@ -1116,6 +1129,7 @@ export default {
                 .then(response=>{
                     if(response.data.code===0)this.$message.error(response.data.msg)
                     else {
+                        this.dialogdata2.content = response.data.map.content
                         if(is_baocun){
                             this.$message.success("保存成功")
                             this.gettablebycondition()
@@ -1291,8 +1305,9 @@ export default {
             this.gettablebycondition()      
         },
         deletetempfolder(){
+            if(!this.temp_fold)return
             axios({
-                url: '/product/deleteTempPhotobyadmin',
+                url: `/product/deleteTempPhotobyadmin?temp_fold=${this.temp_fold}`,
                 method: 'delete',
             })
         }

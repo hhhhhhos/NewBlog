@@ -175,8 +175,12 @@
             <version>2.4.1</version>
         </dependency>
 
-
-
+        <!-- 处理EXIF元数据中的Orientation标签，可以避免图片在转换为WebP格式时方向错误的问题。 -->
+        <dependency>
+            <groupId>net.coobird</groupId>
+            <artifactId>thumbnailator</artifactId>
+            <version>0.4.14</version>
+        </dependency>
 
     </dependencies>
 

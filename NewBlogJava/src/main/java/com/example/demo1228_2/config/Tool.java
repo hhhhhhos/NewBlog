@@ -10,6 +10,7 @@ import com.example.demo1228_2.mapper.DataResultMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.luciad.imageio.webp.WebPWriteParam;
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
 import nl.basjes.parse.useragent.UserAgentAnalyzer;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -235,15 +236,18 @@ public final class Tool {
      * @param path 图片路径 会加在PHOTO_SAVE_URL后
      * @return 图片名字字符串（带.webp）
      */
-    public static String convertToWebpAndSaveToPath(String path,MultipartFile photo,String forward_name) {
+    public static String convertToWebpAndSaveToPath(String path, MultipartFile photo, String forward_name) {
         // 确保保存路径存在
-        File saveDir = new File(PHOTO_SAVE_URL+path);
+        File saveDir = new File(PHOTO_SAVE_URL + path);
         if (!saveDir.exists()) {
             saveDir.mkdirs();
         }
 
         try (InputStream input = photo.getInputStream()) {
-            BufferedImage image = ImageIO.read(input);
+            // 使用 Thumbnails 读取并自动修正 EXIF 信息中的方向
+            BufferedImage image = Thumbnails.of(input)
+                    .scale(1) // 不改变图片大小
+                    .asBufferedImage(); // 获取 BufferedImage
 
             // 使用LocalDateTime和DateTimeFormatter获取当前的年月日时分
             LocalDateTime now = LocalDateTime.now();
@@ -547,7 +551,7 @@ public final class Tool {
      * @param length 随机数个数
      * @return 返回随机数
      * */
-    private static String generateRandomString(int length) {
+    public static String generateRandomString(int length) {
         String charPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         StringBuilder sb = new StringBuilder(length);
         Random random = new Random();

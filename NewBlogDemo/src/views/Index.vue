@@ -35,6 +35,16 @@
                 <svg v-if="$store.state.light_svg_show" @click="switch_change(true)" t="1721842952165" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1658" width="24" height="24"><path d="M480 160V64h64v96h-64z m180.288 31.168l48-83.136 55.424 32-48 83.136-55.424-32zM512 736a224 224 0 1 0 0-448 224 224 0 0 0 0 448z m0 64a288 288 0 1 0 0-576 288 288 0 0 0 0 576z m352-320h96v64h-96v-64z m19.968-219.712l-83.136 48 32 55.424 83.136-48-32-55.424zM260.288 140.032l48 83.136 55.424-32-48-83.136-55.424 32z m-69.12 223.68l-83.136-48 32-55.424 83.136 48-32 55.424zM480 864v96h64v-96h-64zM160 480H64v64h96v-64z m-51.968 228.288l83.136-48 32 55.424-83.136 48-32-55.424z m200.256 92.544l-48 83.168 55.424 32 48-83.168-55.424-32z m400 115.168l-48-83.168 55.424-32 48 83.168-55.424 32z m92.544-200.288l83.136 48 32-55.424-83.136-48-32 55.424z" fill="#F0F8FF" p-id="1659"></path></svg>
                 <svg v-else @click="switch_change(false)" t="1721845417024" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2757" width="24" height="24"><path d="M618.496 111.616c9.216 34.304 14.336 70.656 14.336 108.032 0 228.352-184.832 413.184-413.184 413.184-37.376 0-73.728-5.12-108.544-14.336 47.616 175.616 207.872 305.152 398.848 305.152 228.352 0 413.184-184.832 413.184-413.184 0-190.976-129.024-351.232-304.64-398.848z" fill="#F0F8FF" p-id="2758"></path></svg>
             </div> 
+            <div style="display: flex;justify-content: center;align-items: center;margin-right: 10px;cursor: pointer;">
+                <a href="https://www.travellings.cn/go.html" target="_blank" rel="noopener" title="开往-友链接力">
+                    <span style="font-size: 21px;">🚇</span>
+                </a>
+            </div>
+            <div style="display: flex;justify-content: center;align-items: center;margin-right: 10px;cursor: pointer;">
+                <a href="https://foreverblog.cn/go.html" target="_blank" rel="noopener" title="十年之约-友链接力">
+                    <span style="font-size: 1rem;color:white;">十年</span>
+                </a>
+            </div>
             <Search
                 style="width: 100%;"
                 v-model="input"
@@ -75,8 +85,15 @@
           <path fill="#969799" fill-rule="evenodd" d="M296.114 508.035c-3.22-13.597.473-28.499 11.079-39.105l333.912-333.912c16.271-16.272 42.653-16.272 58.925 0s16.272 42.654 0 58.926L395.504 498.47l304.574 304.574c16.272 16.272 16.272 42.654 0 58.926s-42.654 16.272-58.926 0L307.241 528.058a41.472 41.472 0 0 1-11.127-20.023z">
           </path>
         </svg>
+
+        <div style="cursor: pointer;position: absolute;right: 40px;font-weight: bold;" >
+                <a href="https://www.travellings.cn/go.html" target="_blank" rel="noopener" title="开往-友链接力">
+                    <span style="font-size: 21px;">🚇</span>
+                </a>
+        </div>
         <!-- 右上角菜单图标 -->
         <van-icon @click="popup_show=true"  style="cursor: pointer;position: absolute;right: 0;margin-right: 10px;font-weight: bold;" name="wap-nav" />
+        
       </div>
       <div v-if="this.$route.name !== 'home'" style="height: 56px;"></div>
 

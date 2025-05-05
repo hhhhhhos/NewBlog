@@ -92,7 +92,7 @@
                 :style="product.photo_url?
                     `background-image: url(`+product.photo_url+`);`
                     :product.photo!=='noproduct'?
-                    'background-image: url(/img/'+`${product.id+'/'+product.photo}.webp`+');':`background-image: none;`">
+                    'background-image: url( /xiba-newblog/img/'+`${product.id+'/'+product.photo}.webp`+');':`background-image: none;`">
 
                     <div class="card">
                         
@@ -222,7 +222,7 @@
             <Card
               style="border-radius: 10px; overflow: hidden;background-color: white;text-align: left;"
               :thumb="product.photo_url?product.photo_url
-                :'/img/'+`${product.id+'/'+product.photo}.webp`"
+                :'/xiba-newblog/img/'+`${product.id+'/'+product.photo}.webp`"
             >
             <template #tag>
                 <div class="card-type-mini"   :style="`background-color:${dataResult.fenlei_color_map[product.type]?dataResult.fenlei_color_map[product.type]:'#555555'} ;`">

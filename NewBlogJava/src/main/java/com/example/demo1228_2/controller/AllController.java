@@ -194,6 +194,11 @@ public class AllController {
             Db.lambdaUpdate(Comment.class)
                     .in(Comment::getProduct_id, ids)
                     .remove();
+            // 刪除圖片
+            ids.forEach(id->{
+                Tool.deleteAllFilesInDirectory(Tool.PHOTO_SAVE_URL+id.toString()+'/');
+            });
+
         }
     }
 

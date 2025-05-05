@@ -341,6 +341,7 @@ public class ProductController {
             if(product.getType()==null)product.setType("0");
             product.setPhoto(name.replace(".webp", ""));
             if(name_shot!=null)product.setPhoto_shot(name_shot.replace(".webp", ""));
+
             if(productmapper.insert(product)==0){
                 // 指定要删除的文件路径
                 String filePath = PHOTO_SAVE_URL + name; // 替换为实际的文件路径
@@ -349,6 +350,10 @@ public class ProductController {
                 boolean deleted = file.delete();
                 throw new CustomException("输入库插入失败");
             }else{
+
+                // 移动图片从tempKOOKD231123到ID/...webp 返回修改过图片地址的content
+                product.setContent(movePhotoFromTempToIdFolder(product.getContent(),product.getId().toString(),product.getPhoto(),session));
+
                 boolean moveresult = false;
                 if(!name.equals("noproduct"))
                     moveresult = Tool.moveFile(name,product.getId().toString()+'/'+name);
@@ -369,19 +374,21 @@ public class ProductController {
     public R<String> FindOneProduct(MultipartFile photo,HttpSession session){
         try{
             // 验证权限
+            String temp_fold;
             if(!session.getAttribute("Role").toString().equals("admin"))
                 throw new CustomException("不是管理员，禁止操作");
 
             // 存图
             String name = "";
             if(photo!=null){
-                name = Tool.convertToWebpAndSaveToPath("temp/",photo,"");
+                temp_fold = "temp" + session.getAttribute("IsLogin").toString() +"/";
+                name = Tool.convertToWebpAndSaveToPath(temp_fold,photo,"");
                 //Tool.moveFile(name,product.getId().toString()+'/'+name);
             }else{
                 throw new CustomException("图片为空");
             }
             log.info(name);
-            return R.success(name);
+            return R.success(temp_fold+name).add("temp_fold",temp_fold);
 
         }catch (Exception e){
             return R.error(e.getMessage());
@@ -389,12 +396,13 @@ public class ProductController {
 
     }
 
-    @DeleteMapping("/deleteTempPhotobyadmin") //删除临时文件夹temp和里面所有文件(进入前端页面时会axios触发)
-    public void FindOneProduct(){
-        if(Tool.deleteAllFilesInDirectory(PHOTO_SAVE_URL+"temp/"))
-            log.info("删除temp文件夹所有文件成功");
+    @DeleteMapping("/deleteTempPhotobyadmin") //删除临时文件夹temp和里面所有文件(进入前端页面时会axios触发?废弃？)
+    public void FindOneProduct(@RequestParam String temp_fold){
+        log.warn("deleteTempPhotobyadmin觸發");
+        if(Tool.deleteAllFilesInDirectory(PHOTO_SAVE_URL+temp_fold.substring(1)))
+            log.warn("删除"+PHOTO_SAVE_URL+temp_fold.substring(1) +":成功");
         else
-            log.error("删除temp文件夹失败");
+            log.warn("删除"+PHOTO_SAVE_URL+temp_fold.substring(1) +":fail");
     }
 
     @PutMapping("/updateonebyadmin") // 更新一个商品 //不加注解默认form-data
@@ -463,15 +471,17 @@ public class ProductController {
             if(photo_shot!=null)name_shot = Tool.convertToWebp(photo_shot,"");
             if(name_shot!=null)product.setPhoto_shot(name_shot.replace(".webp", ""));
 
-            if(!productService.updateById(product))
-                throw new CustomException("updateById失败");
+            // 移动图片从tempKOOKD231123到ID/...webp 返回修改过图片地址的content
+            product.setContent(movePhotoFromTempToIdFolder(product.getContent(),product.getId().toString(),product.getPhoto(),session));
 
-            movePhotoFromTempToIdFolder(product.getContent(),product.getId().toString());
+            if(!productService.updateById(product)) {
+                throw new CustomException("updateById失败");
+            }
 
             // 处理标签
             handleBiaoian(obj,product);
 
-            return R.success("更新成功");
+            return R.success("更新成功").add("content",product.getContent());
 
 
 
@@ -724,26 +734,85 @@ public class ProductController {
         }
     }
 
-    // 从正文捕获所有图片 移动到id文件夹
-    private void movePhotoFromTempToIdFolder(String content,String product_id) {
-        // 定义正则表达式
-        String regex = ".*\\/img/([^\\s]+\\.webp)";
-
-        // 编译正则表达式
+    /**
+     * 1.从正文捕获所有/temp/图片 移动到id文件夹
+     * 2.改变content里图片地址
+     * 3.并且从id文件夹里删除content里不存在的图
+      */
+    private String movePhotoFromTempToIdFolder(String content, String product_id,String photo,HttpSession session) {
+        // 定义正则表达式，匹配图片路径（包括临时文件夹和文件名）
+        //String regex = "(https?://[^/]+/xiba-newblog/img)/([^/\\s]+)/([^\\s]+\\.webp)";
+        //String regex = "(https?://[^/]+/xiba-newblog/img)/([^/\\s]+)/([^\\s]+\\.webp)";
+        String regex = "(https?://[^/]+/xiba-newblog/img)/([^/\\s]+)/([^\\s()]+\\.webp)";
         Pattern pattern = Pattern.compile(regex);
-
-        // 创建匹配器
         Matcher matcher = pattern.matcher(content);
 
-        // 创建列表存储结果
-        List<String> matchedResults = new ArrayList<>();
+        // 用于存储 content 中存在的图片文件名
+        Set<String> validImageFiles = new HashSet<>();
 
-        // 找到所有匹配项
+        // 用于替换 content 中的旧路径
+        StringBuffer updatedContent = new StringBuffer();
+
+
+        // 遍历所有匹配项
         while (matcher.find()) {
-            // 获取匹配的字符串
-            String matchedString = matcher.group(1);
-            Tool.moveFile("temp/"+matchedString,product_id+"/"+matchedString);
+            // 获取匹配的完整URL路径
+            String fullUrl = matcher.group(0);
+            // 获取基础路径（如 http://localhost:8099/xiba-newblog/img）
+            String basePath = matcher.group(1);
+            // 获取临时文件夹名称（如 temp4O1QUZFT6）
+            String tempFolder = matcher.group(2);
+            // 获取文件名（如 ORKA1U_202502200126.webp）
+            String fileName = matcher.group(3);
+
+            // 构造新路径
+            String newPath = basePath + "/" + product_id + "/" + fileName;
+
+            // 移动文件到新路径（如果文件存在）
+            Tool.moveFile(tempFolder + "/" + fileName, product_id + "/" + fileName);
+
+            // 替换 content 中的旧路径为新路径
+            matcher.appendReplacement(updatedContent, newPath);
+
+            // 记录有效的图片文件名
+            validImageFiles.add(fileName);
         }
 
+        // 将剩余未匹配的部分追加到 updatedContent
+        matcher.appendTail(updatedContent);
+
+        // 别把封面图给清理了
+        if(photo!=null)validImageFiles.add(photo+".webp");
+
+        // 清理 /12345/ 文件夹中不存在于 content 的图片
+        cleanUpOrphanedImages(Tool.PHOTO_SAVE_URL+product_id, validImageFiles);
+
+        // 删除属于该用户的临时文件夹
+        Tool.deleteAllFilesInDirectory(Tool.PHOTO_SAVE_URL+"temp" + session.getAttribute("IsLogin").toString() +"/");
+
+        // 返回替换后的 content
+        return updatedContent.toString();
     }
+
+    /**
+     * 清理 /12345/ 文件夹中不存在于 content 的图片
+     */
+    private void cleanUpOrphanedImages(String product_id, Set<String> validImageFiles) {
+        // 获取 /12345/ 文件夹中的所有文件
+        File folder = new File(product_id);
+        if (folder.exists() && folder.isDirectory()) {
+            File[] files = folder.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    // 如果文件不在 validImageFiles 中，则删除
+                    if (!validImageFiles.contains(file.getName())) {
+                        file.delete();
+                        log.warn("Deleted orphaned image: " + file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+    }
+
+
 }
